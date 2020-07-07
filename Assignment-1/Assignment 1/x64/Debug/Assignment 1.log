@@ -1,4 +1,5 @@
-﻿  main.cpp
-C:\Users\umaid\Documents\Concordia\Summer 2020\COMP 371\COMP 371 - Project\Assignment 1\Assignment 1\main.cpp(324): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-C:\Users\umaid\Documents\Concordia\Summer 2020\COMP 371\COMP 371 - Project\Assignment 1\Assignment 1\main.cpp(357): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-  Assignment 1.vcxproj -> C:\Users\umaid\Documents\Concordia\Summer 2020\COMP 371\COMP 371 - Project\Assignment 1\x64\Debug\Assignment 1.exe
+﻿  glad.c
+  main.cpp
+C:\Users\umaid\Documents\Concordia\Summer 2020\COMP 371\COMP 371 - Project\COMP-371-Project\Assignment-1\Assignment 1\main.cpp(324): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\Users\umaid\Documents\Concordia\Summer 2020\COMP 371\COMP 371 - Project\COMP-371-Project\Assignment-1\Assignment 1\main.cpp(357): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+  Assignment 1.vcxproj -> C:\Users\umaid\Documents\Concordia\Summer 2020\COMP 371\COMP 371 - Project\COMP-371-Project\Assignment-1\x64\Debug\Assignment 1.exe
