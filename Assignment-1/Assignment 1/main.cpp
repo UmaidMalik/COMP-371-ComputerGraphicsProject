@@ -7,6 +7,7 @@
 */
 
 #include <iostream>
+#include <algorithm>
 
 #define GLEW_STATIC 1 
 
@@ -17,14 +18,18 @@
 #include <glm/gtc/type_ptr.hpp>
 
 
-glm::vec3 cameraEye(0.0f, 0.3f, 0.4f);
-const glm::vec3 center(0.0f, 0.0f, 0.0f);
-const glm::vec3 cameraUp(0.0f, 1.0f, 0.0f);
+glm::vec3 cameraPosition(0.6f, 1.0f, 1.5f);
+glm::vec3 cameraLookAt(0.0f, 0.0f, -1.0f);
+glm::vec3 cameraUp(0.0f, 1.0f, 0.0f);
+glm::vec3 center(0.0f, 0.0f, 0.0f);
 
-glm::vec3 cameraFront = center;
 
-float deltaTime = 0.0f;
-float lastFrameTime = 0.0f;
+
+
+float cameraHorizontalAngle = 90.0f;
+float cameraVerticalAngle = 0.0f;
+float cameraSpeed = 1.0f;
+float cameraSpeedFast = 2 * cameraSpeed;
 
 GLuint worldMatrixLocation;
 
@@ -48,6 +53,8 @@ glm::mat4 translationMatrix;
 glm::mat4 partMatrix;
 
 glm::mat4 shearingMatrix = identityMatrix;
+
+
 
 
 
@@ -171,7 +178,7 @@ int main()
 
 
 	// Disable mouse cursor
-	//glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
 	// Compile and link shaders
 	int shaderProgram = compileAndLinkShaders();
@@ -251,6 +258,13 @@ int main()
 		glm::vec3(0.0f, 0.0f, 5.0f), glm::vec3(0.0f, 0.0f, 1.0f),
 	};
 
+	/*
+	glm::vec3 gridLine[] = {
+	//	glm::vec3( on XZ plane), glm::vec3( yellow color );
+	//    glm::vec3(one XZ plane),glm::vec3( yellow color );
+	}
+	*/
+
 
 
 	GLuint VAO[4];	// vertexArrayObject
@@ -311,17 +325,26 @@ int main()
 	//glBindVertexArray(VAO[1]);
 
 
-
 	glUseProgram(shaderProgram);
 
+	projectionMatrix = glm::perspective(70.0f, 1024.0f / 768.0f, 0.01f, 100.0f);	
+
+	GLuint projectionMatrixLocation = glGetUniformLocation(compileAndLinkShaders(), "projectionMatrix");
+	glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, &projectionMatrix[0][0]);
 
 
+	viewMatrix = glm::lookAt(cameraPosition, cameraPosition + cameraLookAt, cameraUp);
 
+	GLuint viewMatrixLocation = glGetUniformLocation(shaderProgram, "viewMatrix");
+	glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
 
 	// Variables to be used later in tutorial
 	float angle = 0.0f;
 	float rotationSpeed = 30.0f;  // 180 degrees per second
-	lastFrameTime = glfwGetTime();
+	float lastFrameTime = glfwGetTime();
+	double lastMousePosX, lastMousePosY;
+	
+	glfwGetCursorPos(window, &lastMousePosX, &lastMousePosY);
 
 
 	// Enable Backface culling
@@ -354,7 +377,7 @@ int main()
 
 
 
-		deltaTime = glfwGetTime() - lastFrameTime;
+		float deltaTime = glfwGetTime() - lastFrameTime;
 		lastFrameTime += deltaTime;
 
 
@@ -408,9 +431,78 @@ int main()
 		// input
 		processInput(window);
 
+		bool fastCam = glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS;
+		float currentCameraSpeed = (fastCam) ? cameraSpeedFast : cameraSpeed;
+		
+		// first person camera
+		double mousePosX, mousePosY;
+		glfwGetCursorPos(window, &mousePosX, &mousePosY);
 
+		// change in position
+		double dx = mousePosX - lastMousePosX;
+		double dy = mousePosY - lastMousePosY;
 
+		lastMousePosX = mousePosX;
+		lastMousePosY = mousePosY;
 
+		// conversion to sperical coordinates
+		const float cameraAngularSpeed = 5.0f;	// mouse speed
+		cameraHorizontalAngle -= dx * cameraAngularSpeed * deltaTime;
+		cameraVerticalAngle -= dy * cameraAngularSpeed * deltaTime;
+
+		// limit range of vertical camera angle
+		cameraVerticalAngle = std::max(-85.0f, std::min(85.0f, cameraVerticalAngle));
+		if (cameraHorizontalAngle > 360)
+		{
+			cameraHorizontalAngle -= 360;
+		}
+		else if (cameraHorizontalAngle < -360)
+		{
+			cameraHorizontalAngle += 360;
+		}
+
+		// conversion to radians
+		float theta = glm::radians(cameraHorizontalAngle);
+		float phi = glm::radians(cameraVerticalAngle);
+
+		cameraLookAt = glm::vec3(cosf(phi) * cosf(theta), sinf(phi), -cosf(phi) * sinf(theta));
+		glm::vec3 cameraSideVector = glm::cross(cameraLookAt, glm::vec3(0.0f, 1.0f, 0.0f));
+
+		glm::normalize(cameraSideVector);
+
+		if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) // move camera to the left
+		{
+			cameraPosition.x -= currentCameraSpeed * deltaTime;
+		}
+
+		if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) // move camera to the right
+		{
+			cameraPosition.x += currentCameraSpeed * deltaTime;
+		}
+
+		if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS) // move camera up
+		{
+			cameraPosition.z -= currentCameraSpeed * deltaTime;
+		}
+
+		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) // move camera down
+		{
+			cameraPosition.z += currentCameraSpeed * deltaTime;
+		}
+
+		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) // move camera up
+		{
+			cameraPosition.y -= currentCameraSpeed * deltaTime;
+		}
+
+		if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) // move camera down
+		{
+			cameraPosition.y += currentCameraSpeed * deltaTime;
+		}
+		
+		viewMatrix = glm::lookAt(cameraPosition, cameraPosition + cameraLookAt, cameraUp);	
+		GLuint viewMatrixLocation = glGetUniformLocation(compileAndLinkShaders(), "viewMatrix");
+		glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
 	}
 
 	// de-allocate all resources
@@ -454,15 +546,16 @@ void processInput(GLFWwindow * window)
 	if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS)
 	{
 
-		viewMatrix = glm::lookAt(cameraEye, cameraFront, cameraUp);	// eye, center, & up are global variables
+		viewMatrix = glm::lookAt(cameraPosition, cameraLookAt, cameraUp);	// eye, center, & up are global variables
 		GLuint viewMatrixLocation = glGetUniformLocation(compileAndLinkShaders(), "viewMatrix");
 		glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
 	}
 
+
 	// perspective - projection transform
 	if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS)
 	{
-		projectionMatrix = glm::perspective(90.0f,			// field of view in degrees
+		projectionMatrix = glm::perspective(70.0f,			// field of view in degrees
 			1024.0f / 768.0f,	// aspect ratio
 			0.01f, 100.0f);	// near and far (near > 0)
 
@@ -486,8 +579,6 @@ void processInput(GLFWwindow * window)
 	
 	//	GLuint viewMatrixLocation = glGetUniformLocation(compileAndLinkShaders(), "viewMatrix");
 	//	glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
-	
-
 
 
 	// Press and hold C to disable culling
@@ -496,6 +587,8 @@ void processInput(GLFWwindow * window)
 	{
 		glDisable(GL_CULL_FACE);
 	}
+
+
 }
 
 void model_A7()
