@@ -40,7 +40,9 @@ GLuint worldMatrixLocation;
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow * window, int shaderProgram);
 void model_A7(int shaderProgram);
+void model_N7(int shaderProgram, float scalingFactor, glm::vec3 worldPosition);
 GLFWwindow* setupWindow();
+
 
 glm::mat4 identityMatrix = glm::mat4(1.0f);
 
@@ -199,51 +201,51 @@ int main()
 		// postion						// color
 		glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.5f, 0.5f, 0.5f),
 		glm::vec3(0.1f, 0.0f, 0.0f), glm::vec3(0.5f, 0.5f, 0.5f),
-		glm::vec3(0.1f, 0.1f, 0.0f), glm::vec3(0.4f, 0.4f, 0.4f),
+		glm::vec3(0.1f, 0.1f, 0.0f), glm::vec3(0.5f, 0.5f, 0.5f),
 
 		glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.5f, 0.5f, 0.5f),
-		glm::vec3(0.1f, 0.1f, 0.0f), glm::vec3(0.4f, 0.4f, 0.4f),
-		glm::vec3(0.0f, 0.1f, 0.0f), glm::vec3(0.25f, 0.25f, 0.25f),
+		glm::vec3(0.1f, 0.1f, 0.0f), glm::vec3(0.5f, 0.5f, 0.5f),
+		glm::vec3(0.0f, 0.1f, 0.0f), glm::vec3(0.5f, 0.5f, 0.5f),
 
 		glm::vec3(0.1f, 0.0f, 0.0f), glm::vec3(0.5f, 0.5f, 0.5f),
-		glm::vec3(0.1f, 0.0f, 0.1f), glm::vec3(0.7f, 0.7f, 0.7f),
-		glm::vec3(0.1f, 0.1f, 0.0f), glm::vec3(0.4f, 0.4f, 0.4f),
+		glm::vec3(0.1f, 0.0f, 0.1f), glm::vec3(0.5f, 0.5f, 0.5f),
+		glm::vec3(0.1f, 0.1f, 0.0f), glm::vec3(0.5f, 0.5f, 0.5f),
 
-		glm::vec3(0.1f, 0.1f, 0.0f), glm::vec3(0.4f, 0.4f, 0.4f),
-		glm::vec3(0.1f, 0.0f, 0.1f), glm::vec3(0.7f, 0.7f, 0.7f),
-		glm::vec3(0.1f, 0.1f, 0.1f), glm::vec3(0.7f, 0.7f, 0.7f),
+		glm::vec3(0.1f, 0.1f, 0.0f), glm::vec3(0.5f, 0.5f, 0.5f),
+		glm::vec3(0.1f, 0.0f, 0.1f), glm::vec3(0.5f, 0.5f, 0.5f),
+		glm::vec3(0.1f, 0.1f, 0.1f), glm::vec3(0.5f, 0.5f, 0.5f),
 
-		glm::vec3(0.0f, 0.0f, 0.1f), glm::vec3(0.20f, 0.20f, 0.20f),
-		glm::vec3(0.1f, 0.1f, 0.1f), glm::vec3(0.7f, 0.7f, 0.7f),
-		glm::vec3(0.1f, 0.0f, 0.1f), glm::vec3(0.7f, 0.7f, 0.7f),
+		glm::vec3(0.0f, 0.0f, 0.1f), glm::vec3(0.5f, 0.5f, 0.5f),
+		glm::vec3(0.1f, 0.1f, 0.1f), glm::vec3(0.5f, 0.5f, 0.5f),
+		glm::vec3(0.1f, 0.0f, 0.1f), glm::vec3(0.5f, 0.5f, 0.5f),
 
-		glm::vec3(0.0f, 0.0f, 0.1f), glm::vec3(0.20f, 0.20f, 0.20f),
-		glm::vec3(0.0f, 0.1f, 0.1f), glm::vec3(0.4f, 0.4f, 0.4f),
-		glm::vec3(0.1f, 0.1f, 0.1f), glm::vec3(0.7f, 0.7f, 0.7f),
-
-		glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.5f, 0.5f, 0.5f),
-		glm::vec3(0.0f, 0.1f, 0.0f), glm::vec3(0.25f, 0.25f, 0.25f),
-		glm::vec3(0.0f, 0.0f, 0.1f), glm::vec3(0.20f, 0.20f, 0.20f),
-
-		glm::vec3(0.0f, 0.1f, 0.0f), glm::vec3(0.25f, 0.25f, 0.25f),
-		glm::vec3(0.0f, 0.1f, 0.1f), glm::vec3(0.4f, 0.4f, 0.4f),
-		glm::vec3(0.0f, 0.0f, 0.1f), glm::vec3(0.20f, 0.20f, 0.20f),
+		glm::vec3(0.0f, 0.0f, 0.1f), glm::vec3(0.5f, 0.5f, 0.5f),
+		glm::vec3(0.0f, 0.1f, 0.1f), glm::vec3(0.5f, 0.5f, 0.5f),
+		glm::vec3(0.1f, 0.1f, 0.1f), glm::vec3(0.5f, 0.5f, 0.5f),
 
 		glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.5f, 0.5f, 0.5f),
-		glm::vec3(0.1f, 0.0f, 0.1f), glm::vec3(0.7f, 0.7f, 0.7f),
+		glm::vec3(0.0f, 0.1f, 0.0f), glm::vec3(0.5f, 0.5f, 0.5f),
+		glm::vec3(0.0f, 0.0f, 0.1f), glm::vec3(0.5f, 0.5f, 0.5f),
+
+		glm::vec3(0.0f, 0.1f, 0.0f), glm::vec3(0.5f, 0.5f, 0.5f),
+		glm::vec3(0.0f, 0.1f, 0.1f), glm::vec3(0.5f, 0.5f, 0.5f),
+		glm::vec3(0.0f, 0.0f, 0.1f), glm::vec3(0.5f, 0.5f, 0.5f),
+
+		glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.5f, 0.5f, 0.5f),
+		glm::vec3(0.1f, 0.0f, 0.1f), glm::vec3(0.5f, 0.5f, 0.5f),
 		glm::vec3(0.1f, 0.0f, 0.0f), glm::vec3(0.5f, 0.5f, 0.5f),
 
 		glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.5f, 0.5f, 0.5f),
-		glm::vec3(0.0f, 0.0f, 0.1f), glm::vec3(0.20f, 0.20f, 0.20f),
-		glm::vec3(0.1f, 0.0f, 0.1f), glm::vec3(0.7f, 0.7f, 0.7f),
+		glm::vec3(0.0f, 0.0f, 0.1f), glm::vec3(0.5f, 0.5f, 0.5f),
+		glm::vec3(0.1f, 0.0f, 0.1f), glm::vec3(0.5f, 0.5f, 0.5f),
 
-		glm::vec3(0.0f, 0.1f, 0.0f), glm::vec3(0.25f, 0.25f, 0.25f),
-		glm::vec3(0.1f, 0.1f, 0.0f), glm::vec3(0.4f, 0.4f, 0.4f),
-		glm::vec3(0.1f, 0.1f, 0.1f), glm::vec3(0.7f, 0.7f, 0.7f),
+		glm::vec3(0.0f, 0.1f, 0.0f), glm::vec3(0.5f, 0.5f, 0.5f),
+		glm::vec3(0.1f, 0.1f, 0.0f), glm::vec3(0.5f, 0.5f, 0.5f),
+		glm::vec3(0.1f, 0.1f, 0.1f), glm::vec3(0.5f, 0.5f, 0.5f),
 
-		glm::vec3(0.0f, 0.1f, 0.0f), glm::vec3(0.25f, 0.25f, 0.25f),
-		glm::vec3(0.1f, 0.1f, 0.1f), glm::vec3(0.7f, 0.7f, 0.7f),
-		glm::vec3(0.0f, 0.1f, 0.1f), glm::vec3(0.4f, 0.4f, 0.4f),
+		glm::vec3(0.0f, 0.1f, 0.0f), glm::vec3(0.5f, 0.5f, 0.5f),
+		glm::vec3(0.1f, 0.1f, 0.1f), glm::vec3(0.5f, 0.5f, 0.5f),
+		glm::vec3(0.0f, 0.1f, 0.1f), glm::vec3(0.5f, 0.5f, 0.5f),
 	};
 
     const float axisLineLength = 5 * (2.0f / (float)numGridLines);  // axis lines are the length of n grid squares
@@ -320,7 +322,7 @@ int main()
     const float spacing = 2.0f / (float)numGridLines;       // divide the 2.0 world into the number of gridlines
     float increment = 0.0f;                                 // how much to move a line over
     const int numDataPoints = 8;                            // this is how many vec3's there are in one gridline (4 vertices with 1 color each)
-    glm::vec3 zLineColor = glm::vec3(1.0f, 0.0f, 1.0f);     // set line color for lines running parallel to z-axis
+    glm::vec3 zLineColor = glm::vec3(1.0f, 1.0f, 0.0f);     // set line color for lines running parallel to z-axis
     glm::vec3 xLineColor = glm::vec3(1.0f, 1.0f, 0.0f);     // set line color for lines running parallel to x-axis
     glm::vec3 gridLines[numDataPoints * numGridLines];
 
@@ -403,6 +405,9 @@ int main()
 
 		// call model A7
 		model_A7(shaderProgram);
+
+        // call model N7
+        model_N7(shaderProgram, 1.0f, glm::vec3(0.5f, 0.0f, 0.5f));
 
         glLineWidth(5);
 		glBindVertexArray(VAO[1]);
@@ -597,6 +602,86 @@ void processInput(GLFWwindow * window, int shaderProgram)
 
 
 }
+
+/*
+    Draws "N7" on the screen.
+
+    ScalingFactor is undefined for negative values although permitted.
+
+*/
+void model_N7(int shaderProgram, float scalingFactor, glm::vec3 worldPosition) {
+    
+    // these will grow the model
+    float x_scaling = 0.5f * scalingFactor;
+    float y_scaling = 2.5f * scalingFactor;
+    float z_scaling = 0.5f * scalingFactor;
+    
+    glm::mat4 modelMatrix = glm::mat4(1.0f);
+    worldMatrixLocation = glGetUniformLocation(shaderProgram, "worldMatrix");
+    glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]);
+
+    // this matrix moves the entire model around the world, parameters passed will translate the model to where desired
+    glm::mat4 translate_final = glm::translate(glm::mat4(1.0f), glm::vec3(worldPosition.x, worldPosition.y, worldPosition.z));
+
+    // these matrices are for N, they define the parent-child relationship (starting letter is to the left of origin and has its middle aligned to x-axis)
+    glm::mat4 translate_N = glm::translate(glm::mat4(1.0f), glm::vec3(-0.3f * scalingFactor, 0.0f * scalingFactor, -0.025f * scalingFactor));
+    glm::mat4 translate_N_child = glm::mat4(1.0f);  // to attach children cubes to the "parent" (parent not touched by child matrix)
+    shearingMatrix = glm::mat4(1.0f);
+
+    // Left leg of "N" (parent)
+    translationMatrix = translate_N;
+    scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(x_scaling, y_scaling, z_scaling));
+    modelMatrix = translate_final * rotationMatrix * translationMatrix * scalingMatrix;
+    glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]);
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+
+    // Left right of "N".
+    translate_N_child = glm::translate(glm::mat4(1.0f), glm::vec3(0.174f * scalingFactor, 0.0f * scalingFactor, 0.0f * scalingFactor));
+    translationMatrix = translate_N_child * translate_N;
+    modelMatrix = translate_final * rotationMatrix * translationMatrix * scalingMatrix;
+    glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]);
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+    
+    // diagonal of "N".
+    shearingMatrix =
+    {
+        1.0, 0.0, 0.0, 0.0,
+        -0.7, 1.0, 0.0, 0.0,
+        0.0, 0.0, 1.0, 0.0,
+        0.0, 0.0, 0.0, 1.0,
+    };
+    translationMatrix = translate_N_child * translate_N;
+    modelMatrix = translate_final * rotationMatrix * shearingMatrix * translationMatrix * scalingMatrix;
+    glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]);
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+
+    glm::mat4 translate_7 = glm::translate(glm::mat4(1.0f), glm::vec3(0.025f, 0.0f, -0.025f));
+    glm::mat4 translate_7_child = glm::mat4(1.0f);
+
+    // diagonal of "7" (parent)
+    shearingMatrix =
+    {
+        1.0, 0.0, 0.0, 0.0,
+        0.5, 1.0, 0.0, 0.0,
+        0.0, 0.0, 1.0, 0.0,
+        0.0, 0.0, 0.0, 1.0,
+    };
+    translationMatrix = translate_7;
+    scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(x_scaling, y_scaling, z_scaling));
+    modelMatrix = translate_final * rotationMatrix * shearingMatrix * translationMatrix * scalingMatrix;
+    glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]);
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+
+    // horizontal of "7"
+    scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(0.60 * y_scaling, x_scaling, x_scaling));
+    translate_7_child = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.2 * scalingFactor, 0.0f));
+    translationMatrix = translate_7_child * translate_7;
+    modelMatrix = translate_final * rotationMatrix * translationMatrix * scalingMatrix;
+    glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]);
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+
+}
+
 
 void model_A7(int shaderProgram)
 {

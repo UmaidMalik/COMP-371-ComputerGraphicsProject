@@ -1,1 +1,6 @@
-﻿
+﻿  main.cpp
+c:\users\dan\dropbox\concordia\9 - summer 2020\comp 371 - computer graphics\assignment 1\git_repo\comp-371-project\assignment-1\assignment 1\main.cpp(371): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+c:\users\dan\dropbox\concordia\9 - summer 2020\comp 371 - computer graphics\assignment 1\git_repo\comp-371-project\assignment-1\assignment 1\main.cpp(397): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+c:\users\dan\dropbox\concordia\9 - summer 2020\comp 371 - computer graphics\assignment 1\git_repo\comp-371-project\assignment-1\assignment 1\main.cpp(462): warning C4244: '-=': conversion from 'double' to 'float', possible loss of data
+c:\users\dan\dropbox\concordia\9 - summer 2020\comp 371 - computer graphics\assignment 1\git_repo\comp-371-project\assignment-1\assignment 1\main.cpp(463): warning C4244: '-=': conversion from 'double' to 'float', possible loss of data
+  Assignment 1.vcxproj -> C:\Users\Dan\Dropbox\Concordia\9 - Summer 2020\COMP 371 - Computer Graphics\Assignment 1\GIT_REPO\COMP-371-Project\Assignment-1\x64\Debug\Assignment 1.exe
