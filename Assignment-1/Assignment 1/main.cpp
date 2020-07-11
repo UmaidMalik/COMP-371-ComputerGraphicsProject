@@ -88,7 +88,7 @@ float cameraVerticalAngle = 0.0f;
 float cameraSpeed = 1.0f;
 float cameraSpeedFast = 4 * cameraSpeed;
 float deltaTime;
-
+float fov = 45.0f;
 double lastMousePosX, lastMousePosY;
 
 bool ONE_KEY_PRESSED;
@@ -820,6 +820,35 @@ void processInput(GLFWwindow * window)
 		glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
 	}
 	*/
+	
+	// Press = to Zoom In
+	if (glfwGetKey(window, GLFW_KEY_EQUAL) == GLFW_PRESS) {
+		//std::cout << fov << std::endl;
+		if (fov <= 91.6f)
+		{
+			fov = fov + 0.4;
+			projectionMatrix = glm::perspective(glm::radians(fov),			// field of view in degrees
+				1024.0f / 768.0f,	// aspect ratio
+				0.05f, 500.0f);	// near and far (near > 0)
+
+			GLuint projectionMatrixLocation = glGetUniformLocation(compileAndLinkShaders(), "projectionMatrix");
+			glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, &projectionMatrix[0][0]);
+		}
+	}
+	// Press - to Zoom Out
+	if (glfwGetKey(window, GLFW_KEY_MINUS) == GLFW_PRESS) {
+		//std::cout << fov << std::endl;
+		if (fov >= 0.4f)
+		{
+			fov = fov - 0.4;
+			projectionMatrix = glm::perspective(glm::radians(fov),			// field of view in degrees
+				1024.0f / 768.0f,	// aspect ratio
+				0.05f, 500.0f);	// near and far (near > 0)
+
+			GLuint projectionMatrixLocation = glGetUniformLocation(compileAndLinkShaders(), "projectionMatrix");
+			glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, &projectionMatrix[0][0]);
+		}
+	}
 }
 
 // commented because I'm still trying to figure the model movement and scaling with input keys
