@@ -2,16 +2,24 @@
 *	COMP 371 - Assignment 1
 *
 *	Umaid Malik 27576110
-*	(name & id)
+*	Daniel Thibault-Shea 40073133
 *	(name & id)
 *	(name & id)
 *	(name & id)
 *
 *	CONTROLS:
 *
-*		X					: MOVE NEGATIVE Y-DIRECTION
+
+*		VIEW SELECTION CONTROLS
+*		==============================================================
+*       
+*       ESCAPE              : QUIT PROGRAM
 *
-*		SPACE				: MOVE POSITIVE Y-DIRECTION
+*		==============================================================
+
+
+*		VIEW SELECTION CONTROLS
+*		==============================================================
 *
 *		Q					: PERSPECTIVE PROJECTION
 *
@@ -27,27 +35,33 @@
 *
 *		HOME				: RETURN TO INITIAL POSTION
 *
-*		MOUSE SCROLL UP		: ZOOM IN
-*
-*		MOUSE SCROLL DOWN	: ZOOM OUT
+*		==============================================================
 *
 *
 *		PAN AND TILT (MOUSE MOVEMENT) WHILE HOLDING RIGHT MOUSE BUTTON
 *		==============================================================
 *
-*		W		: MOVE FORWARD
+*		W		            : MOVE FORWARD
 *
-*		S		: MOVE BACKWARD
+*		S		            : MOVE BACKWARD
 *
-*		A		: MOVE LEFT
+*		A		            : MOVE LEFT
 *
-*		D		: MOVE RIGHT
+*		D		            : MOVE RIGHT
 *
-*		SHIFT	: INCREASE MOVEMENT SPEED
+*		X		            : MOVE NEGATIVE Y-DIRECTION
+*
+*		SPACE	            : MOVE POSITIVE Y-DIRECTION
+*
+*		MOUSE SCROLL UP		: ZOOM IN
+*
+*		MOUSE SCROLL DOWN	: ZOOM OUT
+*
+*		SHIFT	            : INCREASE MOVEMENT SPEED
+*
+*		HOME				: RETURN TO INITIAL POSTION
 *
 *		==============================================================
-*
-*
 *
 *		ENTER EITHER 1, 2, 3, 4, 5 TO SELECT MODELS - 0 WILL DESELECT
 *		==============================================================
@@ -72,13 +86,15 @@
 *
 *		J			: DOWNSCALE MODEL
 *
-*		F			: ROTATE -Y DIRECTION
+*		F			: ROTATE LEFT IN Y-AXIS DIRECTION
 *
-*		G			: ROTATE +Y DIRECTION
+*		G			: ROTATE RIGHT IN Y-AXIS DIRECTION
 *
 *		SHIFT + WASD: INCREASE MOVEMENT SPEED
 *
 *		SHIFT + U/J	: INCREASE SCALING SPEED
+*
+*		==============================================================
 */
 
 #include <iostream>
@@ -144,9 +160,9 @@ GLuint worldMatrixLocation;
 
 // function prototypes
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-void processInput(GLFWwindow* window);
+void processInput(GLFWwindow* window, int shaderProgram);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
-void model_N7(int shaderProgram, float scalingFactor, glm::vec3 worldPosition);
+void model_N7(int shaderProgram, float scalingFactor, float rotation_angle, glm::vec3 worldPosition);
 void model_A7();
 void model_O9();
 GLFWwindow* setupWindow();
@@ -415,7 +431,7 @@ int main()
 	const float spacing = 10.0f / (float)numGridLines;       // divide the 2.0 world into the number of gridlines
 	float increment = 0.0f;                                 // how much to move a line over
 	const int numDataPoints = 8;                            // this is how many vec3's there are in one gridline (4 vertices with 1 color each)
-	glm::vec3 zLineColor = glm::vec3(1.0f, 0.0f, 1.0f);     // set line color for lines running parallel to z-axis
+	glm::vec3 zLineColor = glm::vec3(1.0f, 1.0f, 0.0f);     // set line color for lines running parallel to z-axis
 	glm::vec3 xLineColor = glm::vec3(1.0f, 1.0f, 0.0f);     // set line color for lines running parallel to x-axis
 	glm::vec3 gridLines[numDataPoints * numGridLines];
 	
@@ -489,7 +505,13 @@ int main()
 	glm::vec3 initPos_A7(-4.0f, 0.5f, -4.0f);			glm::vec3 initPos_O9(4.0f, 0.5f, -4.0f);
 	glm::vec3 model_A7_Position(0.0f, 0.0f, 0.0f);		glm::vec3 model_O9_Position(0.0f, 0.0f, 0.0f);
 	
-	
+	// These are for model N7 and need to live outside the loop (Dan was a bit different and changes position by altering parameters to the function)
+    const glm::vec3 N7_init = glm::vec3(0.5f, 0.0f, 0.5f);       // { x, y, z, scaling }
+    const float N7_init_scaling = 2.0f;
+    const float N7_init_angle = 0.0f;
+    glm::vec3 N7_change = glm::vec3(0.0f, 0.0f, 0.0f);           // { x, y, z, scaling }
+    float N7_change_scaling = 0.0f;
+    float N7_change_angle = 0.0f;
 	
 	// render loop
 	while (!glfwWindowShouldClose(window))
@@ -525,7 +547,7 @@ int main()
 
 	
 
-		// rotationMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(angle), glm::vec3(0.0f, 1.0f, 0.0f));
+		rotationMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(angle), glm::vec3(0.0f, 1.0f, 0.0f));
 		
 
 		
@@ -533,9 +555,10 @@ int main()
 		// model A7
 		modelTranslationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(initPos_A7.x + model_A7_Position.x, initPos_A7.y + model_A7_Position.y, initPos_A7.z + model_A7_Position.z));
 		modelScalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(model_A7_Size + init_A7_Size, model_A7_Size + init_A7_Size, model_A7_Size + init_A7_Size));
-		worldMatrixLocation = glGetUniformLocation(compileAndLinkShaders(), "worldMatrix");
+		worldMatrixLocation = glGetUniformLocation(shaderProgram, "worldMatrix");
 		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
-		
+
+
 		if (ONE_KEY_PRESSED)
 		{
 			
@@ -615,7 +638,7 @@ int main()
 		// model O9
 		modelTranslationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(initPos_O9.x + model_O9_Position.x, initPos_O9.y + model_O9_Position.y, initPos_O9.z + model_O9_Position.z));
 		modelScalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(model_O9_Size + init_O9_Size, model_O9_Size + init_O9_Size, model_O9_Size + init_O9_Size));
-		worldMatrixLocation = glGetUniformLocation(compileAndLinkShaders(), "worldMatrix");
+		worldMatrixLocation = glGetUniformLocation(shaderProgram, "worldMatrix");
 		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
 
 		if (TWO_KEY_PRESSED)
@@ -687,12 +710,47 @@ int main()
 			}
 		}
 
+		// model N7
+        float frameChangeAmount = deltaTime * modelSpeed;
+
+        if (THREE_KEY_PRESSED) {
+            if (glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS)       // UPSCALE MODEL
+                N7_change_scaling += frameChangeAmount;
+            if (glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS)       // DOWNSCALE MODEL
+                N7_change_scaling -= frameChangeAmount;
+            if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)       // MOVE MODEL IN + Z DIRECTION
+                N7_change.z += frameChangeAmount;
+            if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)       // MOVE MODEL IN - Z DIRECTION
+                N7_change.z -= frameChangeAmount;
+            if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)       // MOVE MODEL IN - X DIRECTION
+                N7_change.x -= frameChangeAmount;
+            if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)       // MOVE MODEL IN + X DIRECTION
+                N7_change.x += frameChangeAmount;
+            if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS)       // MOVE MODEL IN - Y DIRECTION
+                N7_change.y -= frameChangeAmount;
+            if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)   // MOVE MODEL IN + Y DIRECTION
+                N7_change.y += frameChangeAmount;
+            if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS &&     // RESET MODEL TO INITIAL POSITION
+                    glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE)       
+                N7_change = glm::vec3(0.0f, 0.0f, 0.0f);
+            if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS &&     // RESET MODEL TO INITIAL SIZE
+                    (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT)) == GLFW_PRESS)
+                N7_change_scaling = 0.0f;
+            if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS)   	// rotate left in y-axis
+                N7_change_angle -= frameChangeAmount;
+            if (glfwGetKey(window, GLFW_KEY_G) == GLFW_PRESS)	    // rotate right in y-axis
+                N7_change_angle += frameChangeAmount;
+        }
+
+		model_N7(shaderProgram, N7_init_scaling + N7_change_scaling, N7_init_angle + N7_change_angle,
+            glm::vec3(N7_init.x + N7_change.x, N7_init.y + N7_change.y, N7_init.z + N7_change.z));
+        // end of model N7
+
+
+
 		model_O9();
 		// end of model O9
 
-
-		// model N7
-		model_N7(shaderProgram, 2.0f, glm::vec3(2.5f, 0.5f, 4.0f));
 
 
 		// red line
@@ -730,7 +788,7 @@ int main()
 		glfwPollEvents();
 
 		// Detect inputs
-		processInput(window); // input
+		processInput(window, shaderProgram); // input
 
 		
 		
@@ -752,7 +810,7 @@ void framebuffer_size_callback(GLFWwindow * window, int width, int height)
 	glViewport(0, 0, width, height);
 }
 
-void processInput(GLFWwindow * window)
+void processInput(GLFWwindow * window, int shaderProgram)
 {
 
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
@@ -784,7 +842,7 @@ void processInput(GLFWwindow * window)
 			1024.0f / 768.0f,	// aspect ratio
 			0.005f, 500.0f);	// near and far (near > 0)
 
-		GLuint projectionMatrixLocation = glGetUniformLocation(compileAndLinkShaders(), "projectionMatrix");
+		GLuint projectionMatrixLocation = glGetUniformLocation(shaderProgram, "projectionMatrix");
 		glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, &projectionMatrix[0][0]);
 	}
 
@@ -795,7 +853,7 @@ void processInput(GLFWwindow * window)
 			-3.0f, 3.0f,	  // bottom/top
 			-100.0f, 100.0f);  // near/far (near == 0 is ok for ortho)
 
-		GLuint projectionMatrixLocation = glGetUniformLocation(compileAndLinkShaders(), "projectionMatrix");
+		GLuint projectionMatrixLocation = glGetUniformLocation(shaderProgram, "projectionMatrix");
 		glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, &projectionMatrix[0][0]);
 	}
 
@@ -884,7 +942,7 @@ void processInput(GLFWwindow * window)
 
 
 		viewMatrix = glm::lookAt(cameraPosition, cameraPosition + cameraLookAt, cameraUp);
-		GLuint viewMatrixLocation = glGetUniformLocation(compileAndLinkShaders(), "viewMatrix");
+		GLuint viewMatrixLocation = glGetUniformLocation(shaderProgram, "viewMatrix");
 		glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
 	}
 
@@ -902,7 +960,7 @@ void processInput(GLFWwindow * window)
 		cameraLookAt = initialcameraLookAt;
 
 		viewMatrix = lookAt(cameraPosition, cameraPosition + cameraLookAt, cameraUp);
-		GLuint viewMatrixLocation = glGetUniformLocation(compileAndLinkShaders(), "viewMatrix");
+		GLuint viewMatrixLocation = glGetUniformLocation(shaderProgram, "viewMatrix");
 		glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
 
 
@@ -914,7 +972,7 @@ void processInput(GLFWwindow * window)
 	if ((glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) || ((glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE)) == GLFW_PRESS))
 	{
 		viewMatrix = lookAt(cameraPosition, cameraPosition + cameraLookAt, cameraUp);
-		GLuint viewMatrixLocation = glGetUniformLocation(compileAndLinkShaders(), "viewMatrix");
+		GLuint viewMatrixLocation = glGetUniformLocation(shaderProgram, "viewMatrix");
 		glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
 	}
 
@@ -1041,7 +1099,7 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 	ScalingFactor is undefined for negative values although permitted.
 
 */
-void model_N7(int shaderProgram, float scalingFactor, glm::vec3 worldPosition) {
+void model_N7(int shaderProgram, float scalingFactor, float rotation_angle, glm::vec3 worldPosition) {
 
 	// these will grow the model
 	float x_scaling = 0.5f * scalingFactor;
