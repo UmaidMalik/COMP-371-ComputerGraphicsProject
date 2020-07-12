@@ -38,9 +38,10 @@ GLuint worldMatrixLocation;
 
 // function prototypes
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-void processInput(GLFWwindow * window, int shaderProgram);
+void processInput(GLFWwindow* window, int shaderProgram);
 void model_A7(int shaderProgram);
 void model_N7(int shaderProgram, float scalingFactor, glm::vec3 worldPosition);
+void model_S0(int shaderProgram, float scalingFactor, glm::vec3 worldPosition);
 GLFWwindow* setupWindow();
 
 
@@ -155,38 +156,38 @@ int compileAndLinkShaders()
 
 
 GLFWwindow* setupWindow() {
-    glfwInit();
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TURE);
-    glfwWindowHint(GL_DEPTH_TEST, 24);
+	glfwInit();
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+	//glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TURE);
+	glfwWindowHint(GL_DEPTH_TEST, 24);
 
-    GLFWwindow* window = glfwCreateWindow(1024, 768, "COMP 371 - Team 6 - Part 1", NULL, NULL);
-    if (window == NULL)
-    {
-        std::cout << "Failed to create GLFW window" << std::endl;
-        glfwTerminate();
-        exit(EXIT_FAILURE);
-    }
-    glfwMakeContextCurrent(window);
-    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+	GLFWwindow* window = glfwCreateWindow(1024, 768, "COMP 371 - Team 6 - Part 1", NULL, NULL);
+	if (window == NULL)
+	{
+		std::cout << "Failed to create GLFW window" << std::endl;
+		glfwTerminate();
+		exit(EXIT_FAILURE);
+	}
+	glfwMakeContextCurrent(window);
+	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
 
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-    {
-        std::cout << "Failed to initialize GLAD" << std::endl;
-        glfwTerminate();
-        exit(EXIT_FAILURE);
-    }
+	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+	{
+		std::cout << "Failed to initialize GLAD" << std::endl;
+		glfwTerminate();
+		exit(EXIT_FAILURE);
+	}
 
-    return window;
+	return window;
 }
 
 int main()
 {
-    // Setup a window
-    GLFWwindow* window = setupWindow();
+	// Setup a window
+	GLFWwindow* window = setupWindow();
 
 	// Disable mouse cursor
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -248,7 +249,7 @@ int main()
 		glm::vec3(0.0f, 0.1f, 0.1f), glm::vec3(0.5f, 0.5f, 0.5f),
 	};
 
-    const float axisLineLength = 5 * (2.0f / (float)numGridLines);  // axis lines are the length of n grid squares
+	const float axisLineLength = 5 * (2.0f / (float)numGridLines);  // axis lines are the length of n grid squares
 
 	glm::vec3 redLine[] = {
 		glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f),
@@ -315,46 +316,46 @@ int main()
 	glEnableVertexAttribArray(1);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	
 
-    // grid lines
-    
-    const float spacing = 2.0f / (float)numGridLines;       // divide the 2.0 world into the number of gridlines
-    float increment = 0.0f;                                 // how much to move a line over
-    const int numDataPoints = 8;                            // this is how many vec3's there are in one gridline (4 vertices with 1 color each)
-    glm::vec3 zLineColor = glm::vec3(1.0f, 1.0f, 0.0f);     // set line color for lines running parallel to z-axis
-    glm::vec3 xLineColor = glm::vec3(1.0f, 1.0f, 0.0f);     // set line color for lines running parallel to x-axis
-    glm::vec3 gridLines[numDataPoints * numGridLines];
 
-    for (int i = 0; i < numGridLines; ++i) {
-        // lines parallel to z-axis
-        gridLines[i*numDataPoints] = glm::vec3(-1.0f + increment, 0.0f, -1.0f);     
-        gridLines[i*numDataPoints + 1] = glm::vec3(zLineColor.x, zLineColor.y, zLineColor.z);
-        gridLines[i*numDataPoints + 2] = glm::vec3(-1.0f + increment, 0.0f, 1.0f);  
-        gridLines[i*numDataPoints + 3] = glm::vec3(zLineColor.x, zLineColor.y, zLineColor.z);
-        // lines parallel to x-axis
-        gridLines[i*numDataPoints + 4] = glm::vec3(-1.0f, 0.0f, -1.0f + increment); 
-        gridLines[i*numDataPoints + 5] = glm::vec3(xLineColor.x, xLineColor.y, xLineColor.z);
-        gridLines[i*numDataPoints + 6] = glm::vec3(1.0f, 0.0f, -1.0f + increment);  
-        gridLines[i*numDataPoints + 7] = glm::vec3(xLineColor.x, xLineColor.y, xLineColor.z);
+	// grid lines
 
-        increment += spacing;
-    }
-    glBindVertexArray(VAO[4]);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO[4]);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(gridLines), gridLines, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(glm::vec3), (void*)0);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(glm::vec3), (void*)sizeof(glm::vec3));
-    glEnableVertexAttribArray(1);
+	const float spacing = 10.0f / (float)numGridLines;       // divide the 2.0 world into the number of gridlines
+	float increment = 0.0f;                                 // how much to move a line over
+	const int numDataPoints = 8;                            // this is how many vec3's there are in one gridline (4 vertices with 1 color each)
+	glm::vec3 zLineColor = glm::vec3(1.0f, 1.0f, 0.0f);     // set line color for lines running parallel to z-axis
+	glm::vec3 xLineColor = glm::vec3(1.0f, 1.0f, 0.0f);     // set line color for lines running parallel to x-axis
+	glm::vec3 gridLines[numDataPoints * numGridLines];
 
-    // bind to nothing so we don't inadvertantly modify something
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
+	for (int i = 0; i < numGridLines; ++i) {
+		// lines parallel to z-axis
+		gridLines[i * numDataPoints] = glm::vec3(-5.0f + increment, 0.0f, -5.0f);
+		gridLines[i * numDataPoints + 1] = glm::vec3(zLineColor.x, zLineColor.y, zLineColor.z);
+		gridLines[i * numDataPoints + 2] = glm::vec3(-5.0f + increment, 0.0f, 5.0f);
+		gridLines[i * numDataPoints + 3] = glm::vec3(zLineColor.x, zLineColor.y, zLineColor.z);
+		// lines parallel to x-axis
+		gridLines[i * numDataPoints + 4] = glm::vec3(-5.0f, 0.0f, -5.0f + increment);
+		gridLines[i * numDataPoints + 5] = glm::vec3(xLineColor.x, xLineColor.y, xLineColor.z);
+		gridLines[i * numDataPoints + 6] = glm::vec3(5.0f, 0.0f, -5.0f + increment);
+		gridLines[i * numDataPoints + 7] = glm::vec3(xLineColor.x, xLineColor.y, xLineColor.z);
+
+		increment += spacing;
+	}
+	glBindVertexArray(VAO[4]);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO[4]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(gridLines), gridLines, GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(glm::vec3), (void*)0);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(glm::vec3), (void*)sizeof(glm::vec3));
+	glEnableVertexAttribArray(1);
+
+	// bind to nothing so we don't inadvertantly modify something
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
 
 	glUseProgram(shaderProgram);
 
-	projectionMatrix = glm::perspective(70.0f, 1024.0f / 768.0f, 0.01f, 100.0f);	
+	projectionMatrix = glm::perspective(70.0f, 1024.0f / 768.0f, 0.01f, 100.0f);
 
 	GLuint projectionMatrixLocation = glGetUniformLocation(compileAndLinkShaders(), "projectionMatrix");
 	glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, &projectionMatrix[0][0]);
@@ -370,7 +371,7 @@ int main()
 	float rotationSpeed = 30.0f;  // 180 degrees per second
 	float lastFrameTime = glfwGetTime();
 	double lastMousePosX, lastMousePosY;
-	
+
 	glfwGetCursorPos(window, &lastMousePosX, &lastMousePosY);
 
 
@@ -378,7 +379,7 @@ int main()
 	glEnable(GL_CULL_FACE);
 	glFrontFace(GL_CW);     // clockwise polygons are considered as front-facing
 
-	// z-Buffer
+							// z-Buffer
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
 
@@ -406,10 +407,13 @@ int main()
 		// call model A7
 		model_A7(shaderProgram);
 
-        // call model N7
-        model_N7(shaderProgram, 1.0f, glm::vec3(0.5f, 0.0f, 0.5f));
+		// call model N7
+		model_N7(shaderProgram, 1.0f, glm::vec3(0.5f, 0.0f, 0.5f));
 
-        glLineWidth(5);
+		// call model S0
+		model_S0(shaderProgram, 1.0f, glm::vec3(1.0f, 0.0f, 1.0f));
+
+		glLineWidth(5);
 		glBindVertexArray(VAO[1]);
 		glBindBuffer(GL_ARRAY_BUFFER, VBO[1]);
 		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
@@ -425,11 +429,11 @@ int main()
 		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
 		glDrawArrays(GL_LINES, 0, 2);
 
-        glLineWidth(1);
-        glBindVertexArray(VAO[4]);
-        glBindBuffer(GL_ARRAY_BUFFER, VBO[4]);
-        glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
-        glDrawArrays(GL_LINES, 0, 2 * 2 * numGridLines);
+		glLineWidth(1);
+		glBindVertexArray(VAO[4]);
+		glBindBuffer(GL_ARRAY_BUFFER, VBO[4]);
+		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+		glDrawArrays(GL_LINES, 0, 2 * 2 * numGridLines);
 
 		// When debugging press 2 and 3 to get perspective view.
 
@@ -438,14 +442,14 @@ int main()
 		//glfwSwapInterval(0);
 		glfwPollEvents();
 
-        // Detect inputs
+		// Detect inputs
 
 		// input
 		processInput(window, shaderProgram);
 
 		bool fastCam = glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS;
 		float currentCameraSpeed = (fastCam) ? cameraSpeedFast : cameraSpeed;
-		
+
 		// first person camera
 		double mousePosX, mousePosY;
 		glfwGetCursorPos(window, &mousePosX, &mousePosY);
@@ -511,8 +515,8 @@ int main()
 		{
 			cameraPosition.y += currentCameraSpeed * deltaTime;
 		}
-		
-		viewMatrix = glm::lookAt(cameraPosition, cameraPosition + cameraLookAt, cameraUp);	
+
+		viewMatrix = glm::lookAt(cameraPosition, cameraPosition + cameraLookAt, cameraUp);
 		GLuint viewMatrixLocation = glGetUniformLocation(shaderProgram, "viewMatrix");
 		glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
 	}
@@ -527,12 +531,12 @@ int main()
 	return 0;
 }
 
-void framebuffer_size_callback(GLFWwindow * window, int width, int height)
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
 	glViewport(0, 0, width, height);
 }
 
-void processInput(GLFWwindow * window, int shaderProgram)
+void processInput(GLFWwindow* window, int shaderProgram)
 {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
@@ -588,7 +592,7 @@ void processInput(GLFWwindow * window, int shaderProgram)
 
 
 	// camera control - view transform
-	
+
 	//	GLuint viewMatrixLocation = glGetUniformLocation(shaderProgram, "viewMatrix");
 	//	glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
 
@@ -604,83 +608,169 @@ void processInput(GLFWwindow * window, int shaderProgram)
 }
 
 /*
-    Draws "N7" on the screen.
+Draws "N7" on the screen.
 
-    ScalingFactor is undefined for negative values although permitted.
+ScalingFactor is undefined for negative values although permitted.
 
 */
 void model_N7(int shaderProgram, float scalingFactor, glm::vec3 worldPosition) {
-    
-    // these will grow the model
-    float x_scaling = 0.5f * scalingFactor;
-    float y_scaling = 2.5f * scalingFactor;
-    float z_scaling = 0.5f * scalingFactor;
-    
-    glm::mat4 modelMatrix = glm::mat4(1.0f);
-    worldMatrixLocation = glGetUniformLocation(shaderProgram, "worldMatrix");
-    glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]);
 
-    // this matrix moves the entire model around the world, parameters passed will translate the model to where desired
-    glm::mat4 translate_final = glm::translate(glm::mat4(1.0f), glm::vec3(worldPosition.x, worldPosition.y, worldPosition.z));
+	// these will grow the model
+	float x_scaling = 0.5f * scalingFactor;
+	float y_scaling = 2.5f * scalingFactor;
+	float z_scaling = 0.5f * scalingFactor;
 
-    // these matrices are for N, they define the parent-child relationship (starting letter is to the left of origin and has its middle aligned to x-axis)
-    glm::mat4 translate_N = glm::translate(glm::mat4(1.0f), glm::vec3(-0.3f * scalingFactor, 0.0f * scalingFactor, -0.025f * scalingFactor));
-    glm::mat4 translate_N_child = glm::mat4(1.0f);  // to attach children cubes to the "parent" (parent not touched by child matrix)
-    shearingMatrix = glm::mat4(1.0f);
+	glm::mat4 modelMatrix = glm::mat4(1.0f);
+	worldMatrixLocation = glGetUniformLocation(shaderProgram, "worldMatrix");
+	glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]);
 
-    // Left leg of "N" (parent)
-    translationMatrix = translate_N;
-    scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(x_scaling, y_scaling, z_scaling));
-    modelMatrix = translate_final * rotationMatrix * translationMatrix * scalingMatrix;
-    glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]);
-    glDrawArrays(GL_TRIANGLES, 0, 36);
+	// this matrix moves the entire model around the world, parameters passed will translate the model to where desired
+	glm::mat4 translate_final = glm::translate(glm::mat4(1.0f), glm::vec3(worldPosition.x, worldPosition.y, worldPosition.z));
 
-    // Left right of "N".
-    translate_N_child = glm::translate(glm::mat4(1.0f), glm::vec3(0.174f * scalingFactor, 0.0f * scalingFactor, 0.0f * scalingFactor));
-    translationMatrix = translate_N_child * translate_N;
-    modelMatrix = translate_final * rotationMatrix * translationMatrix * scalingMatrix;
-    glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]);
-    glDrawArrays(GL_TRIANGLES, 0, 36);
-    
-    // diagonal of "N".
-    shearingMatrix =
-    {
-        1.0, 0.0, 0.0, 0.0,
-        -0.7, 1.0, 0.0, 0.0,
-        0.0, 0.0, 1.0, 0.0,
-        0.0, 0.0, 0.0, 1.0,
-    };
-    translationMatrix = translate_N_child * translate_N;
-    modelMatrix = translate_final * rotationMatrix * shearingMatrix * translationMatrix * scalingMatrix;
-    glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]);
-    glDrawArrays(GL_TRIANGLES, 0, 36);
+	// these matrices are for N, they define the parent-child relationship (starting letter is to the left of origin and has its middle aligned to x-axis)
+	glm::mat4 translate_N = glm::translate(glm::mat4(1.0f), glm::vec3(-0.3f * scalingFactor, 0.0f * scalingFactor, -0.025f * scalingFactor));
+	glm::mat4 translate_N_child = glm::mat4(1.0f);  // to attach children cubes to the "parent" (parent not touched by child matrix)
+	shearingMatrix = glm::mat4(1.0f);
 
-    glm::mat4 translate_7 = glm::translate(glm::mat4(1.0f), glm::vec3(0.025f, 0.0f, -0.025f));
-    glm::mat4 translate_7_child = glm::mat4(1.0f);
+	// Left leg of "N" (parent)
+	translationMatrix = translate_N;
+	scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(x_scaling, y_scaling, z_scaling));
+	modelMatrix = translate_final * rotationMatrix * translationMatrix * scalingMatrix;
+	glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]);
+	glDrawArrays(GL_TRIANGLES, 0, 36);
 
-    // diagonal of "7" (parent)
-    shearingMatrix =
-    {
-        1.0, 0.0, 0.0, 0.0,
-        0.5, 1.0, 0.0, 0.0,
-        0.0, 0.0, 1.0, 0.0,
-        0.0, 0.0, 0.0, 1.0,
-    };
-    translationMatrix = translate_7;
-    scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(x_scaling, y_scaling, z_scaling));
-    modelMatrix = translate_final * rotationMatrix * shearingMatrix * translationMatrix * scalingMatrix;
-    glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]);
-    glDrawArrays(GL_TRIANGLES, 0, 36);
+	// Left right of "N".
+	translate_N_child = glm::translate(glm::mat4(1.0f), glm::vec3(0.174f * scalingFactor, 0.0f * scalingFactor, 0.0f * scalingFactor));
+	translationMatrix = translate_N_child * translate_N;
+	modelMatrix = translate_final * rotationMatrix * translationMatrix * scalingMatrix;
+	glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]);
+	glDrawArrays(GL_TRIANGLES, 0, 36);
 
-    // horizontal of "7"
-    scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(0.60 * y_scaling, x_scaling, x_scaling));
-    translate_7_child = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.2 * scalingFactor, 0.0f));
-    translationMatrix = translate_7_child * translate_7;
-    modelMatrix = translate_final * rotationMatrix * translationMatrix * scalingMatrix;
-    glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]);
-    glDrawArrays(GL_TRIANGLES, 0, 36);
+	// diagonal of "N".
+	shearingMatrix =
+	{
+		1.0, 0.0, 0.0, 0.0,
+		-0.7, 1.0, 0.0, 0.0,
+		0.0, 0.0, 1.0, 0.0,
+		0.0, 0.0, 0.0, 1.0,
+	};
+	translationMatrix = translate_N_child * translate_N;
+	modelMatrix = translate_final * rotationMatrix * shearingMatrix * translationMatrix * scalingMatrix;
+	glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]);
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+
+	glm::mat4 translate_7 = glm::translate(glm::mat4(1.0f), glm::vec3(0.025f, 0.0f, -0.025f));
+	glm::mat4 translate_7_child = glm::mat4(1.0f);
+
+	// diagonal of "7" (parent)
+	shearingMatrix =
+	{
+		1.0, 0.0, 0.0, 0.0,
+		0.5, 1.0, 0.0, 0.0,
+		0.0, 0.0, 1.0, 0.0,
+		0.0, 0.0, 0.0, 1.0,
+	};
+	translationMatrix = translate_7;
+	scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(x_scaling, y_scaling, z_scaling));
+	modelMatrix = translate_final * rotationMatrix * shearingMatrix * translationMatrix * scalingMatrix;
+	glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]);
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+
+	// horizontal of "7"
+	scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(0.60 * y_scaling, x_scaling, x_scaling));
+	translate_7_child = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.2 * scalingFactor, 0.0f));
+	translationMatrix = translate_7_child * translate_7;
+	modelMatrix = translate_final * rotationMatrix * translationMatrix * scalingMatrix;
+	glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]);
+	glDrawArrays(GL_TRIANGLES, 0, 36);
 
 }
+
+
+	//start of model S0
+void model_S0(int shaderProgram, float scalingFactor, glm::vec3 worldPosition) {
+
+
+	
+		// S
+		shearingMatrix = glm::mat4(1.0f);
+		translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(1.1f, 0.6f, 0.6f));
+		scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(4.0f, 1.0f, 1.0f));
+		partMatrix = translationMatrix * shearingMatrix * scalingMatrix;
+		worldMatrix = rotationMatrix * partMatrix;
+		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		shearingMatrix = glm::mat4(1.0f);
+		scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 2.0f, 1.0f));
+		translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(1.0f, 0.4f, 0.6f));
+		partMatrix = translationMatrix * shearingMatrix * scalingMatrix;
+		worldMatrix = rotationMatrix * partMatrix;
+		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(1.1f, 0.3f, 0.6f));
+		scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(3.0f, 1.0f, 1.0f));
+		partMatrix = translationMatrix * shearingMatrix * scalingMatrix;
+		worldMatrix = rotationMatrix * partMatrix;
+		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		shearingMatrix = glm::mat4(1.0f);
+		scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 2.0f, 1.0f));
+		translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(1.4f, 0.1f, 0.6f));
+		partMatrix = translationMatrix * shearingMatrix * scalingMatrix;
+		worldMatrix = rotationMatrix * partMatrix;
+		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(1.0f, 0.0f, 0.6f));
+		scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(4.0f, 1.0f, 1.0f));
+		partMatrix = translationMatrix * shearingMatrix * scalingMatrix;
+		worldMatrix = rotationMatrix * partMatrix;
+		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+
+		// ZERO
+		scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 5.0f, 1.0f));
+		shearingMatrix = glm::mat4(1.0f);
+		translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(1.7f, 0.1f, 0.6f));
+		partMatrix = translationMatrix * shearingMatrix * scalingMatrix;
+		worldMatrix = rotationMatrix * partMatrix;
+		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 5.0f, 1.0f));
+		shearingMatrix = glm::mat4(1.0f);
+		translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(2.1f, 0.1f, 0.6f));
+		partMatrix = translationMatrix * shearingMatrix * scalingMatrix;
+		worldMatrix = rotationMatrix * partMatrix;
+		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(3.0f, 1.0f, 1.0f));
+		shearingMatrix = glm::mat4(1.0f);
+		translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(1.8f, 0.6f, 0.6f));
+		partMatrix = translationMatrix * shearingMatrix * scalingMatrix;
+		worldMatrix = rotationMatrix * partMatrix;
+		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(3.0f, 1.0f, 1.0f));
+		shearingMatrix = glm::mat4(1.0f);
+		translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(1.8f, 0.0f, 0.6f));
+		partMatrix = translationMatrix * shearingMatrix * scalingMatrix;
+		worldMatrix = rotationMatrix * partMatrix;
+		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		// End of model S0
+
+		//Reset 
+		worldMatrix = glm::mat4(1.0f);
+}
+
 
 
 void model_A7(int shaderProgram)
@@ -741,7 +831,7 @@ void model_A7(int shaderProgram)
 	glDrawArrays(GL_TRIANGLES, 0, 36);
 
 
-    shearingMatrix = glm::mat4(1.0f);
+	shearingMatrix = glm::mat4(1.0f);
 	scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(2.5f, 1.0f, 1.0f));
 	translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.52f, 0.4f, 0.0f));
 	partMatrix = translationMatrix * shearingMatrix * scalingMatrix;
@@ -749,7 +839,7 @@ void model_A7(int shaderProgram)
 	glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
 	glDrawArrays(GL_TRIANGLES, 0, 36);
 
-    // reset world matrix after we're done with it for this object
-    worldMatrix = glm::mat4(1.0f);
+	// reset world matrix after we're done with it for this object
+	worldMatrix = glm::mat4(1.0f);
 
 }
