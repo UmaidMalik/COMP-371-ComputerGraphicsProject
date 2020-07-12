@@ -9,21 +9,27 @@
 *
 *	CONTROLS:
 *
-*		X		: MOVE NEGATIVE Y-DIRECTION
+*		X					: MOVE NEGATIVE Y-DIRECTION
 *
-*		SPACE	: MOVE POSITIVE Y-DIRECTION
+*		SPACE				: MOVE POSITIVE Y-DIRECTION
 *
-*		Q		: PERSPECTIVE PROJECTION
+*		Q					: PERSPECTIVE PROJECTION
 *
-*		E		: ORTHOGRAPHIC PROJECTION
+*		E					: ORTHOGRAPHIC PROJECTION
 *
-*		T		: RENDER TRIANGLES
+*		T					: RENDER TRIANGLES
 *
-*		L		: RENDER LINES
+*		L					: RENDER LINES
 *
-*		P		: RENDER POINTS
+*		P					: RENDER POINTS
 *
-*		C		: HOLD TO DISABLE BACKFACE CULLING
+*		C					: HOLD TO DISABLE BACKFACE CULLING
+*
+*		HOME				: RETURN TO INITIAL POSTION
+*
+*		MOUSE SCROLL UP		: ZOOM IN
+*
+*		MOUSE SCROLL DOWN	: ZOOM OUT
 *
 *
 *		PAN AND TILT (MOUSE MOVEMENT) WHILE HOLDING RIGHT MOUSE BUTTON
@@ -40,6 +46,39 @@
 *		SHIFT	: INCREASE MOVEMENT SPEED
 *
 *		==============================================================
+*
+*
+*
+*		ENTER EITHER 1, 2, 3, 4, 5 TO SELECT MODELS - 0 WILL DESELECT
+*		==============================================================
+*		
+*		W			: MOVE MODEL IN +Z DIRECTION
+*
+*		S			: MOVE MODEL IN -Z DIRECTION
+*
+*		A			: MOVE MODEL IN -X DIRECTION
+*
+*		D			: MOVE MODEL IN +X DIRECTION
+*
+*		X			: MOVE MODEL IN -Y DIRECTION
+*
+*		SPACE		: MOVE MODEL IN +Y DIRECTION
+*
+*		R			: RESET MODEL TO INITIAL POSITION
+*
+*		SHIFT + R	: RESET MODEL TO INITIAL SIZE
+*
+*		U			: UPSCALE MODEL
+*
+*		J			: DOWNSCALE MODEL
+*
+*		F			: ROTATE -Y DIRECTION
+*
+*		G			: ROTATE +Y DIRECTION
+*
+*		SHIFT + WASD: INCREASE MOVEMENT SPEED
+*
+*		SHIFT + U/J	: INCREASE SCALING SPEED
 */
 
 #include <iostream>
@@ -80,29 +119,36 @@ glm::mat4 shearingMatrix = identityMatrix;
 glm::mat4 translationMatrix = identityMatrix;
 glm::mat4 partMatrix;
 
-
-
+glm::mat4 modelTranslationMatrix;
+glm::mat4 modelScalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
 
 float cameraHorizontalAngle = 90.0f;
 float cameraVerticalAngle = 0.0f;
 float cameraSpeed = 1.0f;
 float cameraSpeedFast = 4 * cameraSpeed;
 float deltaTime;
+float fov = 90.0f;
 
 double lastMousePosX, lastMousePosY;
 
-bool ONE_KEY_PRESSED;
-bool TWO_KEY_PRESSED;
-bool THREE_KEY_PRESSED;
-bool FOUR_KEY_PRESSED;
-bool FIVE_KEY_PRESSED;
+// model parameters
+float modelSpeed = 1.0f;
+
+bool ONE_KEY_PRESSED = false;
+bool TWO_KEY_PRESSED = false;
+bool THREE_KEY_PRESSED = false;
+bool FOUR_KEY_PRESSED = false;
+bool FIVE_KEY_PRESSED = false;
 
 GLuint worldMatrixLocation;
 
 // function prototypes
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
+void model_N7(int shaderProgram, float scalingFactor, glm::vec3 worldPosition);
 void model_A7();
+void model_O9();
 GLFWwindow* setupWindow();
 
 
@@ -176,7 +222,7 @@ int compileAndLinkShaders()
 	}
 
 	// link shaders
-	unsigned int shaderProgram;
+	GLuint shaderProgram;
 	shaderProgram = glCreateProgram();
 
 	glAttachShader(shaderProgram, vertexShader);
@@ -235,7 +281,7 @@ int main()
 	GLFWwindow* window = setupWindow();
 
 	// Compile and link shaders
-	int shaderProgram = compileAndLinkShaders();
+    unsigned int shaderProgram = compileAndLinkShaders();
 
 	// defines vertices and color for the cube
 	glm::vec3 vertexArray[] = {
@@ -406,11 +452,11 @@ int main()
 
 	projectionMatrix = glm::perspective(90.0f, 1024.0f / 768.0f, 0.0005f, 500.0f);
 
-	GLuint projectionMatrixLocation = glGetUniformLocation(compileAndLinkShaders(), "projectionMatrix");
+	GLuint projectionMatrixLocation = glGetUniformLocation(shaderProgram, "projectionMatrix");
 	glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, &projectionMatrix[0][0]);
 
 
-	viewMatrix = glm::lookAt(cameraPosition, cameraPosition + cameraLookAt, cameraUp);
+	glm::mat4 viewMatrix = glm::lookAt(cameraPosition, cameraPosition + cameraLookAt, cameraUp);
 
 	GLuint viewMatrixLocation = glGetUniformLocation(shaderProgram, "viewMatrix");
 	glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
@@ -433,6 +479,18 @@ int main()
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
 
+
+	// initial model parameters
+	
+	// float model_movementSpeed = 1.0f;
+
+	float init_A7_Size = 1.4;							float init_O9_Size = 1.4f;
+	float model_A7_Size = 0.0f;							float model_O9_Size = 0.0f;
+	glm::vec3 initPos_A7(-4.0f, 0.5f, -4.0f);			glm::vec3 initPos_O9(4.0f, 0.5f, -4.0f);
+	glm::vec3 model_A7_Position(0.0f, 0.0f, 0.0f);		glm::vec3 model_O9_Position(0.0f, 0.0f, 0.0f);
+	
+	
+	
 	// render loop
 	while (!glfwWindowShouldClose(window))
 	{
@@ -442,6 +500,8 @@ int main()
 		glClearColor(0.28f, 0.68f, 0.82f, 1.0f);	// sky blue color
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+		glPointSize(10);		// increased point size so that it is easily visible
+		glLineWidth(2);
 		glBindVertexArray(VAO[0]);
 		glBindBuffer(GL_ARRAY_BUFFER, VBO[0]);
 
@@ -453,20 +513,10 @@ int main()
 		
 		angle = (angle + rotationSpeed * deltaTime); // angles in degrees, but glm expects radians (conversion below)
 		
-		glm::mat4 modelTranslationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(-4.0f, 0.5f, -4.0f));
-		glm::mat4 modelScalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
 		
 		
-		// press 1 to select model A7
-		bool ONE_KEY_CURRENTLY_PRESSED = glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS;
-			if (ONE_KEY_PRESSED || ONE_KEY_CURRENTLY_PRESSED) 
-			{
-				
-				rotationMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(angle), glm::vec3(0.0f, 1.0f, 0.0f));
-				modelScalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(5.0f, 5.0f, 5.0f));
-				worldMatrix = modelTranslationMatrix * modelScalingMatrix * rotationMatrix * partMatrix;
-				ONE_KEY_PRESSED = ONE_KEY_CURRENTLY_PRESSED;
-			}
+		
+		
 			
 
 		
@@ -475,79 +525,174 @@ int main()
 
 	
 
-		//rotationMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(angle), glm::vec3(0.0f, 1.0f, 0.0f));
+		// rotationMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(angle), glm::vec3(0.0f, 1.0f, 0.0f));
 		
 
-		// call model A7
-		// model_A7();
+		
+	
+		// model A7
+		modelTranslationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(initPos_A7.x + model_A7_Position.x, initPos_A7.y + model_A7_Position.y, initPos_A7.z + model_A7_Position.z));
+		modelScalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(model_A7_Size + init_A7_Size, model_A7_Size + init_A7_Size, model_A7_Size + init_A7_Size));
+		worldMatrixLocation = glGetUniformLocation(compileAndLinkShaders(), "worldMatrix");
+		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+		
+		if (ONE_KEY_PRESSED)
+		{
+			
+			if (glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS) {
+				model_A7_Size += deltaTime * modelSpeed;
+			}
+			
+			if (glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS) {
+				model_A7_Size -= deltaTime * modelSpeed;
+			}
+			modelScalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(model_A7_Size + init_A7_Size, model_A7_Size + init_A7_Size, model_A7_Size + init_A7_Size)); // this scale up or scale down the model depending on input
+			worldMatrix = modelTranslationMatrix * modelScalingMatrix * rotationMatrix * partMatrix;
+			glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+			
+			
+			if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+			{
+				model_A7_Position.x -= deltaTime * modelSpeed;
+			}
+
+			if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) 
+			{
+				model_A7_Position.x += deltaTime * modelSpeed;
+			}
+
+			if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+			{
+				model_A7_Position.z += deltaTime * modelSpeed;
+			}
+
+			if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+			{
+				model_A7_Position.z -= deltaTime * modelSpeed;
+			}
+
+			if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
+				model_A7_Position.y += deltaTime * modelSpeed;
+			}
+
+			if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS) 
+			{
+				model_A7_Position.y -= deltaTime * modelSpeed;
+			}
+			
+			if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
+			{
+				model_A7_Position = {0.0f, 0.0f, 0.0f};
+			}
+
+			if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS && (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT)) == GLFW_PRESS)
+			{
+				model_A7_Size = 0.0f;
+			}
+
+			
+
+			modelScalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(model_A7_Size + init_A7_Size, model_A7_Size + init_A7_Size, model_A7_Size + init_A7_Size));
+			modelTranslationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(initPos_A7.x + model_A7_Position.x, initPos_A7.y + model_A7_Position.y, initPos_A7.z + model_A7_Position.z));
+
+			if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS) {	// rotate left in y-axis
+				
+			}	
+			
+
+			if (glfwGetKey(window, GLFW_KEY_G) == GLFW_PRESS)	// rotate right in y-axis
+			{
+				
+			}	
+			
+			
+		}
+		worldMatrix = modelTranslationMatrix * modelScalingMatrix * rotationMatrix * partMatrix;
+		
+		model_A7();
+		// end of model_A7();
+
+		// model O9
+		modelTranslationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(initPos_O9.x + model_O9_Position.x, initPos_O9.y + model_O9_Position.y, initPos_O9.z + model_O9_Position.z));
+		modelScalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(model_O9_Size + init_O9_Size, model_O9_Size + init_O9_Size, model_O9_Size + init_O9_Size));
 		worldMatrixLocation = glGetUniformLocation(compileAndLinkShaders(), "worldMatrix");
 		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
 
-		scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 5.0f, 1.0f));
-		shearingMatrix =
+		if (TWO_KEY_PRESSED)
 		{
-			1.0, 0.0, 0.0, 0.0,
-			0.35, 1.0, 0.0, 0.0,
-			0.0, 0.0, 1.0, 0.0,
-			0.0, 0.0, 0.0, 1.0,
-		};
-		translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(-0.5f, -0.20f, 0.0f));
-		partMatrix = translationMatrix * shearingMatrix * scalingMatrix;
-		worldMatrix = modelTranslationMatrix * modelScalingMatrix * rotationMatrix * partMatrix;
-		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
+			
+			if (glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS) {
+				model_O9_Size += deltaTime * modelSpeed;
+			}
 
+			if (glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS) {
+				model_O9_Size -= deltaTime * modelSpeed;
+			}
 
-		shearingMatrix =
-		{
-			1.0, 0.0, 0.0, 0.0,
-			-0.35, 1.0, 0.0, 0.0,
-			0.0, 0.0, 1.0, 0.0,
-			0.0, 0.0, 0.0, 1.0,
-		};
-		translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(-0.1f, -0.20f, 0.0f));
-		partMatrix = translationMatrix * shearingMatrix * scalingMatrix;
-		worldMatrix = modelTranslationMatrix * modelScalingMatrix * rotationMatrix * partMatrix;
-		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-
-
-		shearingMatrix = glm::mat4(1.0f);
-		scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(2.0f, 0.75f, 1.0f));
-		translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(-0.35f, -0.05f, 0.0f));
-		partMatrix = translationMatrix * shearingMatrix * scalingMatrix;
-		worldMatrix = modelTranslationMatrix * modelScalingMatrix * rotationMatrix * partMatrix;
-		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-
-
-		shearingMatrix =
-		{
-			1.0, 0.0, 0.0, 0.0,
-			0.3, 1.0, 0.0, 0.0,
-			0.0, 0.0, 1.0, 0.0,
-			0.0, 0.0, 0.0, 1.0,
-		};
-		scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 4.0f, 1.0f));
-		translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.2f, -0.2f, 0.0f));
-		partMatrix = translationMatrix * shearingMatrix * scalingMatrix;
-		worldMatrix = modelTranslationMatrix * modelScalingMatrix * rotationMatrix * partMatrix;
-		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-
-
-		shearingMatrix = glm::mat4(1.0f);
-		scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(3.0f, 1.0f, 1.0f));
-		translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.12f, 0.2f, 0.0f));
-		partMatrix = translationMatrix * shearingMatrix * scalingMatrix;
-		worldMatrix = modelTranslationMatrix * modelScalingMatrix * rotationMatrix * partMatrix;
-		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-
-		// reset world matrix after we're done with it for this object
-		worldMatrix = glm::mat4(1.0f);
+			modelScalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(model_O9_Size + init_O9_Size, model_O9_Size + init_O9_Size, model_O9_Size + init_O9_Size)); // this scale up or scale down the model depending on input
+			worldMatrix = modelTranslationMatrix * modelScalingMatrix * rotationMatrix * partMatrix;
+			glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
 		
-		// end of model A7
+			if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+			{
+				model_O9_Position.x -= deltaTime * modelSpeed;
+			}
+
+			if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+			{
+				model_O9_Position.x += deltaTime * modelSpeed;
+			}
+
+			if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+			{
+				model_O9_Position.z += deltaTime * modelSpeed;
+			}
+
+			if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+			{
+				model_O9_Position.z -= deltaTime * modelSpeed;
+			}
+
+			if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+			{
+				model_O9_Position.y += deltaTime * modelSpeed;
+			}
+
+			if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS)
+			{
+				model_O9_Position.y -= deltaTime * modelSpeed;
+			}
+
+			if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE) 
+			{
+				model_O9_Position = { 0.0f, 0.0f, 0.0f };
+			}
+
+			if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS && (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT)) == GLFW_PRESS)
+			{
+				model_O9_Size = 0.0f;
+			}
+
+			modelScalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(model_O9_Size + init_O9_Size, model_O9_Size + init_O9_Size, model_O9_Size + init_O9_Size));
+			modelTranslationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(initPos_O9.x + model_O9_Position.x, initPos_O9.y + model_O9_Position.y, initPos_O9.z + model_O9_Position.z));
+
+			if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS) {	// rotate left in y-axis
+
+			}
+
+
+			if (glfwGetKey(window, GLFW_KEY_G) == GLFW_PRESS)	// rotate right in y-axis
+			{
+
+			}
+		}
+
+		model_O9();
+		// end of model O9
+
+
+		// model N7
+		model_N7(shaderProgram, 2.0f, glm::vec3(2.5f, 0.5f, 4.0f));
 
 
 		// red line
@@ -556,7 +701,7 @@ int main()
 		glBindBuffer(GL_ARRAY_BUFFER, VBO[1]);
 		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
 		glDrawArrays(GL_LINES, 0, 2);
-
+		
 		// green line
 		glBindVertexArray(VAO[2]);
 		glBindBuffer(GL_ARRAY_BUFFER, VBO[2]);
@@ -575,9 +720,10 @@ int main()
 		glBindBuffer(GL_ARRAY_BUFFER, VBO[4]);
 		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
 		glDrawArrays(GL_LINES, 0, 2 * 2 * numGridLines);
+		
+		glBindVertexArray(0);
 
 		
-
 		// check and call events and swap the buffers
 		glfwSwapBuffers(window);
 		//glfwSwapInterval(0);
@@ -587,53 +733,20 @@ int main()
 		processInput(window); // input
 
 		
-
-		// press 2 to select model (your letter) 
-		if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS)
-		{
-			modelScalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
-			rotationMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(angle), glm::vec3(0.0f, 1.0f, 0.0f));
-			worldMatrix = modelTranslationMatrix * modelScalingMatrix * rotationMatrix * partMatrix;
-		}
-
-		// press 3 to select model (your letter) 
-		if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS)
-		{
-			modelScalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
-			rotationMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(angle), glm::vec3(0.0f, 1.0f, 0.0f));
-			worldMatrix = modelTranslationMatrix * modelScalingMatrix * rotationMatrix * partMatrix;
-		}
-
-		// press 4 to select model (your letter) 
-		if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS)
-		{
-			modelScalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
-			rotationMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(angle), glm::vec3(0.0f, 1.0f, 0.0f));
-			worldMatrix = modelTranslationMatrix * modelScalingMatrix * rotationMatrix * partMatrix;
-		}
-
-		// press 5 to select model (your letter) 
-		if (glfwGetKey(window, GLFW_KEY_5) == GLFW_PRESS)
-		{
-			modelScalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(5.0f, 5.0f, 5.0f));
-			rotationMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(angle), glm::vec3(0.0f, 1.0f, 0.0f));
-			worldMatrix = modelTranslationMatrix * modelScalingMatrix * rotationMatrix * partMatrix;
-		}
 		
 	}
 
 	// de-allocate all resources
-	glDeleteVertexArrays(5, VAO);
-	glDeleteBuffers(5, VBO);
+	glDeleteVertexArrays(1, VAO);
+	glDeleteBuffers(1, VBO);
 	glDeleteProgram(shaderProgram);
-
 
 	glfwTerminate();
 	return 0;
 }
 
 
-
+// resize window 
 void framebuffer_size_callback(GLFWwindow * window, int width, int height)
 {
 	glViewport(0, 0, width, height);
@@ -641,6 +754,7 @@ void framebuffer_size_callback(GLFWwindow * window, int width, int height)
 
 void processInput(GLFWwindow * window)
 {
+
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
 
@@ -662,21 +776,13 @@ void processInput(GLFWwindow * window)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
 	}
 
-	if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS)
-	{
-
-		viewMatrix = glm::lookAt(cameraPosition, cameraLookAt, cameraUp);	// eye, center, & up are global variables
-		GLuint viewMatrixLocation = glGetUniformLocation(compileAndLinkShaders(), "viewMatrix");
-		glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
-	}
-
 
 	// perspective - projection transform
 	if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
 	{
 		projectionMatrix = glm::perspective(90.0f,			// field of view in degrees
 			1024.0f / 768.0f,	// aspect ratio
-			0.05f, 500.0f);	// near and far (near > 0)
+			0.005f, 500.0f);	// near and far (near > 0)
 
 		GLuint projectionMatrixLocation = glGetUniformLocation(compileAndLinkShaders(), "projectionMatrix");
 		glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, &projectionMatrix[0][0]);
@@ -812,34 +918,217 @@ void processInput(GLFWwindow * window)
 		glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
 	}
 
-	// zoom control
-	/*if (glfwSetScrollCallback(window, scroll_callback))
+	// mouse scroll
+	glfwSetScrollCallback(window, scroll_callback); // receives mouse scroll as input
+
+
+	// press 0 to deselect all models
+	if (glfwGetKey(window, GLFW_KEY_0) == GLFW_PRESS)
 	{
-		viewMatrix = lookAt(cameraPosition, cameraPosition + cameraLookAt, cameraUp);
-		GLuint viewMatrixLocation = glGetUniformLocation(compileAndLinkShaders(), "viewMatrix");
-		glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
+		ONE_KEY_PRESSED = false;
+		TWO_KEY_PRESSED = false;
+		THREE_KEY_PRESSED = false;
+		FOUR_KEY_PRESSED = false;
+		FIVE_KEY_PRESSED = false;
 	}
-	*/
+
+	// press 1 to select model A7
+	if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
+	{
+		ONE_KEY_PRESSED = true;
+		TWO_KEY_PRESSED = false;
+		THREE_KEY_PRESSED = false;
+		FOUR_KEY_PRESSED = false;
+		FIVE_KEY_PRESSED = false;
+	}
+
+	// press 2 to select model O9
+	if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS)
+	{
+		ONE_KEY_PRESSED = false;
+		TWO_KEY_PRESSED = true;
+		THREE_KEY_PRESSED = false;
+		FOUR_KEY_PRESSED = false;
+		FIVE_KEY_PRESSED = false;
+	}
+
+	// press 3 to select model (your letter) 
+	if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS)
+	{
+		ONE_KEY_PRESSED = false;
+		TWO_KEY_PRESSED = false;
+		THREE_KEY_PRESSED = true;
+		FOUR_KEY_PRESSED = false;
+		FIVE_KEY_PRESSED = false;
+	}
+
+	// press 4 to select model (your letter) 
+	if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS)
+	{
+		ONE_KEY_PRESSED = false;
+		TWO_KEY_PRESSED = false;
+		THREE_KEY_PRESSED = false;
+		FOUR_KEY_PRESSED = true;
+		FIVE_KEY_PRESSED = false;
+	}
+
+	// press 5 to select model (your letter) 
+	if (glfwGetKey(window, GLFW_KEY_5) == GLFW_PRESS)
+	{
+		ONE_KEY_PRESSED = false;
+		TWO_KEY_PRESSED = false;
+		THREE_KEY_PRESSED = false;
+		FOUR_KEY_PRESSED = false;
+		FIVE_KEY_PRESSED = true;
+	}
+	
+
+	// while in model control, holding shift will increase movement speed or scaling speed
+	if ((glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) || (glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS))
+	{
+		modelSpeed = 6.0;
+	}
+
+	if ((glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE) && (glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_RELEASE))
+	{
+		modelSpeed = 1.0;
+	}
 }
 
-// commented because I'm still trying to figure the model movement and scaling with input keys
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+{
+	
+
+	if ((glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
+		|| (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) != GLFW_RELEASE))
+	{
+
+		// scroll up to zoom in 
+		if (yoffset < 0) {
+			// std::cout << fov << std::endl;
+			if (fov <= 120.0f)
+			{
+				fov = fov + 5.0;
+				projectionMatrix = glm::perspective(glm::radians(fov),			// field of view in degrees
+					1024.0f / 768.0f,	// aspect ratio
+					0.05f, 500.0f);	// near and far (near > 0)
+
+				GLuint projectionMatrixLocation = glGetUniformLocation(compileAndLinkShaders(), "projectionMatrix");
+				glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, &projectionMatrix[0][0]);
+			}
+		}
+		// scroll down to zoom out 
+		if (yoffset > 0) {
+			// std::cout << fov << std::endl;
+			if (fov >= 10.0f)
+			{
+				fov = fov - 5.0;
+				projectionMatrix = glm::perspective(glm::radians(fov),			// field of view in degrees
+					1024.0f / 768.0f,	// aspect ratio
+					0.05f, 500.0f);	// near and far (near > 0)
+
+				GLuint projectionMatrixLocation = glGetUniformLocation(compileAndLinkShaders(), "projectionMatrix");
+				glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, &projectionMatrix[0][0]);
+			}
+		}
+	}
+}
+
+
+/*
+	Draws "N7" on the screen.
+
+	ScalingFactor is undefined for negative values although permitted.
+
+*/
+void model_N7(int shaderProgram, float scalingFactor, glm::vec3 worldPosition) {
+
+	// these will grow the model
+	float x_scaling = 0.5f * scalingFactor;
+	float y_scaling = 2.5f * scalingFactor;
+	float z_scaling = 0.5f * scalingFactor;
+
+
+	glm::mat4 modelMatrix = glm::mat4(1.0f);
+	worldMatrixLocation = glGetUniformLocation(shaderProgram, "worldMatrix");
+	glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]);
+
+	// this matrix moves the entire model around the world, parameters passed will translate the model to where desired
+	glm::mat4 translate_final = glm::translate(glm::mat4(1.0f), glm::vec3(worldPosition.x, worldPosition.y, worldPosition.z));
+
+	// these matrices are for N, they define the parent-child relationship (starting letter is to the left of origin and has its middle aligned to x-axis)
+	glm::mat4 translate_N = glm::translate(glm::mat4(1.0f), glm::vec3(-0.3f * scalingFactor, 0.0f * scalingFactor, -0.025f * scalingFactor));
+	glm::mat4 translate_N_child = glm::mat4(1.0f);  // to attach children cubes to the "parent" (parent not touched by child matrix)
+	shearingMatrix = glm::mat4(1.0f);
+
+	// Left leg of "N" (parent)
+	translationMatrix = translate_N;
+	scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(x_scaling, y_scaling, z_scaling));
+	modelMatrix = translate_final * rotationMatrix * translationMatrix * scalingMatrix;
+	glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]);
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+
+	// Left right of "N".
+	translate_N_child = glm::translate(glm::mat4(1.0f), glm::vec3(0.174f * scalingFactor, 0.0f * scalingFactor, 0.0f * scalingFactor));
+	translationMatrix = translate_N_child * translate_N;
+	modelMatrix = translate_final * rotationMatrix * translationMatrix * scalingMatrix;
+	glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]);
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+
+	// diagonal of "N".
+	shearingMatrix =
+	{
+		1.0, 0.0, 0.0, 0.0,
+		-0.7, 1.0, 0.0, 0.0,
+		0.0, 0.0, 1.0, 0.0,
+		0.0, 0.0, 0.0, 1.0,
+	};
+	translationMatrix = translate_N_child * translate_N;
+	modelMatrix = translate_final * rotationMatrix * shearingMatrix * translationMatrix * scalingMatrix;
+	glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]);
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+
+	glm::mat4 translate_7 = glm::translate(glm::mat4(1.0f), glm::vec3(0.025f, 0.0f, -0.025f));
+	glm::mat4 translate_7_child = glm::mat4(1.0f);
+
+	// diagonal of "7" (parent)
+	shearingMatrix =
+	{
+		1.0, 0.0, 0.0, 0.0,
+		0.5, 1.0, 0.0, 0.0,
+		0.0, 0.0, 1.0, 0.0,
+		0.0, 0.0, 0.0, 1.0,
+	};
+	translationMatrix = translate_7;
+	scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(x_scaling, y_scaling, z_scaling));
+	modelMatrix = translate_final * rotationMatrix * shearingMatrix * translationMatrix * scalingMatrix;
+	glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]);
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+
+	// horizontal of "7"
+	scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(0.60 * y_scaling, x_scaling, x_scaling));
+	translate_7_child = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.2 * scalingFactor, 0.0f));
+	translationMatrix = translate_7_child * translate_7;
+	modelMatrix = translate_final * rotationMatrix * translationMatrix * scalingMatrix;
+	glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]);
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+
+}
+
+
 void model_A7()
 {
-	/*
-	worldMatrixLocation = glGetUniformLocation(compileAndLinkShaders(), "worldMatrix");
-	glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
-
 	scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 5.0f, 1.0f));
 	shearingMatrix =
 	{
 		1.0, 0.0, 0.0, 0.0,
-		0.3, 1.0, 0.0, 0.0,
+		0.35, 1.0, 0.0, 0.0,
 		0.0, 0.0, 1.0, 0.0,
 		0.0, 0.0, 0.0, 1.0,
 	};
-
-	partMatrix = shearingMatrix * scalingMatrix;
-	worldMatrix = rotationMatrix * partMatrix;
+	translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(-0.5f, -0.20f, 0.0f));
+	partMatrix = translationMatrix * shearingMatrix * scalingMatrix;
+	worldMatrix = modelTranslationMatrix * modelScalingMatrix * rotationMatrix * partMatrix;
 	glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
 	glDrawArrays(GL_TRIANGLES, 0, 36);
 
@@ -847,22 +1136,22 @@ void model_A7()
 	shearingMatrix =
 	{
 		1.0, 0.0, 0.0, 0.0,
-		-0.3, 1.0, 0.0, 0.0,
+		-0.35, 1.0, 0.0, 0.0,
 		0.0, 0.0, 1.0, 0.0,
 		0.0, 0.0, 0.0, 1.0,
 	};
-	translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.3f, 0.0f, 0.0f));
+	translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(-0.1f, -0.20f, 0.0f));
 	partMatrix = translationMatrix * shearingMatrix * scalingMatrix;
-	worldMatrix = rotationMatrix * partMatrix;
+	worldMatrix = modelTranslationMatrix * modelScalingMatrix * rotationMatrix * partMatrix;
 	glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
 	glDrawArrays(GL_TRIANGLES, 0, 36);
 
 
 	shearingMatrix = glm::mat4(1.0f);
-	scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(1.1f, 0.75f, 1.0f));
-	translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.145f, 0.15f, 0.0f));
+	scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(2.0f, 0.75f, 1.0f));
+	translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(-0.35f, -0.05f, 0.0f));
 	partMatrix = translationMatrix * shearingMatrix * scalingMatrix;
-	worldMatrix = rotationMatrix * partMatrix;
+	worldMatrix = modelTranslationMatrix * modelScalingMatrix * rotationMatrix * partMatrix;
 	glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
 	glDrawArrays(GL_TRIANGLES, 0, 36);
 
@@ -875,27 +1164,105 @@ void model_A7()
 		0.0, 0.0, 0.0, 1.0,
 	};
 	scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 4.0f, 1.0f));
-	translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.55f, 0.0f, 0.0f));
+	translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.2f, -0.2f, 0.0f));
 	partMatrix = translationMatrix * shearingMatrix * scalingMatrix;
-	worldMatrix = rotationMatrix * partMatrix;
+	worldMatrix = modelTranslationMatrix * modelScalingMatrix * rotationMatrix * partMatrix;
 	glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
 	glDrawArrays(GL_TRIANGLES, 0, 36);
 
 
 	shearingMatrix = glm::mat4(1.0f);
-	scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(2.5f, 1.0f, 1.0f));
-	translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.52f, 0.4f, 0.0f));
+	scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(3.0f, 1.0f, 1.0f));
+	translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.12f, 0.2f, 0.0f));
 	partMatrix = translationMatrix * shearingMatrix * scalingMatrix;
-	worldMatrix = rotationMatrix * partMatrix;
+	worldMatrix = modelTranslationMatrix * modelScalingMatrix * rotationMatrix * partMatrix;
 	glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
 	glDrawArrays(GL_TRIANGLES, 0, 36);
-	
-	
-	
-	
-	// reset world matrix after we're done with it for this object
-	worldMatrix = glm::mat4(1.0f);
-	*/
+
+
+
+	// reset world matrix, rotation matrix, and model scaling matrix after we're done with it for this object
+	modelScalingMatrix = identityMatrix;
+	rotationMatrix = identityMatrix;
+	worldMatrix = identityMatrix;
+
+
+	// end of model A7
 }
 
+void model_O9() {
+	// beginning of letter O
+	scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 5.0f, 1.0f));
+	translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(-0.5f, -0.20f, 0.0f));
+	partMatrix = translationMatrix * scalingMatrix;
+	worldMatrix = modelTranslationMatrix * modelScalingMatrix * rotationMatrix * partMatrix;
+	glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+	glDrawArrays(GL_TRIANGLES, 0, 36);
 
+	scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 5.0f, 1.0f));
+	translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(-0.1f, -0.20f, 0.0f));
+	partMatrix = translationMatrix * scalingMatrix;
+	worldMatrix = modelTranslationMatrix * modelScalingMatrix * rotationMatrix * partMatrix;
+	glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+
+	scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(3.0f, 0.75f, 1.0f));
+	translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(-0.4f, -0.20f, 0.0f));
+	partMatrix = translationMatrix * scalingMatrix;
+	worldMatrix = modelTranslationMatrix * modelScalingMatrix * rotationMatrix * partMatrix;
+	glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+
+	scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(3.0f, 0.75f, 1.0f));
+	translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(-0.4f, 0.225f, 0.0f));
+	partMatrix = translationMatrix * scalingMatrix;
+	worldMatrix = modelTranslationMatrix * modelScalingMatrix * rotationMatrix * partMatrix;
+	glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+	// end of letter O
+
+	// beginning of number 9
+	scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(4.0f, 0.75f, 1.0f));
+	translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.12f, 0.225f, 0.0f));
+	partMatrix = translationMatrix * scalingMatrix;
+	worldMatrix = modelTranslationMatrix * modelScalingMatrix * rotationMatrix * partMatrix;
+	glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+
+	scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(3.0f, 0.75f, 1.0f));
+	translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.12f, -0.025f, 0.0f));
+	partMatrix = translationMatrix * scalingMatrix;
+	worldMatrix = modelTranslationMatrix * modelScalingMatrix * rotationMatrix * partMatrix;
+	glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+
+	scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(3.0f, 0.75f, 1.0f));
+	translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.12f, -0.20f, 0.0f));
+	partMatrix = translationMatrix * scalingMatrix;
+	worldMatrix = modelTranslationMatrix * modelScalingMatrix * rotationMatrix * partMatrix;
+	glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+
+	//vertical
+	//right
+	scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 5.0f, 1.0f));
+	translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.42f, -0.20f, 0.0f));
+	partMatrix = translationMatrix * scalingMatrix;
+	worldMatrix = modelTranslationMatrix * modelScalingMatrix * rotationMatrix * partMatrix;
+	glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+
+	scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(0.75f, -2.0f, 1.0f));
+	translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.12f, 0.225f, 0.0f));
+	partMatrix = translationMatrix * scalingMatrix;
+	worldMatrix = modelTranslationMatrix * modelScalingMatrix * rotationMatrix * partMatrix;
+	glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+	// end of number 9
+
+	// reset world matrix, rotation matrix, and model scaling matrix after we're done with it for this object
+	modelScalingMatrix = identityMatrix;
+	rotationMatrix = identityMatrix;
+	worldMatrix = identityMatrix;
+	// end of model O9
+}
