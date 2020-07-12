@@ -48,37 +48,47 @@
 *		==============================================================
 *
 *
-*
-*		ENTER EITHER 1, 2, 3, 4, 5 TO SELECT MODELS - 0 WILL DESELECT
-*		==============================================================
+*		MODEL CONTROL
+*		ENTER EITHER 1, 2, 3, 4 OR 5 TO SELECT MODELS - 0 WILL SELECT ALL MODELS - LEFT MOUSE CLICK WILL DESELECT ALL MODELS
+*		====================================================================================================================
 *		
-*		W			: MOVE MODEL IN +Z DIRECTION
+*		W						: MOVE MODEL IN +Z DIRECTION
 *
-*		S			: MOVE MODEL IN -Z DIRECTION
+*		S						: MOVE MODEL IN -Z DIRECTION
 *
-*		A			: MOVE MODEL IN -X DIRECTION
+*		A						: MOVE MODEL IN -X DIRECTION
 *
-*		D			: MOVE MODEL IN +X DIRECTION
+*		D						: MOVE MODEL IN +X DIRECTION
 *
-*		X			: MOVE MODEL IN -Y DIRECTION
+*		X						: MOVE MODEL IN -Y DIRECTION
 *
-*		SPACE		: MOVE MODEL IN +Y DIRECTION
+*		SPACE					: MOVE MODEL IN +Y DIRECTION
 *
-*		R			: RESET MODEL TO INITIAL POSITION
+*		R						: RESET MODEL TO INITIAL POSITION
 *
-*		SHIFT + R	: RESET MODEL TO INITIAL SIZE
+*		SHIFT + R				: RESET MODEL TO INITIAL SIZE
 *
-*		U			: UPSCALE MODEL
+*		LCTRL + SHIFT + R		: RESET MODEL ORIENTATION
 *
-*		J			: DOWNSCALE MODEL
+*		U						: UPSCALE MODEL
 *
-*		F			: ROTATE -Y DIRECTION
+*		J						: DOWNSCALE MODEL
 *
-*		G			: ROTATE +Y DIRECTION
+*		T						: ROTATE MODEL +X DIRECTION
 *
-*		SHIFT + WASD: INCREASE MOVEMENT SPEED
+*		Y						: ROTATE MODEL -X DIRECTION
 *
-*		SHIFT + U/J	: INCREASE SCALING SPEED
+*		G						: ROTATE MODEL +Y DIRECTION
+*
+*		H						: ROTATE MODEL -Y DIRECTION
+*
+*		B						: ROTATE MODEL +Z DIRECTION
+*
+*		N						: ROTATE MODEL -Z DIRECTION
+*
+*		SHIFT + W/A/S/D/X/SPACE	: INCREASE MOVEMENT SPEED
+*
+*		SHIFT + U/J				: INCREASE SCALING SPEED
 */
 
 #include <iostream>
@@ -140,6 +150,13 @@ bool THREE_KEY_PRESSED = false;
 bool FOUR_KEY_PRESSED = false;
 bool FIVE_KEY_PRESSED = false;
 
+bool T_KEY = GLFW_RELEASE;
+bool Y_KEY = GLFW_RELEASE;
+bool G_KEY = GLFW_RELEASE;
+bool H_KEY = GLFW_RELEASE;
+bool B_KEY = GLFW_RELEASE;
+bool N_KEY = GLFW_RELEASE;
+
 GLuint worldMatrixLocation;
 
 // function prototypes
@@ -149,6 +166,9 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void model_N7(int shaderProgram, float scalingFactor, glm::vec3 worldPosition);
 void model_A7();
 void model_O9();
+void model_S0();
+void model_Control(GLFWwindow* window, glm::mat4 modelTranslationMatrix, glm::mat4 modelScalingMatrix, glm::mat4 rotationMatrix,
+	glm::mat4 worldMatrix, glm::mat4 partMatrix, float initSize, float modelSize, glm::vec3 initPos, glm::vec3 modelPosition, float angle);
 GLFWwindow* setupWindow();
 
 
@@ -480,16 +500,19 @@ int main()
 	glDepthFunc(GL_LESS);
 
 
+	
 	// initial model parameters
 	
-	// float model_movementSpeed = 1.0f;
 
-	float init_A7_Size = 1.4;							float init_O9_Size = 1.4f;
-	float model_A7_Size = 0.0f;							float model_O9_Size = 0.0f;
-	glm::vec3 initPos_A7(-4.0f, 0.5f, -4.0f);			glm::vec3 initPos_O9(4.0f, 0.5f, -4.0f);
-	glm::vec3 model_A7_Position(0.0f, 0.0f, 0.0f);		glm::vec3 model_O9_Position(0.0f, 0.0f, 0.0f);
+	float init_A7_Size = 1.0f;							float init_O9_Size = 1.0f;							float init_S0_Size = 1.0f;
+	float model_A7_Size = 0.0f;							float model_O9_Size = 0.0f;							float model_S0_Size = 0.0f;
+	glm::vec3 initPos_A7(-4.0f, 0.5f, -4.0f);			glm::vec3 initPos_O9(4.0f, 0.5f, -4.0f);			glm::vec3 initPos_S0(-4.0f, 0.5f, 4.0f);
+	glm::vec3 model_A7_Position(0.0f, 0.0f, 0.0f);		glm::vec3 model_O9_Position(0.0f, 0.0f, 0.0f);		glm::vec3 model_S0_Position(0.0f, 0.0f, 0.0f);
+	glm::vec3 A7_theta(0.0f, 0.0f, 0.0f);				glm::vec3 O9_theta(0.0f, 0.0f, 0.0f);				glm::vec3 S0_theta(0.0f, 0.0f, 0.0f);
 	
-	
+	glm::mat4 A7_rotation_X;							glm::mat4 O9_rotation_X;							glm::mat4 S0_rotation_X;
+	glm::mat4 A7_rotation_Y;							glm::mat4 O9_rotation_Y;							glm::mat4 S0_rotation_Y;
+	glm::mat4 A7_rotation_Z;							glm::mat4 O9_rotation_Z;							glm::mat4 S0_rotation_Z;
 	
 	// render loop
 	while (!glfwWindowShouldClose(window))
@@ -518,7 +541,7 @@ int main()
 		
 		
 			
-
+		
 		
 
 		
@@ -531,91 +554,153 @@ int main()
 		
 	
 		// model A7
+		A7_theta = { A7_theta.x, A7_theta.y, A7_theta.z };
+		rotationMatrix = A7_rotation_X * A7_rotation_Y * A7_rotation_Z;
 		modelTranslationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(initPos_A7.x + model_A7_Position.x, initPos_A7.y + model_A7_Position.y, initPos_A7.z + model_A7_Position.z));
 		modelScalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(model_A7_Size + init_A7_Size, model_A7_Size + init_A7_Size, model_A7_Size + init_A7_Size));
-		worldMatrixLocation = glGetUniformLocation(compileAndLinkShaders(), "worldMatrix");
+		worldMatrixLocation = glGetUniformLocation(shaderProgram, "worldMatrix");
 		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
 		
 		if (ONE_KEY_PRESSED)
 		{
-			
+
 			if (glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS) {
 				model_A7_Size += deltaTime * modelSpeed;
 			}
-			
+
 			if (glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS) {
 				model_A7_Size -= deltaTime * modelSpeed;
 			}
-			modelScalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(model_A7_Size + init_A7_Size, model_A7_Size + init_A7_Size, model_A7_Size + init_A7_Size)); // this scale up or scale down the model depending on input
-			worldMatrix = modelTranslationMatrix * modelScalingMatrix * rotationMatrix * partMatrix;
-			glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
-			
-			
+
 			if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
 			{
 				model_A7_Position.x -= deltaTime * modelSpeed;
 			}
 
-			if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) 
+			if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 			{
 				model_A7_Position.x += deltaTime * modelSpeed;
 			}
 
 			if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
 			{
-				model_A7_Position.z += deltaTime * modelSpeed;
+				model_A7_Position.z -= deltaTime * modelSpeed;
 			}
 
 			if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
 			{
-				model_A7_Position.z -= deltaTime * modelSpeed;
+				model_A7_Position.z += deltaTime * modelSpeed;
 			}
 
-			if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
+			if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+			{
 				model_A7_Position.y += deltaTime * modelSpeed;
 			}
 
-			if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS) 
+			if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS)
 			{
 				model_A7_Position.y -= deltaTime * modelSpeed;
 			}
-			
-			if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
+
+			if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE)
 			{
-				model_A7_Position = {0.0f, 0.0f, 0.0f};
+				model_A7_Position = { 0.0f, 0.0f, 0.0f };
 			}
 
-			if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS && (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT)) == GLFW_PRESS)
+			if ((glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS && (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT)) == GLFW_PRESS) && (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_RELEASE))
 			{
 				model_A7_Size = 0.0f;
 			}
 
-			
+			if ((T_KEY == GLFW_RELEASE) && (glfwGetKey(window, GLFW_KEY_T))) {	// rotate in +y axis
+
+				A7_theta.x = A7_theta.x + glm::radians(5.0f);
+
+			}
+			T_KEY = glfwGetKey(window, GLFW_KEY_T);
+
+
+			if ((Y_KEY == GLFW_RELEASE) && (glfwGetKey(window, GLFW_KEY_Y))) {	// rotate in -y axis
+
+				A7_theta.x = A7_theta.x - glm::radians(5.0f);
+
+			}
+			Y_KEY = glfwGetKey(window, GLFW_KEY_Y);
+
+
+			if ((G_KEY == GLFW_RELEASE) && (glfwGetKey(window, GLFW_KEY_G))) {	// rotate in +x axis
+
+				A7_theta.y = A7_theta.y + glm::radians(5.0f);
+
+			}
+			G_KEY = glfwGetKey(window, GLFW_KEY_G);
+
+
+			if ((H_KEY == GLFW_RELEASE) && (glfwGetKey(window, GLFW_KEY_H))) {	// rotate in -x axis
+
+				A7_theta.y = A7_theta.y - glm::radians(5.0f);
+
+			}
+			H_KEY = glfwGetKey(window, GLFW_KEY_H);
+
+			if ((B_KEY == GLFW_RELEASE) && (glfwGetKey(window, GLFW_KEY_B))) {	// rotate in +z axis
+
+				A7_theta.z = A7_theta.z + glm::radians(5.0f);
+
+			}
+			B_KEY = glfwGetKey(window, GLFW_KEY_B);
+
+
+			if ((N_KEY == GLFW_RELEASE) && (glfwGetKey(window, GLFW_KEY_N))) {	// rotate in -z axis
+
+				A7_theta.z = A7_theta.z - glm::radians(5.0f);
+
+			}
+			N_KEY = glfwGetKey(window, GLFW_KEY_N);
+
+			if ((glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) && glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) && glfwGetKey(window, GLFW_KEY_R)) == GLFW_PRESS) {	// reset model orientation
+
+				A7_theta = { 0.0f, 0.0f, 0.0f };  // set theta back to zero
+
+			}
+
+			A7_rotation_X = {
+									  1,            0,             0, 0,
+									  0, cos(A7_theta.x), -sin(A7_theta.x), 0,
+									  0, sin(A7_theta.x),  cos(A7_theta.x), 0,
+									  0,            0,             0, 1,
+			};
+
+			A7_rotation_Y = {
+									  cos(A7_theta.y),  0, sin(A7_theta.y), 0,
+												 0,  1,            0, 0,
+									 -sin(A7_theta.y),  0, cos(A7_theta.y), 0,
+												 0,  0,            0, 1,
+			};
+
+			A7_rotation_Z = {
+						   cos(A7_theta.z), -sin(A7_theta.z), 0, 0,
+						   sin(A7_theta.z),  cos(A7_theta.z), 0, 0,
+									  0,             0, 1, 0,
+									  0,             0, 0, 1,
+			};
 
 			modelScalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(model_A7_Size + init_A7_Size, model_A7_Size + init_A7_Size, model_A7_Size + init_A7_Size));
 			modelTranslationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(initPos_A7.x + model_A7_Position.x, initPos_A7.y + model_A7_Position.y, initPos_A7.z + model_A7_Position.z));
-
-			if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS) {	// rotate left in y-axis
-				
-			}	
-			
-
-			if (glfwGetKey(window, GLFW_KEY_G) == GLFW_PRESS)	// rotate right in y-axis
-			{
-				
-			}	
-			
-			
+			rotationMatrix = A7_rotation_X * A7_rotation_Y * A7_rotation_Z;
+			worldMatrix = modelTranslationMatrix * modelScalingMatrix * rotationMatrix * partMatrix;
+			glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
 		}
-		worldMatrix = modelTranslationMatrix * modelScalingMatrix * rotationMatrix * partMatrix;
 		
 		model_A7();
 		// end of model_A7();
 
 		// model O9
+		O9_theta = { O9_theta.x, O9_theta.y, O9_theta.z };
+		rotationMatrix = O9_rotation_X * O9_rotation_Y * O9_rotation_Z;
 		modelTranslationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(initPos_O9.x + model_O9_Position.x, initPos_O9.y + model_O9_Position.y, initPos_O9.z + model_O9_Position.z));
 		modelScalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(model_O9_Size + init_O9_Size, model_O9_Size + init_O9_Size, model_O9_Size + init_O9_Size));
-		worldMatrixLocation = glGetUniformLocation(compileAndLinkShaders(), "worldMatrix");
+		worldMatrixLocation = glGetUniformLocation(shaderProgram, "worldMatrix");
 		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
 
 		if (TWO_KEY_PRESSED)
@@ -628,10 +713,6 @@ int main()
 			if (glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS) {
 				model_O9_Size -= deltaTime * modelSpeed;
 			}
-
-			modelScalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(model_O9_Size + init_O9_Size, model_O9_Size + init_O9_Size, model_O9_Size + init_O9_Size)); // this scale up or scale down the model depending on input
-			worldMatrix = modelTranslationMatrix * modelScalingMatrix * rotationMatrix * partMatrix;
-			glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
 		
 			if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
 			{
@@ -645,12 +726,12 @@ int main()
 
 			if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
 			{
-				model_O9_Position.z += deltaTime * modelSpeed;
+				model_O9_Position.z -= deltaTime * modelSpeed;
 			}
 
 			if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
 			{
-				model_O9_Position.z -= deltaTime * modelSpeed;
+				model_O9_Position.z += deltaTime * modelSpeed;
 			}
 
 			if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
@@ -668,23 +749,89 @@ int main()
 				model_O9_Position = { 0.0f, 0.0f, 0.0f };
 			}
 
-			if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS && (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT)) == GLFW_PRESS)
+			if ((glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS && (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT)) == GLFW_PRESS) && (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_RELEASE))
 			{
 				model_O9_Size = 0.0f;
 			}
 
+			if ((T_KEY == GLFW_RELEASE) && (glfwGetKey(window, GLFW_KEY_T))) {	// rotate in +y axis
+
+				O9_theta.x = O9_theta.x + glm::radians(5.0f);
+
+			}
+			T_KEY = glfwGetKey(window, GLFW_KEY_T);
+
+
+			if ((Y_KEY == GLFW_RELEASE) && (glfwGetKey(window, GLFW_KEY_Y))) {	// rotate in -y axis
+
+				O9_theta.x = O9_theta.x - glm::radians(5.0f);
+
+			}
+			Y_KEY = glfwGetKey(window, GLFW_KEY_Y);
+
+
+			if ((G_KEY == GLFW_RELEASE) && (glfwGetKey(window, GLFW_KEY_G))) {	// rotate in +x axis
+
+				O9_theta.y = O9_theta.y + glm::radians(5.0f);
+
+			}
+			G_KEY = glfwGetKey(window, GLFW_KEY_G);
+
+
+			if ((H_KEY == GLFW_RELEASE) && (glfwGetKey(window, GLFW_KEY_H))) {	// rotate in -x axis
+
+				O9_theta.y = O9_theta.y - glm::radians(5.0f);
+
+			}
+			H_KEY = glfwGetKey(window, GLFW_KEY_H);
+
+			if ((B_KEY == GLFW_RELEASE) && (glfwGetKey(window, GLFW_KEY_B))) {	// rotate in +z axis
+
+				O9_theta.z = O9_theta.z + glm::radians(5.0f);
+
+			}
+			B_KEY = glfwGetKey(window, GLFW_KEY_B);
+
+
+			if ((N_KEY == GLFW_RELEASE) && (glfwGetKey(window, GLFW_KEY_N))) {	// rotate in -z axis
+
+				O9_theta.z = O9_theta.z - glm::radians(5.0f);
+
+			}
+			N_KEY = glfwGetKey(window, GLFW_KEY_N);
+
+			if ((glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) && glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) && glfwGetKey(window, GLFW_KEY_R)) == GLFW_PRESS) {	// reset model orientation
+
+				O9_theta = { 0.0f, 0.0f, 0.0f };  // set theta back to zero
+
+			}
+		
+			O9_rotation_X = {
+									  1,            0,             0, 0,
+									  0, cos(O9_theta.x), -sin(O9_theta.x), 0,
+									  0, sin(O9_theta.x),  cos(O9_theta.x), 0,
+									  0,            0,             0, 1,
+			};
+
+			O9_rotation_Y = {
+						              cos(O9_theta.y),  0, sin(O9_theta.y), 0,
+									             0,  1,            0, 0,
+							         -sin(O9_theta.y),  0, cos(O9_theta.y), 0,
+									             0,  0,            0, 1,
+			};
+
+			O9_rotation_Z = {
+						   cos(O9_theta.z), -sin(O9_theta.z), 0, 0,
+						   sin(O9_theta.z),  cos(O9_theta.z), 0, 0,
+									  0,             0, 1, 0,
+									  0,             0, 0, 1,
+			};
+
 			modelScalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(model_O9_Size + init_O9_Size, model_O9_Size + init_O9_Size, model_O9_Size + init_O9_Size));
 			modelTranslationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(initPos_O9.x + model_O9_Position.x, initPos_O9.y + model_O9_Position.y, initPos_O9.z + model_O9_Position.z));
-
-			if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS) {	// rotate left in y-axis
-
-			}
-
-
-			if (glfwGetKey(window, GLFW_KEY_G) == GLFW_PRESS)	// rotate right in y-axis
-			{
-
-			}
+			rotationMatrix = O9_rotation_X * O9_rotation_Y * O9_rotation_Z;
+			worldMatrix = modelTranslationMatrix * modelScalingMatrix * rotationMatrix * partMatrix;
+			glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
 		}
 
 		model_O9();
@@ -693,7 +840,149 @@ int main()
 
 		// model N7
 		model_N7(shaderProgram, 2.0f, glm::vec3(2.5f, 0.5f, 4.0f));
+		// end of model N7
 
+		// model S0
+		S0_theta = { S0_theta.x, S0_theta.y, S0_theta.z };
+		rotationMatrix = S0_rotation_X * S0_rotation_Y * S0_rotation_Z;
+		modelTranslationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(initPos_S0.x + model_S0_Position.x, initPos_S0.y + model_S0_Position.y, initPos_S0.z + model_S0_Position.z));
+		modelScalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(model_S0_Size + init_S0_Size, model_S0_Size + init_S0_Size, model_S0_Size + init_S0_Size));
+		worldMatrixLocation = glGetUniformLocation(shaderProgram, "worldMatrix");
+		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+
+		if (THREE_KEY_PRESSED)
+		{
+
+			if (glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS) {
+				model_S0_Size += deltaTime * modelSpeed;
+			}
+
+			if (glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS) {
+				model_S0_Size -= deltaTime * modelSpeed;
+			}
+
+			if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+			{
+				model_S0_Position.x -= deltaTime * modelSpeed;
+			}
+
+			if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+			{
+				model_S0_Position.x += deltaTime * modelSpeed;
+			}
+
+			if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+			{
+				model_S0_Position.z -= deltaTime * modelSpeed;
+			}
+
+			if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+			{
+				model_S0_Position.z += deltaTime * modelSpeed;
+			}
+
+			if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+			{
+				model_S0_Position.y += deltaTime * modelSpeed;
+			}
+
+			if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS)
+			{
+				model_S0_Position.y -= deltaTime * modelSpeed;
+			}
+
+			if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE)
+			{
+				model_S0_Position = { 0.0f, 0.0f, 0.0f };
+			}
+
+			if ((glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS && (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT)) == GLFW_PRESS) && (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_RELEASE))
+			{
+				model_S0_Size = 0.0f;
+			}
+
+			if ((T_KEY == GLFW_RELEASE) && (glfwGetKey(window, GLFW_KEY_T))) {	// rotate in +y axis
+
+				S0_theta.x = S0_theta.x + glm::radians(5.0f);
+
+			}
+			T_KEY = glfwGetKey(window, GLFW_KEY_T);
+
+
+			if ((Y_KEY == GLFW_RELEASE) && (glfwGetKey(window, GLFW_KEY_Y))) {	// rotate in -y axis
+
+				S0_theta.x = S0_theta.x - glm::radians(5.0f);
+
+			}
+			Y_KEY = glfwGetKey(window, GLFW_KEY_Y);
+
+
+			if ((G_KEY == GLFW_RELEASE) && (glfwGetKey(window, GLFW_KEY_G))) {	// rotate in +x axis
+
+				S0_theta.y = S0_theta.y + glm::radians(5.0f);
+
+			}
+			G_KEY = glfwGetKey(window, GLFW_KEY_G);
+
+
+			if ((H_KEY == GLFW_RELEASE) && (glfwGetKey(window, GLFW_KEY_H))) {	// rotate in -x axis
+
+				S0_theta.y = S0_theta.y - glm::radians(5.0f);
+
+			}
+			H_KEY = glfwGetKey(window, GLFW_KEY_H);
+
+			if ((B_KEY == GLFW_RELEASE) && (glfwGetKey(window, GLFW_KEY_B))) {	// rotate in +z axis
+
+				S0_theta.z = S0_theta.z + glm::radians(5.0f);
+
+			}
+			B_KEY = glfwGetKey(window, GLFW_KEY_B);
+
+
+			if ((N_KEY == GLFW_RELEASE) && (glfwGetKey(window, GLFW_KEY_N))) {	// rotate in -z axis
+
+				S0_theta.z = S0_theta.z - glm::radians(5.0f);
+
+			}
+			N_KEY = glfwGetKey(window, GLFW_KEY_N);
+
+			if ((glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) && glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) && glfwGetKey(window, GLFW_KEY_R)) == GLFW_PRESS) {	// reset model orientation
+
+				S0_theta = { 0.0f, 0.0f, 0.0f };  // set theta back to zero
+
+			}
+
+			S0_rotation_X = {
+									  1,            0,             0, 0,
+									  0, cos(S0_theta.x), -sin(S0_theta.x), 0,
+									  0, sin(S0_theta.x),  cos(S0_theta.x), 0,
+									  0,            0,             0, 1,
+			};
+
+			S0_rotation_Y = {
+									  cos(S0_theta.y),  0, sin(S0_theta.y), 0,
+												 0,  1,            0, 0,
+									 -sin(S0_theta.y),  0, cos(S0_theta.y), 0,
+												 0,  0,            0, 1,
+			};
+
+			S0_rotation_Z = {
+						   cos(S0_theta.z), -sin(S0_theta.z), 0, 0,
+						   sin(S0_theta.z),  cos(S0_theta.z), 0, 0,
+									  0,             0, 1, 0,
+									  0,             0, 0, 1,
+			};
+
+			modelScalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(model_S0_Size + init_S0_Size, model_S0_Size + init_S0_Size, model_S0_Size + init_S0_Size));
+			modelTranslationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(initPos_S0.x + model_S0_Position.x, initPos_S0.y + model_S0_Position.y, initPos_S0.z + model_S0_Position.z));
+			rotationMatrix = S0_rotation_X * S0_rotation_Y * S0_rotation_Z;
+			worldMatrix = modelTranslationMatrix * modelScalingMatrix * rotationMatrix * partMatrix;
+			glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+		}
+
+		model_S0();
+		// end of model S0
 
 		// red line
 		glLineWidth(5);
@@ -800,7 +1089,7 @@ void processInput(GLFWwindow * window)
 	}
 
 
-	// Press and hold C to disable culling
+	// Press and hold C to disable backface culling
 	glEnable(GL_CULL_FACE);
 	if (glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS && !GLFW_RELEASE)
 	{
@@ -921,9 +1210,18 @@ void processInput(GLFWwindow * window)
 	// mouse scroll
 	glfwSetScrollCallback(window, scroll_callback); // receives mouse scroll as input
 
-
-	// press 0 to deselect all models
+	// press 0 mouse button to select all models
 	if (glfwGetKey(window, GLFW_KEY_0) == GLFW_PRESS)
+	{
+		ONE_KEY_PRESSED = true;
+		TWO_KEY_PRESSED = true;
+		THREE_KEY_PRESSED = true;
+		FOUR_KEY_PRESSED = true;
+		FIVE_KEY_PRESSED = true;
+	}
+
+	// press right mouse button to deselect all models
+	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
 	{
 		ONE_KEY_PRESSED = false;
 		TWO_KEY_PRESSED = false;
@@ -1005,7 +1303,7 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 
 		// scroll up to zoom in 
 		if (yoffset < 0) {
-			// std::cout << fov << std::endl;
+			std::cout << fov << std::endl;
 			if (fov <= 120.0f)
 			{
 				fov = fov + 5.0;
@@ -1019,7 +1317,7 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 		}
 		// scroll down to zoom out 
 		if (yoffset > 0) {
-			// std::cout << fov << std::endl;
+			std::cout << fov << std::endl;
 			if (fov >= 10.0f)
 			{
 				fov = fov - 5.0;
@@ -1112,6 +1410,13 @@ void model_N7(int shaderProgram, float scalingFactor, glm::vec3 worldPosition) {
 	modelMatrix = translate_final * rotationMatrix * translationMatrix * scalingMatrix;
 	glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]);
 	glDrawArrays(GL_TRIANGLES, 0, 36);
+	// end of number 7
+
+	// reset world matrix, rotation matrix, and model scaling matrix after we're done with it for this object
+	modelScalingMatrix = identityMatrix;
+	rotationMatrix = identityMatrix;
+	worldMatrix = identityMatrix;
+	// end of model N7
 
 }
 
@@ -1266,3 +1571,158 @@ void model_O9() {
 	worldMatrix = identityMatrix;
 	// end of model O9
 }
+
+void model_S0() {
+
+	// S
+	shearingMatrix = glm::mat4(1.0f);
+	translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(-0.5f, 0.3f, 0.0f));
+	scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(4.0f, 1.0f, 1.0f));
+	partMatrix = translationMatrix * shearingMatrix * scalingMatrix;
+	worldMatrix = modelTranslationMatrix * modelScalingMatrix * rotationMatrix * partMatrix;
+	glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+
+	shearingMatrix = glm::mat4(1.0f);
+	scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 2.0f, 1.0f));
+	translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(-0.6f, 0.1f, 0.0f));
+	partMatrix = translationMatrix * shearingMatrix * scalingMatrix;
+	worldMatrix = modelTranslationMatrix * modelScalingMatrix * rotationMatrix * partMatrix;
+	glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+
+	translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(-0.5f, 0.0f, 0.0f));
+	scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(3.0f, 1.0f, 1.0f));
+	partMatrix = translationMatrix * shearingMatrix * scalingMatrix;
+	worldMatrix = modelTranslationMatrix * modelScalingMatrix * rotationMatrix * partMatrix;
+	glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+
+	shearingMatrix = glm::mat4(1.0f);
+	scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 2.0f, 1.0f));
+	translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(-0.2, -0.2f, 0.0f));
+	partMatrix = translationMatrix * shearingMatrix * scalingMatrix;
+	worldMatrix = modelTranslationMatrix * modelScalingMatrix * rotationMatrix * partMatrix;
+	glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+
+	translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(-0.6f, -0.3f, 0.0f));
+	scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(4.0f, 1.0f, 1.0f));
+	partMatrix = translationMatrix * shearingMatrix * scalingMatrix;
+	worldMatrix = modelTranslationMatrix * modelScalingMatrix * rotationMatrix * partMatrix;
+	glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+
+
+	// ZERO
+	scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 5.0f, 1.0f));
+	shearingMatrix = glm::mat4(1.0f);
+	translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.1f, -0.2f, 0.0f));
+	partMatrix = translationMatrix * shearingMatrix * scalingMatrix;
+	worldMatrix = modelTranslationMatrix * modelScalingMatrix * rotationMatrix * partMatrix;
+	glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+
+	scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 5.0f, 1.0f));
+	shearingMatrix = glm::mat4(1.0f);
+	translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.5f, -0.2f, 0.0f));
+	partMatrix = translationMatrix * shearingMatrix * scalingMatrix;
+	worldMatrix = modelTranslationMatrix * modelScalingMatrix * rotationMatrix * partMatrix;
+	glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+
+	scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(3.0f, 1.0f, 1.0f));
+	shearingMatrix = glm::mat4(1.0f);
+	translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.2f, 0.3f, 0.0f));
+	partMatrix = translationMatrix * shearingMatrix * scalingMatrix;
+	worldMatrix = modelTranslationMatrix * modelScalingMatrix * rotationMatrix * partMatrix;
+	glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+
+	scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(3.0f, 1.0f, 1.0f));
+	shearingMatrix = glm::mat4(1.0f);
+	translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.2f, -0.3f, 0.0f));
+	partMatrix = translationMatrix * shearingMatrix * scalingMatrix;
+	worldMatrix = modelTranslationMatrix * modelScalingMatrix * rotationMatrix * partMatrix;
+	glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+
+	// End of model S0
+
+	//Reset 
+	modelScalingMatrix = identityMatrix;
+	rotationMatrix = identityMatrix;
+	worldMatrix = identityMatrix;
+}
+
+
+/* WAS NOT WORKING WHEN PASSING PARAMETERS TO METHOD
+void model_Control(GLFWwindow * window, glm::mat4 modelTranslationMatrix, glm::mat4 modelScalingMatrix, glm::mat4 rotationMatrix, glm::mat4 worldMatrix, glm::mat4 partMatrix, float initSize, float modelSize, glm::vec3 initPos, glm::vec3 modelPosition, float angle) {
+	if (glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS) {
+		modelSize += deltaTime * modelSpeed;
+	}
+
+	if (glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS) {
+		modelSize -= deltaTime * modelSpeed;
+	}
+
+	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+	{
+		modelPosition.x -= deltaTime * modelSpeed;
+	}
+
+	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+	{
+		modelPosition.x += deltaTime * modelSpeed;
+	}
+
+	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+	{
+		modelPosition.z += deltaTime * modelSpeed;
+	}
+
+	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+	{
+		modelPosition.z -= deltaTime * modelSpeed;
+	}
+
+	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
+		modelPosition.y += deltaTime * modelSpeed;
+	}
+
+	if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS)
+	{
+		modelPosition.y -= deltaTime * modelSpeed;
+	}
+
+	if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
+	{
+		modelPosition = { 0.0f, 0.0f, 0.0f };
+	}
+
+	if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS && (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT)) == GLFW_PRESS)
+	{
+		modelSize = 0.0f;
+	}
+
+	
+
+
+	if (glfwGetKey(window, GLFW_KEY_G) == GLFW_PRESS)	// rotate right in y-axis
+	{
+		angle = angle - 0.785;
+	}
+	glm::mat4 rotation_Y = {
+					 cos(angle), 0, sin(angle), 0,
+							  0, 1,          0, 0,
+					-sin(angle), 0, cos(angle), 0,
+							  0, 0,          0, 1,
+	};
+
+	modelScalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(modelSize + initSize, modelSize + initSize, modelSize + initSize));
+	modelTranslationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(initPos.x + modelPosition.x, initPos.y + modelPosition.y, initPos.z + modelPosition.z));
+	rotationMatrix = rotation_Y;
+	worldMatrix = modelTranslationMatrix * modelScalingMatrix * rotationMatrix * partMatrix;
+	glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+}
+*/

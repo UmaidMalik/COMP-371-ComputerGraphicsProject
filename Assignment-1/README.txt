@@ -39,34 +39,45 @@
 *		==============================================================
 *
 *
-*
-*		ENTER EITHER 1, 2, 3, 4, 5 TO SELECT MODELS - 0 WILL DESELECT
-*		==============================================================
+*		MODEL CONTROL
+*		ENTER EITHER 1, 2, 3, 4 OR 5 TO SELECT MODELS - 0 WILL SELECT ALL MODELS - LEFT MOUSE CLICK WILL DESELECT ALL MODELS
+*		====================================================================================================================
 *		
-*		W			: MOVE MODEL IN +Z DIRECTION
+*		W						: MOVE MODEL IN +Z DIRECTION
 *
-*		S			: MOVE MODEL IN -Z DIRECTION
+*		S						: MOVE MODEL IN -Z DIRECTION
 *
-*		A			: MOVE MODEL IN -X DIRECTION
+*		A						: MOVE MODEL IN -X DIRECTION
 *
-*		D			: MOVE MODEL IN +X DIRECTION
+*		D						: MOVE MODEL IN +X DIRECTION
 *
-*		X			: MOVE MODEL IN -Y DIRECTION
+*		X						: MOVE MODEL IN -Y DIRECTION
 *
-*		SPACE		: MOVE MODEL IN +Y DIRECTION
+*		SPACE					: MOVE MODEL IN +Y DIRECTION
 *
-*		R			: RESET MODEL TO INITIAL POSITION
+*		R						: RESET MODEL TO INITIAL POSITION
 *
-*		SHIFT + R	: RESET MODEL TO INITIAL SIZE
+*		SHIFT + R				: RESET MODEL TO INITIAL SIZE
 *
-*		U			: UPSCALE MODEL
+*		LCTRL + SHIFT + R		: RESET MODEL ORIENTATION
 *
-*		J			: DOWNSCALE MODEL
+*		U						: UPSCALE MODEL
 *
-*		F			: ROTATE -Y DIRECTION
+*		J						: DOWNSCALE MODEL
 *
-*		G			: ROTATE +Y DIRECTION
+*		T						: ROTATE MODEL +X DIRECTION
 *
-*		SHIFT + WASD: INCREASE MOVEMENT SPEED
+*		Y						: ROTATE MODEL -X DIRECTION
 *
-*		SHIFT + U/J	: INCREASE SCALING SPEED
+*		G						: ROTATE MODEL +Y DIRECTION
+*
+*		H						: ROTATE MODEL -Y DIRECTION
+*
+*		B						: ROTATE MODEL +Z DIRECTION
+*
+*		N						: ROTATE MODEL -Z DIRECTION
+*
+*		SHIFT + W/A/S/D/X/SPACE	: INCREASE MOVEMENT SPEED
+*
+*		SHIFT + U/J				: INCREASE SCALING SPEED
+
