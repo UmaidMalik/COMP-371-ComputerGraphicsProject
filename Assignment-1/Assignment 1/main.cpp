@@ -1266,3 +1266,114 @@ void model_O9() {
 	worldMatrix = identityMatrix;
 	// end of model O9
 }
+void model_M6() {
+			
+			float init_M6_Size = 1.4f;					
+			float model_M6_Size = 0.0f;
+			glm::vec3 initPos_M6(-4.0f, 0.5f, 4.0f);
+			glm::vec3 model_M6_Position(0.0f, 0.0f, 0.0f);
+
+			modelTranslationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(initPos_M6.x + model_M6_Position.x, initPos_M6.y + model_M6_Position.y, initPos_M6.z + model_M6_Position.z));
+			modelScalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(model_M6_Size + init_M6_Size, model_M6_Size + init_M6_Size, model_M6_Size + init_M6_Size));
+			
+			//draw letter M
+				//left upright for letter M
+				scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 5.0f, 1.0f));
+				translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
+				partMatrix = translationMatrix * scalingMatrix;
+				worldMatrix = modelTranslationMatrix * modelScalingMatrix * rotationMatrix * partMatrix;
+				glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+				glDrawArrays(GL_TRIANGLES, 0, 36);
+
+				//left diagonal for letter M
+				shearingMatrix =
+				{
+					1.0, 0.0, 0.0, 0.0,
+					0.35, 1.0, 0.0, 0.0,
+					0.0, 0.0, 1.0, 0.0,
+					0.0, 0.0, 0.0, 1.0,
+				};
+				scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 5.0f, 1.0f));
+				translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.2f, 0.0f, 0.0f));
+				partMatrix = translationMatrix * shearingMatrix * scalingMatrix;
+				worldMatrix = modelTranslationMatrix * modelScalingMatrix * rotationMatrix * partMatrix;
+				glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+				glDrawArrays(GL_TRIANGLES, 0, 36);
+
+				//right diagonal for letter M
+				shearingMatrix =
+				{
+					1.0, 0.0, 0.0, 0.0,
+					-0.35, 1.0, 0.0, 0.0,
+					0.0, 0.0, 1.0, 0.0,
+					0.0, 0.0, 0.0, 1.0,
+				};
+				scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 5.0f, 1.0f));
+				//translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
+				partMatrix = translationMatrix * shearingMatrix * scalingMatrix;
+				worldMatrix = modelTranslationMatrix * modelScalingMatrix * rotationMatrix * partMatrix;
+				glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+				glDrawArrays(GL_TRIANGLES, 0, 36);
+
+				//right upright for letter M
+				shearingMatrix = glm::mat4(1.0f);
+				scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 5.0f, 1.0f));
+				translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.4f, 0.0f, 0.0f));
+				partMatrix = translationMatrix * scalingMatrix;
+				worldMatrix = modelTranslationMatrix * modelScalingMatrix * rotationMatrix * partMatrix;
+				glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+				glDrawArrays(GL_TRIANGLES, 0, 36);
+			//end of M
+
+			//draw 6
+				//vertical segments
+				scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 3.0f, 1.0f));
+				translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.8f, 0.0f, 0.0f));
+				partMatrix = translationMatrix * scalingMatrix;
+				worldMatrix = modelTranslationMatrix * modelScalingMatrix * rotationMatrix * partMatrix;
+				glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+				glDrawArrays(GL_TRIANGLES, 0, 36);
+
+				scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 5.0f, 1.0f));
+				translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.6f, 0.0f, 0.0f));
+				partMatrix = translationMatrix * scalingMatrix;
+				worldMatrix = modelTranslationMatrix * modelScalingMatrix * rotationMatrix * partMatrix;
+				glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+				glDrawArrays(GL_TRIANGLES, 0, 36);
+
+				//horizontal segments
+				scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(2.0f, 1.0f, 1.0f));
+				partMatrix = translationMatrix * scalingMatrix;
+				worldMatrix = modelTranslationMatrix * modelScalingMatrix * rotationMatrix * partMatrix;
+				glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+				glDrawArrays(GL_TRIANGLES, 0, 36);
+
+				scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(2.0f, 1.0f, 1.0f));
+				translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.6f, 0.2f, 0.0f));
+				partMatrix = translationMatrix * scalingMatrix;
+				worldMatrix = modelTranslationMatrix * modelScalingMatrix * rotationMatrix * partMatrix;
+				glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+				glDrawArrays(GL_TRIANGLES, 0, 36);
+
+				scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(3.0f, 1.0f, 1.0f));
+				translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.6f, 0.4f, 0.0f));
+				partMatrix = translationMatrix * scalingMatrix;
+				worldMatrix = modelTranslationMatrix * modelScalingMatrix * rotationMatrix * partMatrix;
+				glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+				glDrawArrays(GL_TRIANGLES, 0, 36);
+			//end 6	
+				
+			// reset world matrix, rotation matrix, and model scaling matrix after we're done with it for this object.
+			// also reset shearing matrix and scaling matrix, so that they work correctly with model_A7().
+			shearingMatrix =
+				{
+					1.0, 0.0, 0.0, 0.0,
+					0.35, 1.0, 0.0, 0.0,
+					0.0, 0.0, 1.0, 0.0,
+					0.0, 0.0, 0.0, 1.0,
+				};
+			scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 5.0f, 1.0f));
+			modelScalingMatrix = identityMatrix;
+			rotationMatrix = identityMatrix;
+			worldMatrix = identityMatrix;
+		}
