@@ -858,7 +858,65 @@ void processInput(GLFWwindow* window)
 			glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, &projectionMatrix[0][0]);
 		}
 	}
-}
+
+	if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
+	
+		cameraVerticalAngle = cameraVerticalAngle + 1;
+		float theta = glm::radians(cameraHorizontalAngle);
+		float phi = glm::radians(cameraVerticalAngle);
+		
+		cameraLookAt = glm::vec3(cosf(phi) * cosf(theta), sinf(phi), cosf(phi) * sinf(theta)); 
+
+		viewMatrix = glm::lookAt(cameraPosition, cameraPosition + cameraLookAt, cameraUp);
+		GLuint viewMatrixLocation = glGetUniformLocation(compileAndLinkShaders(), "viewMatrix");
+		glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
+	}
+
+	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
+		
+		cameraVerticalAngle = cameraVerticalAngle - 1;
+		float theta = glm::radians(cameraHorizontalAngle);
+		float phi = glm::radians(cameraVerticalAngle);
+
+		cameraLookAt = glm::vec3(-cosf(phi) * cosf(theta), sinf(phi), -cosf(phi) * sinf(theta));
+		
+		viewMatrix = glm::lookAt(cameraPosition, cameraPosition + cameraLookAt, cameraUp);
+		GLuint viewMatrixLocation = glGetUniformLocation(compileAndLinkShaders(), "viewMatrix");
+		glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
+	}
+
+	if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) {
+		
+		cameraHorizontalAngle = cameraHorizontalAngle - 2;
+		float theta = glm::radians(cameraHorizontalAngle);
+		float phi = glm::radians(cameraVerticalAngle);
+
+		cameraLookAt = glm::vec3(cosf(phi) * cosf(theta), sinf(phi), -cosf(phi) * sinf(theta));
+		glm::vec3 cameraSideVector = glm::cross(cameraLookAt, glm::vec3(0.0f, 1.0f, 0.0f));
+
+		glm::normalize(cameraSideVector);
+
+		viewMatrix = glm::lookAt(cameraPosition, cameraPosition + cameraLookAt, cameraUp);
+		GLuint viewMatrixLocation = glGetUniformLocation(compileAndLinkShaders(), "viewMatrix");
+		glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
+	}
+
+	if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
+		
+		cameraHorizontalAngle = cameraHorizontalAngle + 2;
+		float theta = glm::radians(cameraHorizontalAngle);
+		float phi = glm::radians(cameraVerticalAngle);
+
+		cameraLookAt = glm::vec3(cosf(phi) * cosf(theta), sinf(phi), -cosf(phi) * sinf(theta));
+		glm::vec3 cameraSideVector = glm::cross(cameraLookAt, glm::vec3(0.0f, 1.0f, 0.0f));
+
+		glm::normalize(cameraSideVector);
+
+		viewMatrix = glm::lookAt(cameraPosition, cameraPosition + cameraLookAt, cameraUp);
+		GLuint viewMatrixLocation = glGetUniformLocation(compileAndLinkShaders(), "viewMatrix");
+		glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
+	}
+}	
 
 // commented because I'm still trying to figure the model movement and scaling with input keys
 void model_A7()
