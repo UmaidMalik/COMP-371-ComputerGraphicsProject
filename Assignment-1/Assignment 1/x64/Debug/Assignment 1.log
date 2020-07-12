@@ -1,9 +1,8 @@
-﻿  glad.c
-  main.cpp
-C:\Users\umaid\Documents\Concordia\Summer 2020\COMP 371\COMP 371 - Project\COMP-371-Project\Assignment-1\Assignment 1\main.cpp(487): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-C:\Users\umaid\Documents\Concordia\Summer 2020\COMP 371\COMP 371 - Project\COMP-371-Project\Assignment-1\Assignment 1\main.cpp(532): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-C:\Users\umaid\Documents\Concordia\Summer 2020\COMP 371\COMP 371 - Project\COMP-371-Project\Assignment-1\Assignment 1\main.cpp(1121): warning C4244: '-=': conversion from 'double' to 'float', possible loss of data
-C:\Users\umaid\Documents\Concordia\Summer 2020\COMP 371\COMP 371 - Project\COMP-371-Project\Assignment-1\Assignment 1\main.cpp(1122): warning C4244: '-=': conversion from 'double' to 'float', possible loss of data
-C:\Users\umaid\Documents\Concordia\Summer 2020\COMP 371\COMP 371 - Project\COMP-371-Project\Assignment-1\Assignment 1\main.cpp(1309): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-C:\Users\umaid\Documents\Concordia\Summer 2020\COMP 371\COMP 371 - Project\COMP-371-Project\Assignment-1\Assignment 1\main.cpp(1323): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-  Assignment 1.vcxproj -> C:\Users\umaid\Documents\Concordia\Summer 2020\COMP 371\COMP 371 - Project\COMP-371-Project\Assignment-1\x64\Debug\Assignment 1.exe
+﻿  main.cpp
+C:\Users\umaid\Documents\Concordia\Summer 2020\COMP 371\COMP 371 - Project\Assignment-1\Assignment 1\main.cpp(489): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\umaid\Documents\Concordia\Summer 2020\COMP 371\COMP 371 - Project\Assignment-1\Assignment 1\main.cpp(534): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\Users\umaid\Documents\Concordia\Summer 2020\COMP 371\COMP 371 - Project\Assignment-1\Assignment 1\main.cpp(1265): warning C4244: '-=': conversion from 'double' to 'float', possible loss of data
+C:\Users\umaid\Documents\Concordia\Summer 2020\COMP 371\COMP 371 - Project\Assignment-1\Assignment 1\main.cpp(1266): warning C4244: '-=': conversion from 'double' to 'float', possible loss of data
+C:\Users\umaid\Documents\Concordia\Summer 2020\COMP 371\COMP 371 - Project\Assignment-1\Assignment 1\main.cpp(1453): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\Users\umaid\Documents\Concordia\Summer 2020\COMP 371\COMP 371 - Project\Assignment-1\Assignment 1\main.cpp(1467): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+  Assignment 1.vcxproj -> C:\Users\umaid\Documents\Concordia\Summer 2020\COMP 371\COMP 371 - Project\Assignment-1\x64\Debug\Assignment 1.exe
