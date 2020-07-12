@@ -313,7 +313,7 @@ int main()
 	};
 
 
-	
+
 	glGenVertexArrays(numbObjInScene, VAO);
 	glGenBuffers(numbObjInScene, VBO);
 
@@ -361,22 +361,22 @@ int main()
 	glEnableVertexAttribArray(1);
 
 	//glBindBuffer(GL_ARRAY_BUFFER, 0);
-	
+
 
 	// grid lines
 
-	
+
 	const float spacing = 10.0f / (float)numGridLines;       // divide the 2.0 world into the number of gridlines
 	float increment = 0.0f;                                 // how much to move a line over
 	const int numDataPoints = 8;                            // this is how many vec3's there are in one gridline (4 vertices with 1 color each)
 	glm::vec3 zLineColor = glm::vec3(1.0f, 0.0f, 1.0f);     // set line color for lines running parallel to z-axis
 	glm::vec3 xLineColor = glm::vec3(1.0f, 1.0f, 0.0f);     // set line color for lines running parallel to x-axis
 	glm::vec3 gridLines[numDataPoints * numGridLines];
-	
+
 
 	for (int i = 0; i < numGridLines; ++i) {
 		// lines parallel to z-axis
-		gridLines[i * numDataPoints ] = glm::vec3(-5.0f + increment, 0.0f, -5.0f);
+		gridLines[i * numDataPoints] = glm::vec3(-5.0f + increment, 0.0f, -5.0f);
 		gridLines[i * numDataPoints + 1] = glm::vec3(zLineColor.x, zLineColor.y, zLineColor.z);
 		gridLines[i * numDataPoints + 2] = glm::vec3(-5.0f + increment, 0.0f, 5.0f);
 		gridLines[i * numDataPoints + 3] = glm::vec3(zLineColor.x, zLineColor.y, zLineColor.z);
@@ -388,7 +388,7 @@ int main()
 
 		increment += spacing;
 	}
-	
+
 	glBindVertexArray(VAO[4]);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO[4]);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(gridLines), gridLines, GL_STATIC_DRAW);
@@ -396,7 +396,7 @@ int main()
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(glm::vec3), (void*)sizeof(glm::vec3));
 	glEnableVertexAttribArray(1);
-	
+
 
 	// bind to nothing so we don't inadvertantly modify something
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -419,7 +419,7 @@ int main()
 	float angle = 0.0f;
 	float rotationSpeed = 90.0f;  // degrees per second
 	float lastFrameTime = glfwGetTime();
-	
+
 
 	// read mouse position
 	glfwGetCursorPos(window, &lastMousePosX, &lastMousePosY);
@@ -450,103 +450,112 @@ int main()
 		lastFrameTime += deltaTime;
 
 
-		
+
 		angle = (angle + rotationSpeed * deltaTime); // angles in degrees, but glm expects radians (conversion below)
-		
+
 		glm::mat4 modelTranslationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(-4.0f, 0.5f, -4.0f));
 		glm::mat4 modelScalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
-		
-		
+
+
 		// press 1 to select model A7
 		bool ONE_KEY_CURRENTLY_PRESSED = glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS;
-			if (ONE_KEY_PRESSED || ONE_KEY_CURRENTLY_PRESSED) 
-			{
-				
-				rotationMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(angle), glm::vec3(0.0f, 1.0f, 0.0f));
-				modelScalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(5.0f, 5.0f, 5.0f));
-				worldMatrix = modelTranslationMatrix * modelScalingMatrix * rotationMatrix * partMatrix;
-				ONE_KEY_PRESSED = ONE_KEY_CURRENTLY_PRESSED;
-			}
-			
+		if (ONE_KEY_PRESSED || ONE_KEY_CURRENTLY_PRESSED)
+		{
 
-		
+			rotationMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(angle), glm::vec3(0.0f, 1.0f, 0.0f));
+			modelScalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(5.0f, 5.0f, 5.0f));
+			worldMatrix = modelTranslationMatrix * modelScalingMatrix * rotationMatrix * partMatrix;
+			ONE_KEY_PRESSED = ONE_KEY_CURRENTLY_PRESSED;
+		}
 
-		
 
-	
+
+
+
+
+
 
 		//rotationMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(angle), glm::vec3(0.0f, 1.0f, 0.0f));
-		
 
-		// call model A7
-		// model_A7();
+
+		//model O 9
 		worldMatrixLocation = glGetUniformLocation(compileAndLinkShaders(), "worldMatrix");
 		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+		
+		//O
+		scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 5.0f, 1.0f));
+		translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(-0.5f, -0.20f, 0.0f));
+		partMatrix = translationMatrix  * scalingMatrix;
+		worldMatrix = modelTranslationMatrix * modelScalingMatrix * rotationMatrix * partMatrix;
+		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 5.0f, 1.0f));
-		shearingMatrix =
-		{
-			1.0, 0.0, 0.0, 0.0,
-			0.35, 1.0, 0.0, 0.0,
-			0.0, 0.0, 1.0, 0.0,
-			0.0, 0.0, 0.0, 1.0,
-		};
-		translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(-0.5f, -0.20f, 0.0f));
-		partMatrix = translationMatrix * shearingMatrix * scalingMatrix;
-		worldMatrix = modelTranslationMatrix * modelScalingMatrix * rotationMatrix * partMatrix;
-		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-
-
-		shearingMatrix =
-		{
-			1.0, 0.0, 0.0, 0.0,
-			-0.35, 1.0, 0.0, 0.0,
-			0.0, 0.0, 1.0, 0.0,
-			0.0, 0.0, 0.0, 1.0,
-		};
 		translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(-0.1f, -0.20f, 0.0f));
-		partMatrix = translationMatrix * shearingMatrix * scalingMatrix;
+		partMatrix = translationMatrix * scalingMatrix;
 		worldMatrix = modelTranslationMatrix * modelScalingMatrix * rotationMatrix * partMatrix;
 		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
-
-		shearingMatrix = glm::mat4(1.0f);
-		scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(2.0f, 0.75f, 1.0f));
-		translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(-0.35f, -0.05f, 0.0f));
-		partMatrix = translationMatrix * shearingMatrix * scalingMatrix;
+		scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(3.0f, 0.75f, 1.0f));
+		translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(-0.4f, -0.20f, 0.0f));
+		partMatrix = translationMatrix * scalingMatrix;
 		worldMatrix = modelTranslationMatrix * modelScalingMatrix * rotationMatrix * partMatrix;
 		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
-
-		shearingMatrix =
-		{
-			1.0, 0.0, 0.0, 0.0,
-			0.3, 1.0, 0.0, 0.0,
-			0.0, 0.0, 1.0, 0.0,
-			0.0, 0.0, 0.0, 1.0,
-		};
-		scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 4.0f, 1.0f));
-		translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.2f, -0.2f, 0.0f));
-		partMatrix = translationMatrix * shearingMatrix * scalingMatrix;
+		scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(3.0f, 0.75f, 1.0f));
+		translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(-0.4f, 0.225f, 0.0f));
+		partMatrix = translationMatrix * scalingMatrix;
 		worldMatrix = modelTranslationMatrix * modelScalingMatrix * rotationMatrix * partMatrix;
 		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
-
-		shearingMatrix = glm::mat4(1.0f);
-		scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(3.0f, 1.0f, 1.0f));
-		translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.12f, 0.2f, 0.0f));
-		partMatrix = translationMatrix * shearingMatrix * scalingMatrix;
+		//9
+		
+		scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(4.0f, 0.75f, 1.0f));
+		translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.12f, 0.225f, 0.0f));
+		partMatrix = translationMatrix * scalingMatrix;
 		worldMatrix = modelTranslationMatrix * modelScalingMatrix * rotationMatrix * partMatrix;
 		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(3.0f, 0.75f, 1.0f));
+		translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.12f, -0.025f, 0.0f));
+		partMatrix = translationMatrix * scalingMatrix;
+		worldMatrix = modelTranslationMatrix * modelScalingMatrix * rotationMatrix * partMatrix;
+		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(3.0f, 0.75f, 1.0f));
+		translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.12f, -0.20f, 0.0f));
+		partMatrix = translationMatrix * scalingMatrix;
+		worldMatrix = modelTranslationMatrix * modelScalingMatrix * rotationMatrix * partMatrix;
+		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		//vertical
+		//right
+		scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 5.0f, 1.0f));
+		translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.42f, -0.20f, 0.0f));
+		partMatrix = translationMatrix * scalingMatrix;
+		worldMatrix = modelTranslationMatrix * modelScalingMatrix * rotationMatrix * partMatrix;
+		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+		
+		scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(0.75f, -2.0f, 1.0f));
+		translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.12f, 0.225f, 0.0f));
+		partMatrix = translationMatrix * scalingMatrix;
+		worldMatrix = modelTranslationMatrix * modelScalingMatrix * rotationMatrix * partMatrix;
+		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+	
+		
 
 		// reset world matrix after we're done with it for this object
 		worldMatrix = glm::mat4(1.0f);
-		
+
 		// end of model A7
 
 
@@ -576,7 +585,7 @@ int main()
 		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
 		glDrawArrays(GL_LINES, 0, 2 * 2 * numGridLines);
 
-		
+
 
 		// check and call events and swap the buffers
 		glfwSwapBuffers(window);
@@ -586,7 +595,7 @@ int main()
 		// Detect inputs
 		processInput(window); // input
 
-		
+
 
 		// press 2 to select model (your letter) 
 		if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS)
@@ -619,7 +628,7 @@ int main()
 			rotationMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(angle), glm::vec3(0.0f, 1.0f, 0.0f));
 			worldMatrix = modelTranslationMatrix * modelScalingMatrix * rotationMatrix * partMatrix;
 		}
-		
+
 	}
 
 	// de-allocate all resources
@@ -634,12 +643,12 @@ int main()
 
 
 
-void framebuffer_size_callback(GLFWwindow * window, int width, int height)
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
 	glViewport(0, 0, width, height);
 }
 
-void processInput(GLFWwindow * window)
+void processInput(GLFWwindow* window)
 {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
@@ -820,7 +829,7 @@ void processInput(GLFWwindow * window)
 		glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
 	}
 	*/
-	
+
 	// Press = to Zoom In
 	if (glfwGetKey(window, GLFW_KEY_EQUAL) == GLFW_PRESS) {
 		//std::cout << fov << std::endl;
@@ -918,10 +927,10 @@ void model_A7()
 	worldMatrix = rotationMatrix * partMatrix;
 	glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
 	glDrawArrays(GL_TRIANGLES, 0, 36);
-	
-	
-	
-	
+
+
+
+
 	// reset world matrix after we're done with it for this object
 	worldMatrix = glm::mat4(1.0f);
 	*/
