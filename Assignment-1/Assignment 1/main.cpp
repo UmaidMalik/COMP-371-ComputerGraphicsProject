@@ -1301,33 +1301,36 @@ void processInput(GLFWwindow * window)
 
 	if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
 
-		cameraVerticalAngle = cameraVerticalAngle + 3;
+		cameraVerticalAngle = cameraVerticalAngle + 1;
 		float theta = glm::radians(cameraHorizontalAngle);
 		float phi = glm::radians(cameraVerticalAngle);
-		if (cameraVerticalAngle == 270)
-		{
-			theta = glm::radians(cameraHorizontalAngle + 180.0f);
+
+		float temp = cameraUp.y;
+		if ((int)cameraVerticalAngle % 180 == 0) {
+			phi = glm::radians(cameraVerticalAngle - 90);
 		}
-		cameraLookAt = glm::vec3(cosf(phi) * cosf(theta), sinf(phi), cosf(phi) * sinf(theta));
-
-		viewMatrix = glm::lookAt(cameraPosition, cameraPosition + cameraLookAt, cameraUp);
-		GLuint viewMatrixLocation = glGetUniformLocation(compileAndLinkShaders(), "viewMatrix");
-		glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
-	}
-
-	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
-
-
-		cameraVerticalAngle = cameraVerticalAngle - 3;
-		float theta = glm::radians(cameraHorizontalAngle);
-		float phi = glm::radians(cameraVerticalAngle);
-
 		cameraLookAt = glm::vec3(-cosf(phi) * cosf(theta), sinf(phi), -cosf(phi) * sinf(theta));
 
 		viewMatrix = glm::lookAt(cameraPosition, cameraPosition + cameraLookAt, cameraUp);
 		GLuint viewMatrixLocation = glGetUniformLocation(compileAndLinkShaders(), "viewMatrix");
 		glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
 
+	}
+
+	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
+
+
+		cameraVerticalAngle = cameraVerticalAngle - 1;
+		float theta = glm::radians(cameraHorizontalAngle);
+		float phi = glm::radians(cameraVerticalAngle);
+		if ((int)cameraVerticalAngle % 180 == 0) {
+			phi = glm::radians(cameraVerticalAngle - 90);
+		}
+		cameraLookAt = glm::vec3(-cosf(phi) * cosf(theta), sinf(phi), -cosf(phi) * sinf(theta));
+
+		viewMatrix = glm::lookAt(cameraPosition, cameraPosition + cameraLookAt, cameraUp);
+		GLuint viewMatrixLocation = glGetUniformLocation(compileAndLinkShaders(), "viewMatrix");
+		glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
 	}
 
 	if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) {

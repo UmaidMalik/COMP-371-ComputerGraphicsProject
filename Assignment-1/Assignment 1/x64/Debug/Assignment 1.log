@@ -3,6 +3,6 @@ C:\Users\umaid\Documents\Concordia\Summer 2020\COMP 371\COMP 371 - Project\Assig
 C:\Users\umaid\Documents\Concordia\Summer 2020\COMP 371\COMP 371 - Project\Assignment-1\Assignment 1\main.cpp(563): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
 C:\Users\umaid\Documents\Concordia\Summer 2020\COMP 371\COMP 371 - Project\Assignment-1\Assignment 1\main.cpp(1138): warning C4244: '-=': conversion from 'double' to 'float', possible loss of data
 C:\Users\umaid\Documents\Concordia\Summer 2020\COMP 371\COMP 371 - Project\Assignment-1\Assignment 1\main.cpp(1139): warning C4244: '-=': conversion from 'double' to 'float', possible loss of data
-C:\Users\umaid\Documents\Concordia\Summer 2020\COMP 371\COMP 371 - Project\Assignment-1\Assignment 1\main.cpp(1379): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-C:\Users\umaid\Documents\Concordia\Summer 2020\COMP 371\COMP 371 - Project\Assignment-1\Assignment 1\main.cpp(1393): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\Users\umaid\Documents\Concordia\Summer 2020\COMP 371\COMP 371 - Project\Assignment-1\Assignment 1\main.cpp(1382): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\Users\umaid\Documents\Concordia\Summer 2020\COMP 371\COMP 371 - Project\Assignment-1\Assignment 1\main.cpp(1396): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
   Assignment 1.vcxproj -> C:\Users\umaid\Documents\Concordia\Summer 2020\COMP 371\COMP 371 - Project\Assignment-1\x64\Debug\Assignment 1.exe
