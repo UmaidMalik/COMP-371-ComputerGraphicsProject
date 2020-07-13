@@ -172,7 +172,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 // models
-void model_N7(int shaderProgram, float scalingFactor, float rotation_angle, glm::vec3 worldPosition);
+void model_N7(int shaderProgram, float scalingFactor, float rotationAngle, glm::mat4 rotationMat, glm::vec3 worldPosition);
 void model_A7();
 void model_O9();
 void model_S0();
@@ -527,12 +527,20 @@ int main()
 	
 
 	// These are for model N7 and need to live outside the loop (Dan was a bit different and changes position by altering parameters to the function)
-	const glm::vec3 N7_init = glm::vec3(0.5f, 0.0f, 0.5f);       // { x, y, z, scaling }
-	const float N7_init_scaling = 2.0f;
-	const float N7_init_angle = 0.0f;
+	const glm::vec3 N7_init = glm::vec3(0.05f, 0.0f, -0.25f);     // { x, y, z, scaling }
 	glm::vec3 N7_change = glm::vec3(0.0f, 0.0f, 0.0f);           // { x, y, z, scaling }
+
+	const float N7_init_scaling = 2.0f;
 	float N7_change_scaling = 0.0f;
+
+	const float N7_init_angle = 0.0f;
 	float N7_change_angle = 0.0f;
+	glm::vec3 rotationAxes = glm::vec3(1.0f, 0.0f, 0.0f);
+
+	glm::vec3 N7_theta(0.0f, 0.0f, 0.0f);
+	glm::mat4 N7_rotation_X;
+	glm::mat4 N7_rotation_Y;
+	glm::mat4 N7_rotation_Z;
 	
 	
 	// render loop
@@ -923,6 +931,30 @@ int main()
 		// beginning of model N7
 		float frameChangeAmount = deltaTime * modelSpeed;
 
+		N7_rotation_X = {
+									  1,            0,             0, 0,
+									  0, cos(N7_theta.x), -sin(N7_theta.x), 0,
+									  0, sin(N7_theta.x),  cos(N7_theta.x), 0,
+									  0,            0,             0, 1,
+		};
+
+		N7_rotation_Y = {
+								  cos(N7_theta.y),  0, sin(N7_theta.y), 0,
+											 0,  1,            0, 0,
+								 -sin(N7_theta.y),  0, cos(N7_theta.y), 0,
+											 0,  0,            0, 1,
+		};
+
+		N7_rotation_Z = {
+					   cos(N7_theta.z), -sin(N7_theta.z), 0, 0,
+					   sin(N7_theta.z),  cos(N7_theta.z), 0, 0,
+								  0,             0, 1, 0,
+								  0,             0, 0, 1,
+		};
+
+		rotationMatrix = N7_rotation_X * N7_rotation_Y * N7_rotation_Z;
+
+
 		if (FIVE_KEY_PRESSED) {
 			if (glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS)       // UPSCALE MODEL
 				N7_change_scaling += frameChangeAmount;
@@ -941,18 +973,31 @@ int main()
 			if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)   // MOVE MODEL IN + Y DIRECTION
 				N7_change.y += frameChangeAmount;
 			if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS &&     // RESET MODEL TO INITIAL POSITION
-				glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE)
+				glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE) {
 				N7_change = glm::vec3(0.0f, 0.0f, 0.0f);
+				N7_theta.x = 0.0f;
+				N7_theta.y = 0.0f;
+				N7_theta.z = 0.0f;
+			}
 			if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS &&     // RESET MODEL TO INITIAL SIZE
 				(glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT)) == GLFW_PRESS)
 				N7_change_scaling = 0.0f;
-			if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS)   	// rotate left in y-axis
-				N7_change_angle -= frameChangeAmount;
+			if (glfwGetKey(window, GLFW_KEY_H) == GLFW_PRESS)    	// rotate left in y-axis
+				N7_theta.y -= frameChangeAmount;
 			if (glfwGetKey(window, GLFW_KEY_G) == GLFW_PRESS)	    // rotate right in y-axis
-				N7_change_angle += frameChangeAmount;
+				N7_theta.y += frameChangeAmount;
+			if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS)	    // rotate left in x-axis
+				N7_theta.x -= frameChangeAmount;
+			if (glfwGetKey(window, GLFW_KEY_Y) == GLFW_PRESS)	    // rotate right in x-axis
+				N7_theta.x += frameChangeAmount;
+			if (glfwGetKey(window, GLFW_KEY_B) == GLFW_PRESS)	    // rotate left in z-axis
+				N7_theta.z -= frameChangeAmount;
+			if (glfwGetKey(window, GLFW_KEY_N) == GLFW_PRESS)	    // rotate right in z-axis
+				N7_theta.z += frameChangeAmount;
 		}
 
-		model_N7(shaderProgram, N7_init_scaling + N7_change_scaling, N7_init_angle + N7_change_angle,
+
+		model_N7(shaderProgram, (N7_init_scaling + N7_change_scaling), (N7_init_angle + N7_change_angle), rotationMatrix,
 			glm::vec3(N7_init.x + N7_change.x, N7_init.y + N7_change.y, N7_init.z + N7_change.z));
 		// end of model N7
 
@@ -1304,13 +1349,15 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 	ScalingFactor is undefined for negative values although permitted.
 
 */
-void model_N7(int shaderProgram, float scalingFactor, float rotation_angle, glm::vec3 worldPosition) {
+void model_N7(int shaderProgram, float scalingFactor, float rotationAngle, glm::mat4 rotationMat, glm::vec3 worldPosition) {
 
 	// these will grow the model
 	float x_scaling = 0.5f * scalingFactor;
 	float y_scaling = 2.5f * scalingFactor;
 	float z_scaling = 0.5f * scalingFactor;
 
+	// this matrix rotates the model about itself
+	//spinMatrix = glm::mat4(1.0f);
 
 	glm::mat4 modelMatrix = glm::mat4(1.0f);
 	worldMatrixLocation = glGetUniformLocation(shaderProgram, "worldMatrix");
@@ -1327,14 +1374,14 @@ void model_N7(int shaderProgram, float scalingFactor, float rotation_angle, glm:
 	// Left leg of "N" (parent)
 	translationMatrix = translate_N;
 	scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(x_scaling, y_scaling, z_scaling));
-	modelMatrix = translate_final * rotationMatrix * translationMatrix * scalingMatrix;
+	modelMatrix = translate_final * rotationMat * translationMatrix * scalingMatrix;
 	glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]);
 	glDrawArrays(GL_TRIANGLES, 0, 36);
 
 	// Left right of "N".
 	translate_N_child = glm::translate(glm::mat4(1.0f), glm::vec3(0.174f * scalingFactor, 0.0f * scalingFactor, 0.0f * scalingFactor));
 	translationMatrix = translate_N_child * translate_N;
-	modelMatrix = translate_final * rotationMatrix * translationMatrix * scalingMatrix;
+	modelMatrix = translate_final * rotationMat * translationMatrix * scalingMatrix;
 	glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]);
 	glDrawArrays(GL_TRIANGLES, 0, 36);
 
@@ -1347,7 +1394,7 @@ void model_N7(int shaderProgram, float scalingFactor, float rotation_angle, glm:
 		0.0, 0.0, 0.0, 1.0,
 	};
 	translationMatrix = translate_N_child * translate_N;
-	modelMatrix = translate_final * rotationMatrix * shearingMatrix * translationMatrix * scalingMatrix;
+	modelMatrix = translate_final * rotationMat * shearingMatrix * translationMatrix * scalingMatrix;
 	glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]);
 	glDrawArrays(GL_TRIANGLES, 0, 36);
 
@@ -1364,7 +1411,7 @@ void model_N7(int shaderProgram, float scalingFactor, float rotation_angle, glm:
 	};
 	translationMatrix = translate_7;
 	scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(x_scaling, y_scaling, z_scaling));
-	modelMatrix = translate_final * rotationMatrix * shearingMatrix * translationMatrix * scalingMatrix;
+	modelMatrix = translate_final * rotationMat * shearingMatrix * translationMatrix * scalingMatrix;
 	glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]);
 	glDrawArrays(GL_TRIANGLES, 0, 36);
 
@@ -1372,7 +1419,7 @@ void model_N7(int shaderProgram, float scalingFactor, float rotation_angle, glm:
 	scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(0.60 * y_scaling, x_scaling, x_scaling));
 	translate_7_child = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.2 * scalingFactor, 0.0f));
 	translationMatrix = translate_7_child * translate_7;
-	modelMatrix = translate_final * rotationMatrix * translationMatrix * scalingMatrix;
+	modelMatrix = translate_final * rotationMat * translationMatrix * scalingMatrix;
 	glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]);
 	glDrawArrays(GL_TRIANGLES, 0, 36);
 
