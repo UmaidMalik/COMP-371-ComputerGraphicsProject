@@ -3,9 +3,9 @@
 *
 *	Umaid Malik 27576110
 *	Daniel Thibault-Shea 40073133
-*	(name & id)
-*	(name & id)
-*	(name & id)
+*	Noor Alali
+*	Vishal Senewiratne
+*	Dominic Hart
 *
 *	CONTROLS:
 
@@ -97,6 +97,9 @@
 *		SHIFT + W/A/S/D/X/SPACE	: INCREASE MOVEMENT SPEED
 *
 *		SHIFT + U/J				: INCREASE SCALING SPEED
+*
+*
+*		ARROW UP/DOWN/LEFT/RIGHT: ORIENTATION CONTROL
 */
 
 #include <iostream>
@@ -118,7 +121,7 @@ const int numGridLines = 100;                           // how many gridlines (g
 
 glm::vec3 initialCameraPosition(0.6f, 1.0f, 1.5f);
 glm::vec3 initialcameraLookAt(0.0f, 0.0f, -1.0f);
-const glm::vec3 cameraUp(0.0f, 1.0f, 0.0f);
+glm::vec3 cameraUp(0.0f, 1.0f, 0.0f);
 
 glm::vec3 center(0.0f, 0.0f, 0.0f);
 
@@ -388,7 +391,6 @@ int main()
 		glm::vec3(0.0f, 0.0f, axisLineLength), glm::vec3(0.0f, 0.0f, 1.0f),
 	};
 
-
 	
 	glGenVertexArrays(numbObjInScene, VAO);
 	glGenBuffers(numbObjInScene, VBO);
@@ -436,7 +438,7 @@ int main()
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(glm::vec3), (void*)sizeof(glm::vec3));
 	glEnableVertexAttribArray(1);
 
-	//glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	
 
 	// grid lines
@@ -1036,10 +1038,8 @@ int main()
 		glfwPollEvents();
 
 		// Detect inputs
-		processInput(window); // input
+		processInput(window); 
 
-		
-		
 	}
 
 	// de-allocate all resources
@@ -1122,7 +1122,7 @@ void processInput(GLFWwindow * window)
 		// disable mouse cursor
 		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-		// first person camera
+		// detect mouse input
 		double mousePosX, mousePosY;
 		glfwGetCursorPos(window, &mousePosX, &mousePosY);
 
@@ -1210,9 +1210,6 @@ void processInput(GLFWwindow * window)
 		viewMatrix = lookAt(cameraPosition, cameraPosition + cameraLookAt, cameraUp);
 		GLuint viewMatrixLocation = glGetUniformLocation(compileAndLinkShaders(), "viewMatrix");
 		glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
-
-
-		// reset camera orientation
 
 	}
 

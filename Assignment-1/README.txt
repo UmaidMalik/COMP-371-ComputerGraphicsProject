@@ -1,5 +1,13 @@
 *	CONTROLS:
+
+*		VIEW SELECTION CONTROLS
+*		==============================================================
 *
+*       ESCAPE              : QUIT PROGRAM
+*
+*		==============================================================
+*
+
 *		X					: MOVE NEGATIVE Y-DIRECTION
 *
 *		SPACE				: MOVE POSITIVE Y-DIRECTION
@@ -80,4 +88,6 @@
 *		SHIFT + W/A/S/D/X/SPACE	: INCREASE MOVEMENT SPEED
 *
 *		SHIFT + U/J				: INCREASE SCALING SPEED
-
+*
+*
+*		ARROW UP/DOWN/LEFT/RIGHT: ORIENTATION CONTROL
