@@ -436,7 +436,7 @@ int main()
 	// render loop
 	while (!glfwWindowShouldClose(window))
 	{
-
+	
 		//  background color
 		//	glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClearColor(0.28f, 0.68f, 0.82f, 1.0f);	// sky blue color
@@ -861,10 +861,13 @@ void processInput(GLFWwindow* window)
 
 	if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
 	
-		cameraVerticalAngle = cameraVerticalAngle + 1;
+		cameraVerticalAngle = cameraVerticalAngle + 3;
 		float theta = glm::radians(cameraHorizontalAngle);
 		float phi = glm::radians(cameraVerticalAngle);
-		
+		if (cameraVerticalAngle == 270)
+		{
+			theta = glm::radians(cameraHorizontalAngle+180.0f);
+		}
 		cameraLookAt = glm::vec3(cosf(phi) * cosf(theta), sinf(phi), cosf(phi) * sinf(theta)); 
 
 		viewMatrix = glm::lookAt(cameraPosition, cameraPosition + cameraLookAt, cameraUp);
@@ -874,20 +877,22 @@ void processInput(GLFWwindow* window)
 
 	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
 		
-		cameraVerticalAngle = cameraVerticalAngle - 1;
+	
+		cameraVerticalAngle = cameraVerticalAngle - 3;
 		float theta = glm::radians(cameraHorizontalAngle);
 		float phi = glm::radians(cameraVerticalAngle);
 
 		cameraLookAt = glm::vec3(-cosf(phi) * cosf(theta), sinf(phi), -cosf(phi) * sinf(theta));
-		
+
 		viewMatrix = glm::lookAt(cameraPosition, cameraPosition + cameraLookAt, cameraUp);
 		GLuint viewMatrixLocation = glGetUniformLocation(compileAndLinkShaders(), "viewMatrix");
 		glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
+		
 	}
 
 	if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) {
 		
-		cameraHorizontalAngle = cameraHorizontalAngle - 2;
+		cameraHorizontalAngle = cameraHorizontalAngle - 3;
 		float theta = glm::radians(cameraHorizontalAngle);
 		float phi = glm::radians(cameraVerticalAngle);
 
@@ -903,7 +908,7 @@ void processInput(GLFWwindow* window)
 
 	if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
 		
-		cameraHorizontalAngle = cameraHorizontalAngle + 2;
+		cameraHorizontalAngle = cameraHorizontalAngle + 3;
 		float theta = glm::radians(cameraHorizontalAngle);
 		float phi = glm::radians(cameraVerticalAngle);
 
