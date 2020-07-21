@@ -793,7 +793,12 @@ void processInput(GLFWwindow * window)
 		cameraPosition = initialCameraPosition;
 		cameraLookAt = initialcameraLookAt;
 
+		// world angle/orientation
+		worldOrientation_X = identityMatrix;
+		worldOrientation_Y = identityMatrix;
 		worldOrientationMatrix = identityMatrix;
+		worldRotation = { 0.0f, 0.0f, 0.0f };
+
 		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
 
 		viewMatrix = lookAt(cameraPosition, cameraPosition + cameraLookAt, cameraUp);
