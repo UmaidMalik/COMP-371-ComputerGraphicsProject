@@ -111,6 +111,7 @@
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/transform2.hpp>    // holds shearing matrix function
 #include <glm/gtc/type_ptr.hpp>
 #include <vector>
 #include "Sphere.h"
@@ -1025,27 +1026,16 @@ void model_A7(GLuint textureLocation, GLuint texture_1, GLuint texture_2, bool i
     }
 
 	scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 5.0f, 1.0f));
-	shearingMatrix =
-	{
-		1.0, 0.0, 0.0, 0.0,
-		0.35, 1.0, 0.0, 0.0,
-		0.0, 0.0, 1.0, 0.0,
-		0.0, 0.0, 0.0, 1.0,
-	};
+    shearingMatrix = glm::shearX2D(mat3(), 0.35f);
+
 	translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(-0.5f, -0.20f, 0.0f));
 	partMatrix = translationMatrix * shearingMatrix * scalingMatrix;
 	worldMatrix = modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
 	glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
 	glDrawArrays(GL_TRIANGLES, 0, 36);
 
+    shearingMatrix = glm::shearX2D(mat3(), -0.35f);
 
-	shearingMatrix =
-	{
-		1.0, 0.0, 0.0, 0.0,
-		-0.35, 1.0, 0.0, 0.0,
-		0.0, 0.0, 1.0, 0.0,
-		0.0, 0.0, 0.0, 1.0,
-	};
 	translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(-0.1f, -0.20f, 0.0f));
 	partMatrix = translationMatrix * shearingMatrix * scalingMatrix;
 	worldMatrix = modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
@@ -1068,13 +1058,8 @@ void model_A7(GLuint textureLocation, GLuint texture_1, GLuint texture_2, bool i
         glUniform1i(textureLocation, 0);                // Set our Texture sampler to user Texture Unit 0
     }
 
-	shearingMatrix =
-	{
-		1.0, 0.0, 0.0, 0.0,
-		0.3, 1.0, 0.0, 0.0,
-		0.0, 0.0, 1.0, 0.0,
-		0.0, 0.0, 0.0, 1.0,
-	};
+    shearingMatrix = glm::shearX2D(mat3(), 0.3f);
+
 	scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 4.0f, 1.0f));
 	translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.2f, -0.2f, 0.0f));
 	partMatrix = translationMatrix * shearingMatrix * scalingMatrix;
@@ -1312,13 +1297,8 @@ void model_M6(GLuint textureLocation, GLuint texture_1, GLuint texture_2, bool i
 	glDrawArrays(GL_TRIANGLES, 0, 36);
 
 	//left diagonal for letter M
-	shearingMatrix =
-	{
-		1.0, 0.0, 0.0, 0.0,
-		0.35, 1.0, 0.0, 0.0,
-		0.0, 0.0, 1.0, 0.0,
-		0.0, 0.0, 0.0, 1.0,
-	};
+    shearingMatrix = glm::shearX2D(mat3(), 0.35f);
+
 	scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 5.0f, 1.0f));
 	translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(-0.3f, -0.2f, 0.0f));
 	partMatrix = translationMatrix * shearingMatrix * scalingMatrix;
@@ -1327,13 +1307,8 @@ void model_M6(GLuint textureLocation, GLuint texture_1, GLuint texture_2, bool i
 	glDrawArrays(GL_TRIANGLES, 0, 36);
 
 	//right diagonal for letter M
-	shearingMatrix =
-	{
-		1.0, 0.0, 0.0, 0.0,
-		-0.35, 1.0, 0.0, 0.0,
-		0.0, 0.0, 1.0, 0.0,
-		0.0, 0.0, 0.0, 1.0,
-	};
+    shearingMatrix = glm::shearX2D(mat3(), -0.35f);
+
 	scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 5.0f, 1.0f));
 	//translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
 	partMatrix = translationMatrix * shearingMatrix * scalingMatrix;
@@ -1396,13 +1371,7 @@ void model_M6(GLuint textureLocation, GLuint texture_1, GLuint texture_2, bool i
 
 	// reset world matrix, rotation matrix, and model scaling matrix after we're done with it for this object.
 	// also reset shearing matrix and scaling matrix, so that they work correctly with model_A7().
-	shearingMatrix =
-	{
-		1.0, 0.0, 0.0, 0.0,
-		0.35, 1.0, 0.0, 0.0,
-		0.0, 0.0, 1.0, 0.0,
-		0.0, 0.0, 0.0, 1.0,
-	};
+    shearingMatrix = glm::shearX2D(mat3(), 0.35f);
 	scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 5.0f, 1.0f));
 	modelScalingMatrix = identityMatrix;
 	modelRotationMatrix = identityMatrix;
@@ -1441,7 +1410,7 @@ void model_N7(GLuint textureLocation, GLuint texture_1, GLuint texture_2, bool i
     glDrawArrays(GL_TRIANGLES, 0, 36);
 
     // Diagonal of 'N'
-    shearingMatrix[1][0] = -0.7f;
+    shearingMatrix = glm::shearX2D(mat3(), -0.7f);
     partMatrix = translationMatrix * shearingMatrix * scalingMatrix;
     worldMatrix = modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
     glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
@@ -1454,7 +1423,7 @@ void model_N7(GLuint textureLocation, GLuint texture_1, GLuint texture_2, bool i
 
     // Diagonal base of '7'
     translationMatrix[3][0] = left_of_origin + 0.35f + letterSpacing;
-    shearingMatrix[1][0] = 0.5f;
+    shearingMatrix = glm::shearX2D(mat3(), 0.5f);
     partMatrix = translationMatrix * shearingMatrix * scalingMatrix;
     worldMatrix = modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
     glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
@@ -1462,7 +1431,7 @@ void model_N7(GLuint textureLocation, GLuint texture_1, GLuint texture_2, bool i
 
     // Horizontal top of '7'
     scalingMatrix = scale(identityMatrix, vec3(1.0f, 2.5f, 1.0f));
-    shearingMatrix[1][0] = 0.0f;
+    shearingMatrix = identityMatrix;
     translationMatrix[3][0] = left_of_origin + 0.6f + letterSpacing;
     translationMatrix[3][1] = 0.4f;
     mat4 seven_top_rotate = rotate(identityMatrix, radians(90.0f), vec3(0.0f, 0.0f, 1.0f));
