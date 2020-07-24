@@ -3,14 +3,10 @@
 *		VIEW SELECTION CONTROLS
 *		==============================================================
 *
-*       	ESCAPE              : QUIT PROGRAM
+*       ESCAPE              : QUIT PROGRAM
 *
 *		==============================================================
-*
-
-*		X					: MOVE NEGATIVE Y-DIRECTION
-*
-*		SPACE					: MOVE POSITIVE Y-DIRECTION
+*		X					: TOGGLE TEXTURE ON/OFF
 *
 *		Q					: PERSPECTIVE PROJECTION
 *
@@ -41,8 +37,12 @@
 *		A		: MOVE LEFT
 *
 *		D		: MOVE RIGHT
+*		
+*		X		: MOVE NEGATIVE Y-DIRECTION
 *
-*		SHIFT	: INCREASE MOVEMENT SPEED
+*		SPACE		: MOVE POSITIVE Y-DIRECTION
+*
+*		SHIFT		: INCREASE MOVEMENT SPEED
 *
 *		==============================================================
 *
@@ -51,8 +51,8 @@
 *		ENTER EITHER 1, 2, 3, 4 OR 5 TO SELECT MODELS - 0 WILL SELECT ALL MODELS - LEFT MOUSE CLICK WILL DESELECT ALL MODELS
 *		====================================================================================================================
 *
-*		TAB						: TOGGLE BETWEEN INCREMENTAL OR CONTINUOUS MOVEMENT 
-*		
+*		TAB						: TOGGLE BETWEEN INCREMENTAL OR CONTINUOUS MOVEMENT
+*
 *		W						: MOVE MODEL IN +Z DIRECTION
 *
 *		S						: MOVE MODEL IN -Z DIRECTION
@@ -61,7 +61,7 @@
 *
 *		D						: MOVE MODEL IN +X DIRECTION
 *
-*		X						: MOVE MODEL IN -Y DIRECTION
+*		Z						: MOVE MODEL IN -Y DIRECTION
 *
 *		SPACE						: MOVE MODEL IN +Y DIRECTION
 *
