@@ -100,7 +100,7 @@
 *
 *		SHIFT + U/J				: INCREASE SCALING SPEED
 *
-*		ALT						: RANDOMIZE THE POSITION OF THE MODEL WITHIN THE GRID AREA
+*		ALT						: RANDOMIZE THE POSITION OF THE SELECTED MODEL WITHIN THE GRID AREA
 *
 *		ARROW UP				: +Y ORIENTATION
 *
@@ -122,7 +122,6 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <vector>
-#include "Sphere.h"
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
@@ -247,7 +246,6 @@ GLuint loadTexture(const char *filename);
 
 // models
 int createTexturedCubeVertexArrayObject(TexturedColoredVertex* texturedCubeVertexArray, GLuint size);
-int createPointLightSource(glm::vec3* lightSource, GLuint size);
 void model_ground(float groundSize, GLuint textureLocation, GLuint texture, bool isTextureOn);
 void model_A7(GLuint textureLocation, GLuint texture_1, GLuint texture_2, bool isTextureOn);
 void model_O9(GLuint textureLocation, GLuint texture_1, GLuint texture_2, bool isTextureOn);
@@ -262,7 +260,7 @@ void drawAxisLines(GLuint shaderProgram);
 
 // control function for the models 
 void modelControl(GLFWwindow* window, unsigned int* shaderProgram, const float& initSize, float& modelSize, glm::vec3& initPos,
-	glm::vec3& modelPos, glm::vec3& rotation, glm::mat4& rotX, glm::mat4& rotY, glm::mat4& rotZ, const float ANGLE, bool KEY_PRESSED);
+	glm::vec3& modelPos, glm::vec3& rotation, glm::mat4& rotX, glm::mat4& rotY, glm::mat4& rotZ, const float ANGLE, bool KEY_PRESSED, glm::vec3& color);
 
 GLFWwindow* setupWindow();
 
@@ -278,9 +276,9 @@ const char* getVertexShaderSource()
 		"layout (location = 3) in vec3 aNormal;"
 		""
 		"uniform mat4 worldMatrix;"
-		"uniform mat4 viewMatrix = mat4(1.0);" // default value for view matrix (identity)
-		"uniform mat4 projectionMatrix = mat4(1.0);"
-		""
+		"uniform mat4 viewMatrix;"
+		"uniform mat4 projectionMatrix;"
+
 		"out vec3 vertexColor;"
 		"void main()"
 		"{"
@@ -321,7 +319,7 @@ const char* getTexturedVertexShaderSource()
         "out vec2 vertexUV;"
 		"out vec3 Normal;"
 		"out vec3 FragPos;"
-        ""
+        
         "void main()"
         "{"
 		"   FragPos = vec3(worldMatrix * vec4(aPos, 1.0));"
@@ -348,26 +346,28 @@ const char* getTexturedFragmentShaderSource()
 		"uniform vec3 objectColor;"
 		"uniform vec3 lightPos;"
 		"uniform vec3 viewPos;"
-        ""
+        
+		"const float ambientStrength = 0.60;"
+		"const float diffuseStrength = 1.50;"
+		"const float specularStrength = 1.80;"
+
         "void main()"
         "{"
 		// ambient
-		"   float ambientStrength = 0.60;"
 		"   vec3 ambient = ambientStrength * lightColor;"
 		// diffuse
 		"	vec3 norm = normalize(Normal);"
 		"	vec3 lightDir = normalize(lightPos - FragPos);"
 		"	float diff = max(dot(norm, lightDir), 0.0);"
-		"	vec3 diffuse = 1.5 * diff * lightColor;"
+		"	vec3 diffuse = diffuseStrength * diff * lightColor;"
 		// specular
-		"	float specularStrength = 1.6;"
 		"	vec3 viewDir = normalize(viewPos - FragPos);"
 		"	vec3 reflectDir = reflect(-lightDir, norm);"
 		"	float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);"
 		"	vec3 specular = specularStrength * spec * lightColor;"
 		//
 		"   vec3 phongModel = (ambient + diffuse + specular) * objectColor;"
-        "   FragColor = texture(textureSampler, vertexUV) * vec4(phongModel, 1.0);"// * vec4(vertexColor, 1.0f)"
+        "   FragColor = texture(textureSampler, vertexUV) * vec4(phongModel, 1.0);"
         "}";
 }
 
@@ -508,14 +508,6 @@ int main()
 	}; 
 	
 
-	
-	
-
-	glm::vec3 pointLightSource[]{
-		// position					// color
-		glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f),
-	};
-
     const float unitLength = 10.0f / (float)numGridLines;   // henceforth considered a unit of length
 	const float axisLineLength = 5 * unitLength;            // axis lines are the length of n grid squares
 
@@ -554,8 +546,6 @@ int main()
     glm::vec3 gridLines[8 * numGridLines];
     VAO[4] = createGridlines(numGridLines, gridLines, sizeof(gridLines), vec3(1.0f, 1.0f, 0.0f), 10.0f);
 
-	VAO[5] = createPointLightSource(pointLightSource, sizeof(pointLightSource));
-
 	// bind to nothing so we don't inadvertantly modify something
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
@@ -574,10 +564,12 @@ int main()
 
 
 	
-	GLuint colorLocation = glGetUniformLocation(colorShaderProgram, "objectColor");
 	GLuint textureLocation = glGetUniformLocation(texturedShaderProgram, "textureSampler");
+	GLuint objectColorLocation = glGetUniformLocation(texturedShaderProgram, "objectColor");
+	GLuint lightColorLocation = glGetUniformLocation(texturedShaderProgram, "lightColor");
+	GLuint lightPosLocation = glGetUniformLocation(texturedShaderProgram, "lightPos");
+	GLuint viewPosLocation = glGetUniformLocation(texturedShaderProgram, "viewPos");
 	GLuint lightLocation = glGetUniformLocation(lightShaderProgram, "lightPos");
-	glUseProgram(lightShaderProgram);
 	
 	
 
@@ -623,7 +615,8 @@ int main()
     glm::vec3 A7_theta(0.0f, 0.0f, 0.0f);				glm::vec3 O9_theta(0.0f, 0.0f, 0.0f);				glm::vec3 S0_theta(0.0f, 0.0f, 0.0f);				
     glm::mat4 A7_rotation_X;							glm::mat4 O9_rotation_X;							glm::mat4 S0_rotation_X;							
     glm::mat4 A7_rotation_Y;							glm::mat4 O9_rotation_Y;							glm::mat4 S0_rotation_Y;							
-    glm::mat4 A7_rotation_Z;							glm::mat4 O9_rotation_Z;							glm::mat4 S0_rotation_Z;							
+    glm::mat4 A7_rotation_Z;							glm::mat4 O9_rotation_Z;							glm::mat4 S0_rotation_Z;	
+	glm::vec3 A7_color(1.0, 1.0f, 0.0f);				glm::vec3 O9_color(1.0, 0.6f, 0.9f);				glm::vec3 S0_color(0.0, 0.0f, 0.5f);
 	
     // model M6                                         // model N7										    // model ground									
     const float init_M6_Size = 1.0f;                    const float init_N7_Size = 1.0f;                    const float init_ground_Size = 1.0f;
@@ -634,10 +627,11 @@ int main()
     glm::mat4 M6_rotation_X;                            glm::mat4 N7_rotation_X;                            glm::mat4 ground_rotation_X;
     glm::mat4 M6_rotation_Y;                            glm::mat4 N7_rotation_Y;                            glm::mat4 ground_rotation_Y;
     glm::mat4 M6_rotation_Z;                            glm::mat4 N7_rotation_Z;                            glm::mat4 ground_rotation_Z;
+	glm::vec3 M6_color(1.0, 0.0f, 0.0f);				glm::vec3 N7_color(0.0, 1.0f, 1.0f);				glm::vec3 ground_color(0.5f, 1.0f, 0.5f);
 
 	const float ANGLE = 5.0f; // set rotation snap to 5 degrees
 
-    Sphere sphere1(25.0f, 36, 18, false);    // radius, sectors, stacks, non-smooth (flat) shading
+   
 
 	// render loop
 	while (!glfwWindowShouldClose(window))
@@ -657,10 +651,10 @@ int main()
 		lastFrameTime += deltaTime;
 
 		
-		glUniform3fv(glGetUniformLocation(texturedShaderProgram, "objectColor"), 1, glm::value_ptr(glm::vec3(1.0f, 1.0f, 1.0f)));
-		glUniform3fv(glGetUniformLocation(texturedShaderProgram, "lightColor"), 1, glm::value_ptr(glm::vec3(1.0f, 1.0f, 1.0f)));
-		glUniform3fv(glGetUniformLocation(texturedShaderProgram, "lightPos"), 1, glm::value_ptr(lightPos));
-		glUniform3fv(glGetUniformLocation(texturedShaderProgram, "viewPos"), 1, glm::value_ptr(cameraPosition));
+		glUniform3fv(objectColorLocation, 1, glm::value_ptr(glm::vec3(1.0f, 1.0f, 1.0f)));
+		glUniform3fv(lightColorLocation, 1, glm::value_ptr(glm::vec3(1.0f, 1.0f, 1.0f)));
+		glUniform3fv(lightPosLocation, 1, glm::value_ptr(lightPos));
+		glUniform3fv(viewPosLocation, 1, glm::value_ptr(cameraPosition));
 
 		
 
@@ -671,50 +665,31 @@ int main()
             glActiveTexture(GL_TEXTURE0); // this is the GL "reset" texture, use to flush previous texture
         }
         else {
-            colorLocation = glGetUniformLocation(colorShaderProgram, "objectColor");
-            glUseProgram(colorShaderProgram);
+            glUseProgram(texturedShaderProgram);
         }
 		
 		
-        modelControl(window, &texturedShaderProgram, init_ground_Size, model_ground_Size, initPos_ground, model_ground_Position, ground_theta, ground_rotation_X, ground_rotation_Y, ground_rotation_Z, ANGLE, false);
-		//glUniform3fv(colorLocation, 1, glm::value_ptr(glm::vec3(0.5f, 1.0f, 0.5f)));
-		//glUniform3fv(glGetUniformLocation(texturedShaderProgram, "objectColor"), 1, glm::value_ptr(glm::vec3(1.0f, 1.0f, 1.0f)));
+        modelControl(window, &texturedShaderProgram, init_ground_Size, model_ground_Size, initPos_ground, model_ground_Position, ground_theta, ground_rotation_X, ground_rotation_Y, ground_rotation_Z, ANGLE, false, ground_color);
 		model_ground(10.0f, textureLocation, groundTexture, textures_on);
 
 		// beginning of model A7
-		modelControl(window, &texturedShaderProgram, init_A7_Size, model_A7_Size, initPos_A7, model_A7_Position, A7_theta, A7_rotation_X, A7_rotation_Y, A7_rotation_Z, ANGLE, ONE_KEY_PRESSED);
-		//glUniform3fv(colorLocation, 1, glm::value_ptr(glm::vec3(1.0f, 1.0f, 0.0f)));
-		//glUniform3fv(glGetUniformLocation(texturedShaderProgram, "objectColor"), 1, glm::value_ptr(glm::vec3(1.0f, 1.0f, 1.0f)));
+		modelControl(window, &texturedShaderProgram, init_A7_Size, model_A7_Size, initPos_A7, model_A7_Position, A7_theta, A7_rotation_X, A7_rotation_Y, A7_rotation_Z, ANGLE, ONE_KEY_PRESSED, A7_color);
 		model_A7(textureLocation, boxTexture, metalTexture, textures_on);
 		// end of model_A7();
-
-		
-
 		// beginning of model O9
-		modelControl(window, &texturedShaderProgram, init_O9_Size, model_O9_Size, initPos_O9, model_O9_Position, O9_theta, O9_rotation_X, O9_rotation_Y, O9_rotation_Z, ANGLE, TWO_KEY_PRESSED);
-		//glUniform3fv(colorLocation, 1, glm::value_ptr(glm::vec3(1.0f, 0.60f, 0.90f)));
-		//glUniform3fv(glGetUniformLocation(texturedShaderProgram, "objectColor"), 1, glm::value_ptr(glm::vec3(1.0f, 1.0f, 1.0f)));
+		modelControl(window, &texturedShaderProgram, init_O9_Size, model_O9_Size, initPos_O9, model_O9_Position, O9_theta, O9_rotation_X, O9_rotation_Y, O9_rotation_Z, ANGLE, TWO_KEY_PRESSED, O9_color);
 		model_O9(textureLocation, boxTexture, metalTexture, textures_on);
 		// end of model O9
-
 		// beginning of model S0
-		modelControl(window, &texturedShaderProgram, init_S0_Size, model_S0_Size, initPos_S0, model_S0_Position, S0_theta, S0_rotation_X, S0_rotation_Y, S0_rotation_Z, ANGLE, THREE_KEY_PRESSED);
-		//glUniform3fv(colorLocation, 1, glm::value_ptr(glm::vec3(0.0f, 0.0f, 0.5f)));
-		//glUniform3fv(glGetUniformLocation(texturedShaderProgram, "objectColor"), 1, glm::value_ptr(glm::vec3(1.0f, 1.0f, 1.0f)));
+		modelControl(window, &texturedShaderProgram, init_S0_Size, model_S0_Size, initPos_S0, model_S0_Position, S0_theta, S0_rotation_X, S0_rotation_Y, S0_rotation_Z, ANGLE, THREE_KEY_PRESSED, S0_color);
 		model_S0(textureLocation, boxTexture, metalTexture, textures_on);
 		// end of model S0
-
 		// beginning of model M6
-		modelControl(window, &texturedShaderProgram, init_M6_Size, model_M6_Size, initPos_M6, model_M6_Position, M6_theta, M6_rotation_X, M6_rotation_Y, M6_rotation_Z, ANGLE, FOUR_KEY_PRESSED);
-		//glUniform3fv(colorLocation, 1, glm::value_ptr(glm::vec3(1.0f, 0.0f, 0.0f)));
-		//glUniform3fv(glGetUniformLocation(texturedShaderProgram, "objectColor"), 1, glm::value_ptr(glm::vec3(1.0f, 1.0f, 1.0f)));
+		modelControl(window, &texturedShaderProgram, init_M6_Size, model_M6_Size, initPos_M6, model_M6_Position, M6_theta, M6_rotation_X, M6_rotation_Y, M6_rotation_Z, ANGLE, FOUR_KEY_PRESSED, M6_color);
 		model_M6(textureLocation, boxTexture, metalTexture, textures_on);
 		// end of model M6
-
         // beginning of model N7
-		modelControl(window, &texturedShaderProgram, init_N7_Size, model_N7_Size, initPos_N7, model_N7_Position, N7_theta, N7_rotation_X, N7_rotation_Y, N7_rotation_Z, ANGLE, FIVE_KEY_PRESSED);
-		//glUniform3fv(colorLocation, 1, glm::value_ptr(glm::vec3(0.0f, 1.0f, 1.0f)));
-		//glUniform3fv(glGetUniformLocation(texturedShaderProgram, "objectColor"), 1, glm::value_ptr(glm::vec3(1.0f, 1.0f, 1.0f)));
+		modelControl(window, &texturedShaderProgram, init_N7_Size, model_N7_Size, initPos_N7, model_N7_Position, N7_theta, N7_rotation_X, N7_rotation_Y, N7_rotation_Z, ANGLE, FIVE_KEY_PRESSED, N7_color);
 		model_N7(textureLocation, boxTexture, metalTexture, textures_on);
         // end of moedel N7
 
@@ -729,16 +704,17 @@ int main()
 		drawGridlines();
 		
 		// light
-		glBindVertexArray(VAO[5]);
-		glBindBuffer(GL_ARRAY_BUFFER, VBO[5]);
-		worldMatrix = glm::translate(glm::mat4(1.0f), lightPos);
+		glBindVertexArray(VAO[0]);
+		glBindBuffer(GL_ARRAY_BUFFER, VBO[0]);
+		worldMatrix = worldOrientationMatrix * glm::translate(glm::mat4(1.0f), lightPos);
+		glUniform3fv(texturedShaderProgram, 1, value_ptr(vec3(1.0f, 1.0f, 1.0f)));
 		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
-		glDrawArrays(GL_POINTS, 0, 1);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
 
+		
+		
+		
 		worldMatrix = identityMatrix;
-		
-		
-		worldMatrix = worldOrientationMatrix;
 
         
 	  
@@ -1652,7 +1628,7 @@ void model_ground(float groundSize, GLuint textureLocation, GLuint texture, bool
 }
 
 void modelControl(GLFWwindow* window, unsigned int* shaderProgram, const float& initSize, float& modelSize, glm::vec3& initPos,
-	glm::vec3& modelPos, glm::vec3& rotation, glm::mat4& rotX, glm::mat4& rotY, glm::mat4& rotZ, const float ANGLE, bool KEY_PRESSED) {
+	glm::vec3& modelPos, glm::vec3& rotation, glm::mat4& rotX, glm::mat4& rotY, glm::mat4& rotZ, const float ANGLE, bool KEY_PRESSED, glm::vec3& color) {
 
 	rotation = { rotation.x, rotation.y, rotation.z };
 	modelRotationMatrix = rotX * rotY * rotZ;
@@ -1743,7 +1719,7 @@ void modelControl(GLFWwindow* window, unsigned int* shaderProgram, const float& 
 		float randomPos_X = ((float(rand()) / RAND_MAX) * 10.0f) - 5.0f;
 		float randomPos_Z = ((float(rand()) / RAND_MAX) * 10.0f) - 5.0f;
 		if ((ALT_KEY == GLFW_RELEASE) && (glfwGetKey(window, GLFW_KEY_LEFT_ALT))) {
-			std::cout << "Model position randomized - X: " << randomPos_X << " Z: " << randomPos_Z << std::endl;
+			std::cout << "Model position randomized - X: " << randomPos_X << " Z: " << randomPos_Z << std::endl; // will display on command window the new position of the model
 			modelPos = { randomPos_X - initPos.x, 0.0f, randomPos_Z - initPos.z };
 
 		}	ALT_KEY = glfwGetKey(window, GLFW_KEY_LEFT_ALT);
@@ -1809,9 +1785,11 @@ void modelControl(GLFWwindow* window, unsigned int* shaderProgram, const float& 
 		worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelShearingMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
 		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
 
-
+	// when textures are off, models will have default textures
 	}
-
+	if (!textures_on) {
+		glUniform3fv(*shaderProgram, 1, glm::value_ptr(color));
+	}
 
 }
 
@@ -1865,7 +1843,7 @@ void setViewMatrix(int shaderProgram, mat4 viewMatrix)
     glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
 }
 
-void setWorldMatrix(int shaderProgram, mat4 worldMatrix)
+void setWorldMatrix(int shaderProgram, mat4 worldMatrix) // not used
 {
     glUseProgram(shaderProgram);
     GLuint worldMatrixLocation = glGetUniformLocation(shaderProgram, "worldMatrix");
@@ -2034,25 +2012,6 @@ int createTexturedCubeVertexArrayObject(TexturedColoredVertex* texturedCubeVerte
     return vertexArrayObject;
 }
 
-int createPointLightSource(glm::vec3* lightSource, GLuint size) {
-	
-	GLuint vertexArrayObject;
-	glGenVertexArrays(1, &vertexArrayObject);
-	glBindVertexArray(vertexArrayObject);
-
-	GLuint vertexBufferObject;
-	glGenBuffers(1, &vertexBufferObject);
-	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
-	glBufferData(GL_ARRAY_BUFFER, size, lightSource, GL_STATIC_DRAW);
-
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vec3), (void*)0);
-	glEnableVertexAttribArray(0);
-
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(vec3), (void*)sizeof(vec3));
-	glEnableVertexAttribArray(1);
-
-	return vertexArrayObject;
-}
 
 
 int createLine(vec3* lineVertices) {

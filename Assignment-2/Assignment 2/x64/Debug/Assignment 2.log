@@ -1,9 +1,9 @@
 ﻿  main.cpp
-C:\Users\umaid\Documents\Concordia\Summer 2020\COMP 371\COMP 371 - Project\Assignment-2\Assignment 2\main.cpp(588): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-C:\Users\umaid\Documents\Concordia\Summer 2020\COMP 371\COMP 371 - Project\Assignment-2\Assignment 2\main.cpp(612): warning C4091: 'typedef ': ignored on left of 'main::ModelParameters' when no variable is declared
-C:\Users\umaid\Documents\Concordia\Summer 2020\COMP 371\COMP 371 - Project\Assignment-2\Assignment 2\main.cpp(656): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-C:\Users\umaid\Documents\Concordia\Summer 2020\COMP 371\COMP 371 - Project\Assignment-2\Assignment 2\main.cpp(856): warning C4244: '-=': conversion from 'double' to 'float', possible loss of data
-C:\Users\umaid\Documents\Concordia\Summer 2020\COMP 371\COMP 371 - Project\Assignment-2\Assignment 2\main.cpp(857): warning C4244: '-=': conversion from 'double' to 'float', possible loss of data
-C:\Users\umaid\Documents\Concordia\Summer 2020\COMP 371\COMP 371 - Project\Assignment-2\Assignment 2\main.cpp(1107): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-C:\Users\umaid\Documents\Concordia\Summer 2020\COMP 371\COMP 371 - Project\Assignment-2\Assignment 2\main.cpp(1120): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-  Assignment 2.vcxproj -> C:\Users\umaid\Documents\Concordia\Summer 2020\COMP 371\COMP 371 - Project\Assignment-2\x64\Debug\Assignment 2.exe
+C:\Users\umaid\Documents\Concordia\Summer 2020\COMP 371\COMP 371 - Project\COMP-371-Project\Assignment-2\Assignment 2\main.cpp(580): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\umaid\Documents\Concordia\Summer 2020\COMP 371\COMP 371 - Project\COMP-371-Project\Assignment-2\Assignment 2\main.cpp(604): warning C4091: 'typedef ': ignored on left of 'main::ModelParameters' when no variable is declared
+C:\Users\umaid\Documents\Concordia\Summer 2020\COMP 371\COMP 371 - Project\COMP-371-Project\Assignment-2\Assignment 2\main.cpp(650): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\Users\umaid\Documents\Concordia\Summer 2020\COMP 371\COMP 371 - Project\COMP-371-Project\Assignment-2\Assignment 2\main.cpp(832): warning C4244: '-=': conversion from 'double' to 'float', possible loss of data
+C:\Users\umaid\Documents\Concordia\Summer 2020\COMP 371\COMP 371 - Project\COMP-371-Project\Assignment-2\Assignment 2\main.cpp(833): warning C4244: '-=': conversion from 'double' to 'float', possible loss of data
+C:\Users\umaid\Documents\Concordia\Summer 2020\COMP 371\COMP 371 - Project\COMP-371-Project\Assignment-2\Assignment 2\main.cpp(1083): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\Users\umaid\Documents\Concordia\Summer 2020\COMP 371\COMP 371 - Project\COMP-371-Project\Assignment-2\Assignment 2\main.cpp(1096): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+  Assignment 2.vcxproj -> C:\Users\umaid\Documents\Concordia\Summer 2020\COMP 371\COMP 371 - Project\COMP-371-Project\Assignment-2\x64\Debug\Assignment 2.exe
