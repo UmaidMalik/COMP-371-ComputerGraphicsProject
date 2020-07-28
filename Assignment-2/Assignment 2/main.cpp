@@ -267,41 +267,6 @@ GLFWwindow* setupWindow();
 // end of function protoypes
 
 
-const char* getVertexShaderSource()
-{
-	return
-		"#version 330 core\n"
-		"layout (location = 0) in vec3 aPos;"
-		"layout (location = 1) in vec3 aColor;"
-		"layout (location = 3) in vec3 aNormal;"
-		""
-		"uniform mat4 worldMatrix;"
-		"uniform mat4 viewMatrix;"
-		"uniform mat4 projectionMatrix;"
-
-		"out vec3 vertexColor;"
-		"void main()"
-		"{"
-		"   vertexColor = aColor;"
-		"	mat4 modelViewProjection = projectionMatrix * viewMatrix * worldMatrix;"
-		"   gl_Position = modelViewProjection * vec4(aPos.x, aPos.y, aPos.z, 1.0);"
-		"}";
-}
-
-const char* getFragmentShaderSource()
-{
-	return
-		"#version 330 core\n"
-		"uniform vec3 objectColor;"
-		"out vec4 FragColor;"
-		"in vec3 vertexColor;"
-		"void main()"
-		"{"		
-		" FragColor = vec4(vertexColor.r * objectColor.r, vertexColor.g * objectColor.r, vertexColor.b * objectColor.r, 1.0f);"
-		"}";
-}
-
-
 const char* getTexturedVertexShaderSource()
 {
     return
@@ -437,7 +402,6 @@ int main()
 	GLFWwindow* window = setupWindow();
 
 	// Compile and link shaders
-    GLuint colorShaderProgram = compileAndLinkShaders(getVertexShaderSource(), getFragmentShaderSource());
     GLuint texturedShaderProgram = compileAndLinkShaders(getTexturedVertexShaderSource(), getTexturedFragmentShaderSource());
 	GLuint lightShaderProgram = compileAndLinkShaders(getLightVertexShaderSource(), getLightFragmentShaderSource());
 	
@@ -552,12 +516,10 @@ int main()
 
     // set global matrices for each shader
 	projectionMatrix = glm::perspective(90.0f, 1024.0f / 768.0f, 0.0005f, 500.0f);
-    setProjectionMatrix(colorShaderProgram, projectionMatrix);
     setProjectionMatrix(texturedShaderProgram, projectionMatrix);
 	setProjectionMatrix(lightShaderProgram, projectionMatrix);
 
 	glm::mat4 viewMatrix = glm::lookAt(cameraPosition, cameraPosition + cameraLookAt, cameraUp);
-    setViewMatrix(colorShaderProgram, viewMatrix);
 	setViewMatrix(texturedShaderProgram, viewMatrix);
     setViewMatrix(lightShaderProgram, viewMatrix);
 	
@@ -705,9 +667,11 @@ int main()
 		
 		// light
 		glBindVertexArray(VAO[0]);
-		glBindBuffer(GL_ARRAY_BUFFER, VBO[0]);
 		worldMatrix = worldOrientationMatrix * glm::translate(glm::mat4(1.0f), lightPos);
-		glUniform3fv(texturedShaderProgram, 1, value_ptr(vec3(1.0f, 1.0f, 1.0f)));
+		if (!textures_on) {
+			glUniform3fv(texturedShaderProgram, 1, glm::value_ptr(glm::vec3(1.0f, 1.0f, 1.0f)));
+		}
+		glUniform3fv(lightShaderProgram, 1, glm::value_ptr(glm::vec3(1.0f, 1.0f, 1.0f)));
 		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
@@ -732,7 +696,6 @@ int main()
 	// de-allocate all resources
 	glDeleteVertexArrays(1, VAO);
 	glDeleteBuffers(1, VBO);
-	glDeleteProgram(colorShaderProgram);
     glDeleteProgram(texturedShaderProgram);
 	glDeleteProgram(lightShaderProgram);
 
