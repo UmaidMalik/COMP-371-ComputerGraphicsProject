@@ -1079,95 +1079,97 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 
 void model_A7(GLuint textureLocation, GLuint texture_1, GLuint texture_2, bool isTextureOn)
 {
-	// set object origin position
-	objectTranslationtionMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(-0.5f, -0.20f, 0.0));
-	partMatrix = objectTranslationtionMatrix * translationMatrix * shearingMatrix * scalingMatrix;
-	worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelShearingMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
-	glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+
+		// set object origin position
+		objectTranslationtionMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(-0.5f, -0.20f, 0.0));
+		partMatrix = objectTranslationtionMatrix * translationMatrix * shearingMatrix * scalingMatrix;
+		worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelShearingMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
+		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
 
 
-    // Start of A
-    if (isTextureOn) {
-        glBindTexture(GL_TEXTURE_2D, texture_1);
-        glUniform1i(textureLocation, 0);                // Set our Texture sampler to user Texture Unit 0
-    }
+		// Start of A
+		if (isTextureOn) {
+			glBindTexture(GL_TEXTURE_2D, texture_1);
+			glUniform1i(textureLocation, 0);                // Set our Texture sampler to user Texture Unit 0
+		}
 
-	scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 5.0f, 1.0f));
-	shearingMatrix =
-	{
-		1.0, 0.0, 0.0, 0.0,
-		0.35, 1.0, 0.0, 0.0,
-		0.0, 0.0, 1.0, 0.0,
-		0.0, 0.0, 0.0, 1.0,
-	};
-	translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
-	partMatrix = objectTranslationtionMatrix * translationMatrix * shearingMatrix * scalingMatrix;
-	worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelShearingMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
-	glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
-	glDrawArrays(GL_TRIANGLES, 0, 36);
-
-
-	shearingMatrix =
-	{
-		1.0, 0.0, 0.0, 0.0,
-		-0.35, 1.0, 0.0, 0.0,
-		0.0, 0.0, 1.0, 0.0,
-		0.0, 0.0, 0.0, 1.0,
-	};
-	translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.4f, 0.0f, 0.0f));
-	partMatrix = objectTranslationtionMatrix * translationMatrix * shearingMatrix * scalingMatrix;
-	worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelShearingMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
-	glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
-	glDrawArrays(GL_TRIANGLES, 0, 36);
+		scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 5.0f, 1.0f));
+		shearingMatrix =
+		{
+			1.0, 0.0, 0.0, 0.0,
+			0.35, 1.0, 0.0, 0.0,
+			0.0, 0.0, 1.0, 0.0,
+			0.0, 0.0, 0.0, 1.0,
+		};
+		translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
+		partMatrix = objectTranslationtionMatrix * translationMatrix * shearingMatrix * scalingMatrix;
+		worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelShearingMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
+		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
 
 
-	shearingMatrix = glm::mat4(1.0f);
-	scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(2.0f, 0.75f, 1.0f));
-	translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.15f, 0.15f, 0.0f));
-	partMatrix = objectTranslationtionMatrix * translationMatrix * shearingMatrix * scalingMatrix;
-	worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelShearingMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
-	glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
-	glDrawArrays(GL_TRIANGLES, 0, 36);
-
-    // Start of 7
-    if (isTextureOn) {
-        glBindTexture(GL_TEXTURE_2D, texture_2);
-        glUniform1i(textureLocation, 0);                // Set our Texture sampler to user Texture Unit 0
-    }
-
-	shearingMatrix =
-	{
-		1.0, 0.0, 0.0, 0.0,
-		0.3, 1.0, 0.0, 0.0,
-		0.0, 0.0, 1.0, 0.0,
-		0.0, 0.0, 0.0, 1.0,
-	};
-	scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 4.0f, 1.0f));
-	translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.7f, 0.0f, 0.0f));
-	partMatrix = objectTranslationtionMatrix * translationMatrix * shearingMatrix * scalingMatrix;
-	worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelShearingMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
-	glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
-	glDrawArrays(GL_TRIANGLES, 0, 36);
+		shearingMatrix =
+		{
+			1.0, 0.0, 0.0, 0.0,
+			-0.35, 1.0, 0.0, 0.0,
+			0.0, 0.0, 1.0, 0.0,
+			0.0, 0.0, 0.0, 1.0,
+		};
+		translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.4f, 0.0f, 0.0f));
+		partMatrix = objectTranslationtionMatrix * translationMatrix * shearingMatrix * scalingMatrix;
+		worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelShearingMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
+		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
 
 
-	shearingMatrix = glm::mat4(1.0f);
-	scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(3.0f, 1.0f, 1.0f));
-	translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.62f, 0.4f, 0.0f));
-	partMatrix = objectTranslationtionMatrix * translationMatrix * shearingMatrix * scalingMatrix;
-	worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelShearingMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
-	glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
-	glDrawArrays(GL_TRIANGLES, 0, 36);
+		shearingMatrix = glm::mat4(1.0f);
+		scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(2.0f, 0.75f, 1.0f));
+		translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.15f, 0.15f, 0.0f));
+		partMatrix = objectTranslationtionMatrix * translationMatrix * shearingMatrix * scalingMatrix;
+		worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelShearingMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
+		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		// Start of 7
+		if (isTextureOn) {
+			glBindTexture(GL_TEXTURE_2D, texture_2);
+			glUniform1i(textureLocation, 0);                // Set our Texture sampler to user Texture Unit 0
+		}
+
+		shearingMatrix =
+		{
+			1.0, 0.0, 0.0, 0.0,
+			0.3, 1.0, 0.0, 0.0,
+			0.0, 0.0, 1.0, 0.0,
+			0.0, 0.0, 0.0, 1.0,
+		};
+		scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 4.0f, 1.0f));
+		translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.7f, 0.0f, 0.0f));
+		partMatrix = objectTranslationtionMatrix * translationMatrix * shearingMatrix * scalingMatrix;
+		worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelShearingMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
+		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
 
 
-	// reset world matrix, rotation matrix, and model scaling matrix after we're done with it for this object
-	modelScalingMatrix = identityMatrix;
-	modelRotationMatrix = identityMatrix;
-	modelShearingMatrix = identityMatrix;
-	worldMatrix = identityMatrix;
+		shearingMatrix = glm::mat4(1.0f);
+		scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(3.0f, 1.0f, 1.0f));
+		translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.62f, 0.4f, 0.0f));
+		partMatrix = objectTranslationtionMatrix * translationMatrix * shearingMatrix * scalingMatrix;
+		worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelShearingMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
+		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
 
-    if (isTextureOn)
-        glActiveTexture(GL_TEXTURE0); // this is the GL "reset" texture, use to flush previous texture
-	// end of model A7
+
+		// reset world matrix, rotation matrix, and model scaling matrix after we're done with it for this object
+		modelScalingMatrix = identityMatrix;
+		modelRotationMatrix = identityMatrix;
+		modelShearingMatrix = identityMatrix;
+		worldMatrix = identityMatrix;
+
+		if (isTextureOn)
+			glActiveTexture(GL_TEXTURE0); // this is the GL "reset" texture, use to flush previous texture
+		// end of model A7
+	
 }
 
 void model_O9(GLuint textureLocation, GLuint texture_1, GLuint texture_2, bool isTextureOn) {
