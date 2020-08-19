@@ -16,18 +16,21 @@ public:
 	unsigned int shaderProgram;
 
 	// constructor will compile and link shaders
-	Shader(const char* vertexShaderPath, const char* fragmentShaderPath)
+	Shader(const char* vertexShaderPath, const char* fragmentShaderPath, const char* geometryShaderPath = nullptr)
 	{
 		// retrieve vertex shader and fragment shader source code file
 		std::string vertexCode;
 		std::string fragmentCode;
+		std::string geometryCode;
 
 		std::ifstream vertexShaderFile;
 		std::ifstream fragmentShaderFile;
+		std::ifstream geometryShaderFile;
 
 		// throw exceptions if file reading fails
 		vertexShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
 		fragmentShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+		geometryShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
 		try
 		{
 			// open shader files
@@ -48,6 +51,15 @@ public:
 			// convert stream to string
 			vertexCode = vertexShaderStream.str();
 			fragmentCode = fragmentShaderStream.str();
+
+			if (geometryShaderPath != nullptr)
+			{
+				geometryShaderFile.open(geometryShaderPath);
+				std::stringstream geometryShaderStream;
+				geometryShaderStream << geometryShaderFile.rdbuf();
+				geometryShaderFile.close();
+				geometryCode = geometryShaderStream.str();
+			}
 		}
 		catch (std::ifstream::failure& e)
 		{
@@ -78,11 +90,23 @@ public:
 		// check for fragment shader compile errors
 		checkErrors(fragmentShader, "FRAGMENT");
 
+		unsigned int geometry;
+		if (geometryShaderPath != nullptr)
+		{
+			const char* geometryShaderCode = geometryCode.c_str();
+			geometry = glCreateShader(GL_GEOMETRY_SHADER);
+			glShaderSource(geometry, 1, &geometryShaderCode, NULL);
+			glCompileShader(geometry);
+			checkErrors(geometry,"GEOMETRY");
+		}
+
 
 		// link shaders
 		shaderProgram = glCreateProgram();
 		glAttachShader(shaderProgram, vertexShader);
 		glAttachShader(shaderProgram, fragmentShader);
+		if (geometryShaderPath != nullptr)
+			glAttachShader(shaderProgram, geometry);
 		glLinkProgram(shaderProgram);
 
 		// check for linking errors
@@ -91,6 +115,8 @@ public:
 		// delete shaders
 		glDeleteShader(vertexShader);
 		glDeleteShader(fragmentShader);
+		if (geometryShaderPath != nullptr)
+			glDeleteShader(geometry);
 	}
 
 	// activate shader

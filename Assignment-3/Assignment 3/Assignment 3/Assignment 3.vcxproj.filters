@@ -40,16 +40,16 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\assets\shaders\light_fragment.glsl">
-      <Filter>Resource Files\shaders</Filter>
-    </None>
-    <None Include="..\assets\shaders\light_vertex.glsl">
-      <Filter>Resource Files\shaders</Filter>
-    </None>
     <None Include="..\assets\shaders\textured_fragment.glsl">
       <Filter>Resource Files\shaders</Filter>
     </None>
     <None Include="..\assets\shaders\textured_vertex.glsl">
+      <Filter>Resource Files\shaders</Filter>
+    </None>
+    <None Include="..\assets\shaders\shadow_fragment.glsl">
+      <Filter>Resource Files\shaders</Filter>
+    </None>
+    <None Include="..\assets\shaders\shadow_vertex.glsl">
       <Filter>Resource Files\shaders</Filter>
     </None>
   </ItemGroup>

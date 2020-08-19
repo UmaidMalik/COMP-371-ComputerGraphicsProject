@@ -6,11 +6,12 @@ uniform vec3 lightColor;
 uniform vec3 lightPos;
 uniform vec3 lightDir;
 
-uniform sampler2D textureSampler;
+uniform sampler2D texture_1;
+
 uniform vec3 objectColor;
     
-const float ambientStrength = 0.3; //0.50
-const float diffuseStrength = 1.9; // 1.50
+uniform float ambientStrength = 0.3; //0.50
+const float diffuseStrength = 2.9; // 1.50
 const float specularStrength = 0.4; // 1.80
 
 uniform float light_cutoff_outer;
@@ -25,8 +26,9 @@ uniform sampler2D shadowMap;
 in vec3 FragPos;
 in vec4 FragPosLightSpace;
 in vec3 Normal;
-in vec3 vertexColor;
+
 in vec2 vertexUV;
+
 
 in vec4 gl_FragCoord;
 
@@ -94,7 +96,7 @@ void main()
 		vec3 specular = specularStrength * spec * lightColor;
 		//
 		vec3 phongModel = (ambient + diffuse + specular) * objectColor;
-		FragResult = texture(textureSampler, vertexUV) * vec4(phongModel, 1.0);
+		FragResult = texture(texture_1, vertexUV) * vec4(phongModel, 1.0);
 	}
 	*/
 
@@ -114,5 +116,5 @@ void main()
 		// phongModel
 		vec3 phongModel = (ambient + diffuse + specular) * objectColor;
 		
-		FragResult = texture(textureSampler, vertexUV) * vec4(phongModel, 1.0);
+		FragResult = texture(texture_1, vertexUV) * vec4(phongModel, 1.0) ;
 	}

@@ -1,9 +1,9 @@
 #version 330 core
 
 layout (location = 0) in vec3 aPos;
-layout (location = 1) in vec3 aColor;
-layout (location = 2) in vec2 aUV;
-layout (location = 3) in vec3 aNormal;
+layout (location = 1) in vec2 aUV;
+layout (location = 2) in vec3 aNormal;
+
 
 uniform mat4 worldMatrix;
 uniform mat4 viewMatrix;
@@ -13,7 +13,6 @@ uniform mat4 light_view_proj_matrix;
 out vec3 Normal;
 out vec3 FragPos;
 out vec4 FragPosLightSpace;
-out vec3 vertexColor;
 out vec2 vertexUV;
 
 
@@ -24,7 +23,7 @@ void main()
 		Normal = mat3(worldMatrix) * aNormal;
 		FragPos = vec3(worldMatrix * vec4(aPos, 1.0));
 		FragPosLightSpace = light_view_proj_matrix * vec4(FragPos, 1.0);
-		vertexColor = aColor;
+		
 		vertexUV = aUV;
 		
 		mat4 modelViewProjection = projectionMatrix * viewMatrix * worldMatrix;

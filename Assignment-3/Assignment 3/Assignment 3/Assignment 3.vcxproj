@@ -136,8 +136,8 @@
     <ClInclude Include="texture.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\assets\shaders\light_fragment.glsl" />
-    <None Include="..\assets\shaders\light_vertex.glsl" />
+    <None Include="..\assets\shaders\shadow_fragment.glsl" />
+    <None Include="..\assets\shaders\shadow_vertex.glsl" />
     <None Include="..\assets\shaders\textured_fragment.glsl" />
     <None Include="..\assets\shaders\textured_vertex.glsl" />
   </ItemGroup>
