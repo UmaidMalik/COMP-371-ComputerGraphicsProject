@@ -134,8 +134,8 @@ const int numbObjInScene = 5;                           // make sure to update t
 
 const int numGridLines = 100;                           // how many gridlines (going one way)
 
-glm::vec3 initialCameraPosition(0.6f, 1.0f, 1.5f);
-glm::vec3 initialcameraLookAt(0.0f, 0.0f, -1.0f);
+glm::vec3 initialCameraPosition(0.0f, 4.0f, 3.5f);
+glm::vec3 initialcameraLookAt(0.0f, 0.0f, 0.0f);
 glm::vec3 cameraUp(0.0f, 1.0f, 0.0f);
 
 glm::vec3 center(0.0f, 0.0f, 0.0f);
@@ -185,6 +185,7 @@ double lastMousePosX, lastMousePosY;
 float modelSpeed = 1.0f;
 float shearingScale = 1.0f; // while the model is moving, it is sheared. When moving the model with (shift + movem
 
+bool ZERO_KEY = false;
 bool ONE_KEY_PRESSED = false;
 bool TWO_KEY_PRESSED = false;
 bool THREE_KEY_PRESSED = false;
@@ -366,6 +367,7 @@ int main()
 	Texture shape_B_9("../assets/textures/face_4/shape_B_9.png");
 
 	// face 5
+	Texture number_0("../assets/textures/face_5/number_0.png");
 	Texture number_1("../assets/textures/face_5/number_1.png");
 	Texture number_2("../assets/textures/face_5/number_2.png");
 	Texture number_3("../assets/textures/face_5/number_3.png");
@@ -389,6 +391,17 @@ int main()
 
 #endif
 
+	unsigned int number[10];
+	number[0] = number_0.getTextureID();
+	number[1] = number_1.getTextureID();
+	number[2] = number_2.getTextureID();
+	number[3] = number_3.getTextureID();
+	number[4] = number_4.getTextureID();
+	number[5] = number_5.getTextureID();
+	number[6] = number_6.getTextureID();
+	number[7] = number_7.getTextureID();
+	number[8] = number_8.getTextureID();
+	number[9] = number_9.getTextureID();
 	
 	// defines vertices and color for the cube 
 	TexturedColoredVertex texturedCubeVertexArray[] = {
@@ -528,7 +541,7 @@ int main()
 	shadowShaderProgram.setMat4("projectionMatrix", projectionMatrix);
 
 
-	viewMatrix = glm::lookAt(cameraPosition, cameraPosition + cameraLookAt, cameraUp);
+	viewMatrix = glm::lookAt(initialCameraPosition, initialCameraPosition + initialcameraLookAt, cameraUp);
 	texturedShaderProgram.useProgram();
 	texturedShaderProgram.setMat4("viewMatrix", viewMatrix);
 	shadowShaderProgram.useProgram();
@@ -597,17 +610,17 @@ int main()
 	const float ANGLE = 5.0f; // set rotation snap to 5 degrees
 
 	// rubiks cube
-	glm::mat4 cube_rotation_X_1;	float rotation_X_1 = 0.0f;
-	glm::mat4 cube_rotation_X_2;	float rotation_X_2 = 0.0f;
-	glm::mat4 cube_rotation_X_3;	float rotation_X_3 = 0.0f;
+	glm::mat4 cube_rotation_X_1;	
+	glm::mat4 cube_rotation_X_2;	
+	glm::mat4 cube_rotation_X_3;	
 
-	glm::mat4 cube_rotation_Y_1;	float rotation_Y_1 = 0.0f;
-	glm::mat4 cube_rotation_Y_2;	float rotation_Y_2 = 0.0f;
-	glm::mat4 cube_rotation_Y_3;	float rotation_Y_3 = 0.0f;
+	glm::mat4 cube_rotation_Y_1;	
+	glm::mat4 cube_rotation_Y_2;	
+	glm::mat4 cube_rotation_Y_3;	
 
-	glm::mat4 cube_rotation_Z_1;	float rotation_Z_1 = 0.0f;
-	glm::mat4 cube_rotation_Z_2;	float rotation_Z_2 = 0.0f;
-	glm::mat4 cube_rotation_Z_3;	float rotation_Z_3 = 0.0f;
+	glm::mat4 cube_rotation_Z_1;	
+	glm::mat4 cube_rotation_Z_2;	
+	glm::mat4 cube_rotation_Z_3;	
 
 	glm::mat3 cube_rotation = glm::mat4(0.0f);
 	
@@ -715,8 +728,6 @@ int main()
 		texturedShaderProgram.setMat4("worldMatrix", worldMatrix);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
-		
-		 
 
 			// draw rubiks cube
 			texturedShaderProgram.setFloat("ambientStrength", 1.0f);
@@ -806,7 +817,6 @@ int main()
 			cube_rotation_Z_3[1][0] = sin(cube_rotation[2][2]);
 
 
-
 			// cube 1
 			partMatrix = cube_rotation_X_3 * cube_rotation_Y_1 * cube_rotation_Z_1 * translate(glm::mat4(1.0f), glm::vec3(0.05f, 0.05f, 0.05f));
 			worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
@@ -850,7 +860,7 @@ int main()
 			texturedShaderProgram.setInt("texture_1", 0);
 			glDrawArrays(GL_TRIANGLES, 6, 6);
 
-			glBindTexture(GL_TEXTURE_2D, number_1.getTextureID());
+			glBindTexture(GL_TEXTURE_2D, number[1]);
 			texturedShaderProgram.setInt("texture_1", 0);
 			glDrawArrays(GL_TRIANGLES, 0, 6);
 
@@ -885,7 +895,7 @@ int main()
 			texturedShaderProgram.setInt("texture_1", 0);
 			glDrawArrays(GL_TRIANGLES, 30, 6);
 
-			glBindTexture(GL_TEXTURE_2D, number_2.getTextureID());
+			glBindTexture(GL_TEXTURE_2D, number[2]);
 			texturedShaderProgram.setInt("texture_1", 0);
 			glDrawArrays(GL_TRIANGLES, 0, 6);
 
@@ -932,7 +942,7 @@ int main()
 			texturedShaderProgram.setInt("texture_1", 0);
 			glDrawArrays(GL_TRIANGLES, 18, 6);
 
-			glBindTexture(GL_TEXTURE_2D, number_3.getTextureID());
+			glBindTexture(GL_TEXTURE_2D, number[3]);
 			texturedShaderProgram.setInt("texture_1", 0);
 			glDrawArrays(GL_TRIANGLES, 0, 6);
 
@@ -967,7 +977,7 @@ int main()
 			texturedShaderProgram.setInt("texture_1", 0);
 			glDrawArrays(GL_TRIANGLES, 6, 6);
 
-			glBindTexture(GL_TEXTURE_2D, number_4.getTextureID());
+			glBindTexture(GL_TEXTURE_2D, number[4]);
 			texturedShaderProgram.setInt("texture_1", 0);
 			glDrawArrays(GL_TRIANGLES, 0, 6);
 
@@ -985,7 +995,7 @@ int main()
 			worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
 			texturedShaderProgram.setMat4("worldMatrix", worldMatrix);
 
-			glBindTexture(GL_TEXTURE_2D, number_5.getTextureID());
+			glBindTexture(GL_TEXTURE_2D, number[5]);
 			texturedShaderProgram.setInt("texture_1", 0);
 			glDrawArrays(GL_TRIANGLES, 0, 6);
 
@@ -1021,7 +1031,7 @@ int main()
 			texturedShaderProgram.setInt("texture_1", 0);
 			glDrawArrays(GL_TRIANGLES, 18, 6);
 
-			glBindTexture(GL_TEXTURE_2D, number_6.getTextureID());
+			glBindTexture(GL_TEXTURE_2D, number[6]);
 			texturedShaderProgram.setInt("texture_1", 0);
 			glDrawArrays(GL_TRIANGLES, 0, 6);
 
@@ -1068,7 +1078,7 @@ int main()
 			texturedShaderProgram.setInt("texture_1", 0);
 			glDrawArrays(GL_TRIANGLES, 24, 6);
 
-			glBindTexture(GL_TEXTURE_2D, number_7.getTextureID());
+			glBindTexture(GL_TEXTURE_2D, number[7]);
 			texturedShaderProgram.setInt("texture_1", 0);
 			glDrawArrays(GL_TRIANGLES, 0, 6);
 
@@ -1103,7 +1113,7 @@ int main()
 			texturedShaderProgram.setInt("texture_1", 0);
 			glDrawArrays(GL_TRIANGLES, 24, 6);
 
-			glBindTexture(GL_TEXTURE_2D, number_8.getTextureID());
+			glBindTexture(GL_TEXTURE_2D, number[8]);
 			texturedShaderProgram.setInt("texture_1", 0);
 			glDrawArrays(GL_TRIANGLES, 0, 6);
 
@@ -1147,19 +1157,72 @@ int main()
 			glDrawArrays(GL_TRIANGLES, 18, 6);
 
 			glBindTexture(GL_TEXTURE_2D, shape_B_7.getTextureID());
-			texturedShaderProgram.setInt("textwure_1", 0);
+			texturedShaderProgram.setInt("texture_1", 0);
 			glDrawArrays(GL_TRIANGLES, 24, 6);
 
-			glBindTexture(GL_TEXTURE_2D, number_9.getTextureID());
+			glBindTexture(GL_TEXTURE_2D, number[9]);
 			texturedShaderProgram.setInt("texture_1", 0);
 			glDrawArrays(GL_TRIANGLES, 0, 6);
 
+			// end of rubiks cube
+
+
+			// draw timer
+			modelTranslationMatrix = translate(glm::mat4(1.0f), glm::vec3(0.1f, 4.0f, 2.0f));
+			worldMatrix = worldOrientationMatrix; 
+			texturedShaderProgram.setMat4("worldMatrix", worldMatrix);
+			
+			int time[5];
+			time[0] = glfwGetTime();
+			time[1] = glfwGetTime() / 10.0f;
+			time[2] = glfwGetTime() / 100.0f;
+			time[3] = glfwGetTime() / 1000.0f;
+			time[4] = glfwGetTime() / 10000.0f;
+
+			std::cout << time[4]%10 << time[3]%10 << time[2]%10 << time[1]%10 << time[0]%10 << std::endl;
+
+			
+				glDisable(GL_CULL_FACE);
+				partMatrix = translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
+				worldMatrix = worldOrientationMatrix * modelTranslationMatrix * partMatrix;
+				texturedShaderProgram.setMat4("worldMatrix", worldMatrix);
+				glBindTexture(GL_TEXTURE_2D, number[time[0] % 10]);
+				texturedShaderProgram.setInt("texture_1", 0);
+				glDrawArrays(GL_TRIANGLES, 12, 6);
+			
+				partMatrix = translate(glm::mat4(1.0f), glm::vec3(-0.1f, 0.0f, 0.0f));
+				worldMatrix = worldOrientationMatrix * modelTranslationMatrix * partMatrix;
+				texturedShaderProgram.setMat4("worldMatrix", worldMatrix);
+				glBindTexture(GL_TEXTURE_2D, number[time[1] % 10]);
+				glDrawArrays(GL_TRIANGLES, 12, 6);
+
+				partMatrix = translate(glm::mat4(1.0f), glm::vec3(-0.2f, 0.0f, 0.0f));
+				worldMatrix = worldOrientationMatrix * modelTranslationMatrix * partMatrix;
+				texturedShaderProgram.setMat4("worldMatrix", worldMatrix);
+				glBindTexture(GL_TEXTURE_2D, number[time[2] % 10]);
+				glDrawArrays(GL_TRIANGLES, 12, 6);
+
+				partMatrix = translate(glm::mat4(1.0f), glm::vec3(-0.3f, 0.0f, 0.0f));
+				worldMatrix = worldOrientationMatrix * modelTranslationMatrix * partMatrix;
+				texturedShaderProgram.setMat4("worldMatrix", worldMatrix);
+				glBindTexture(GL_TEXTURE_2D, number[time[3] % 10]);
+				glDrawArrays(GL_TRIANGLES, 12, 6);
+
+				partMatrix = translate(glm::mat4(1.0f), glm::vec3(-0.4f, 0.0f, 0.0f));
+				worldMatrix = worldOrientationMatrix * modelTranslationMatrix * partMatrix;
+				texturedShaderProgram.setMat4("worldMatrix", worldMatrix);
+				glBindTexture(GL_TEXTURE_2D, number[time[4] % 10]);
+				glDrawArrays(GL_TRIANGLES, 12, 6);
+
+				glEnable(GL_CULL_FACE);
+			
 
 		worldMatrix = worldOrientationMatrix;
 		texturedShaderProgram.setFloat("ambientStrength", 2.0f);
 		drawAxisLines(texturedShaderProgram);
 		texturedShaderProgram.setFloat("ambientStrength", 1.0f);
 		drawGridlines(texturedShaderProgram);
+		
 		
 		
 
@@ -1227,6 +1290,10 @@ void processInput(GLFWwindow* window, Shader shaderProgram)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
 	}
 
+	// reset glfwGetTime() to 0.0;
+	if ((ZERO_KEY == GLFW_RELEASE) && (glfwGetKey(window, GLFW_KEY_0)))	// rotate in +y axis
+		glfwSetTime(0.0f);
+	ZERO_KEY = glfwGetKey(window, GLFW_KEY_0);
 
 	// perspective - projection transform
 	if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
@@ -2168,8 +2235,6 @@ void modelControl(GLFWwindow * window, Shader shaderProgram, const float& initSi
 
 void drawAxisLines(Shader shaderProgram) {
 
-
-	
 	// red line
 	glLineWidth(5);
 	glBindVertexArray(VAO[1]);
