@@ -366,15 +366,15 @@ int main()
 	Texture shape_B_9("../assets/textures/face_4/shape_B_9.png");
 
 	// face 5
-	Texture shape_C_1("../assets/textures/face_5/shape_C_1.jpg");
-	Texture shape_C_2("../assets/textures/face_5/shape_C_2.jpg");
-	Texture shape_C_3("../assets/textures/face_5/shape_C_3.jpg");
-	Texture shape_C_4("../assets/textures/face_5/shape_C_4.jpg");
-	Texture shape_C_5("../assets/textures/face_5/shape_C_5.jpg");
-	Texture shape_C_6("../assets/textures/face_5/shape_C_6.jpg");
-	Texture shape_C_7("../assets/textures/face_5/shape_C_7.jpg");
-	Texture shape_C_8("../assets/textures/face_5/shape_C_8.jpg");
-	Texture shape_C_9("../assets/textures/face_5/shape_C_9.jpg");
+	Texture number_1("../assets/textures/face_5/number_1.png");
+	Texture number_2("../assets/textures/face_5/number_2.png");
+	Texture number_3("../assets/textures/face_5/number_3.png");
+	Texture number_4("../assets/textures/face_5/number_4.png");
+	Texture number_5("../assets/textures/face_5/number_5.png");
+	Texture number_6("../assets/textures/face_5/number_6.png");
+	Texture number_7("../assets/textures/face_5/number_7.png");
+	Texture number_8("../assets/textures/face_5/number_8.png");
+	Texture number_9("../assets/textures/face_5/number_9.png");
 
 	// face 6
 	Texture science_1("../assets/textures/face_6/science_1.jpg");
@@ -720,7 +720,7 @@ int main()
 
 			// draw rubiks cube
 			texturedShaderProgram.setFloat("ambientStrength", 1.0f);
-			modelTranslationMatrix = translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.0f, -2.0f));
+			modelTranslationMatrix = translate(glm::mat4(1.0f), glm::vec3(0.0f, 3.0f, 2.0f));
 			modelScalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(3.0f, 3.0f, 3.0f));
 			modelRotationMatrix = identityMatrix;
 
@@ -850,7 +850,7 @@ int main()
 			texturedShaderProgram.setInt("texture_1", 0);
 			glDrawArrays(GL_TRIANGLES, 6, 6);
 
-			glBindTexture(GL_TEXTURE_2D, shape_C_1.getTextureID());
+			glBindTexture(GL_TEXTURE_2D, number_1.getTextureID());
 			texturedShaderProgram.setInt("texture_1", 0);
 			glDrawArrays(GL_TRIANGLES, 0, 6);
 
@@ -885,7 +885,7 @@ int main()
 			texturedShaderProgram.setInt("texture_1", 0);
 			glDrawArrays(GL_TRIANGLES, 30, 6);
 
-			glBindTexture(GL_TEXTURE_2D, shape_C_2.getTextureID());
+			glBindTexture(GL_TEXTURE_2D, number_2.getTextureID());
 			texturedShaderProgram.setInt("texture_1", 0);
 			glDrawArrays(GL_TRIANGLES, 0, 6);
 
@@ -932,7 +932,7 @@ int main()
 			texturedShaderProgram.setInt("texture_1", 0);
 			glDrawArrays(GL_TRIANGLES, 18, 6);
 
-			glBindTexture(GL_TEXTURE_2D, shape_C_3.getTextureID());
+			glBindTexture(GL_TEXTURE_2D, number_3.getTextureID());
 			texturedShaderProgram.setInt("texture_1", 0);
 			glDrawArrays(GL_TRIANGLES, 0, 6);
 
@@ -967,7 +967,7 @@ int main()
 			texturedShaderProgram.setInt("texture_1", 0);
 			glDrawArrays(GL_TRIANGLES, 6, 6);
 
-			glBindTexture(GL_TEXTURE_2D, shape_C_4.getTextureID());
+			glBindTexture(GL_TEXTURE_2D, number_4.getTextureID());
 			texturedShaderProgram.setInt("texture_1", 0);
 			glDrawArrays(GL_TRIANGLES, 0, 6);
 
@@ -985,7 +985,7 @@ int main()
 			worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
 			texturedShaderProgram.setMat4("worldMatrix", worldMatrix);
 
-			glBindTexture(GL_TEXTURE_2D, shape_C_5.getTextureID());
+			glBindTexture(GL_TEXTURE_2D, number_5.getTextureID());
 			texturedShaderProgram.setInt("texture_1", 0);
 			glDrawArrays(GL_TRIANGLES, 0, 6);
 
@@ -1021,7 +1021,7 @@ int main()
 			texturedShaderProgram.setInt("texture_1", 0);
 			glDrawArrays(GL_TRIANGLES, 18, 6);
 
-			glBindTexture(GL_TEXTURE_2D, shape_C_6.getTextureID());
+			glBindTexture(GL_TEXTURE_2D, number_6.getTextureID());
 			texturedShaderProgram.setInt("texture_1", 0);
 			glDrawArrays(GL_TRIANGLES, 0, 6);
 
@@ -1068,7 +1068,7 @@ int main()
 			texturedShaderProgram.setInt("texture_1", 0);
 			glDrawArrays(GL_TRIANGLES, 24, 6);
 
-			glBindTexture(GL_TEXTURE_2D, shape_C_7.getTextureID());
+			glBindTexture(GL_TEXTURE_2D, number_7.getTextureID());
 			texturedShaderProgram.setInt("texture_1", 0);
 			glDrawArrays(GL_TRIANGLES, 0, 6);
 
@@ -1103,7 +1103,7 @@ int main()
 			texturedShaderProgram.setInt("texture_1", 0);
 			glDrawArrays(GL_TRIANGLES, 24, 6);
 
-			glBindTexture(GL_TEXTURE_2D, shape_C_8.getTextureID());
+			glBindTexture(GL_TEXTURE_2D, number_8.getTextureID());
 			texturedShaderProgram.setInt("texture_1", 0);
 			glDrawArrays(GL_TRIANGLES, 0, 6);
 
@@ -1150,7 +1150,7 @@ int main()
 			texturedShaderProgram.setInt("textwure_1", 0);
 			glDrawArrays(GL_TRIANGLES, 24, 6);
 
-			glBindTexture(GL_TEXTURE_2D, shape_C_9.getTextureID());
+			glBindTexture(GL_TEXTURE_2D, number_9.getTextureID());
 			texturedShaderProgram.setInt("texture_1", 0);
 			glDrawArrays(GL_TRIANGLES, 0, 6);
 
@@ -1162,6 +1162,8 @@ int main()
 		drawGridlines(texturedShaderProgram);
 		
 		
+
+
 
 		glBindVertexArray(0);
 
