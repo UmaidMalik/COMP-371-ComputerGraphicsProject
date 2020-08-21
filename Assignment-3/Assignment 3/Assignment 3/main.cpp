@@ -16,15 +16,15 @@
 *		==============================================================
 *		X					: TOGGLE TEXTURE ON/OFF
 *
-*		Q					: PERSPECTIVE PROJECTION
+*		E					: PERSPECTIVE PROJECTION
 *
-*		E					: ORTHOGRAPHIC PROJECTION
+*		V					: ORTHOGRAPHIC PROJECTION
 *
-*		T					: RENDER TRIANGLES
+*		B					: RENDER TRIANGLES
 *
-*		L					: RENDER LINES
+*		N					: RENDER LINES
 *
-*		P					: RENDER POINTS
+*		M					: RENDER POINTS
 *
 *		C					: HOLD TO DISABLE BACKFACE CULLING
 *
@@ -46,7 +46,7 @@
 *
 *		D		: MOVE RIGHT
 *
-*		X		: MOVE NEGATIVE Y-DIRECTION
+*		Z		: MOVE NEGATIVE Y-DIRECTION
 *
 *		SPACE	: MOVE POSITIVE Y-DIRECTION
 *
@@ -56,7 +56,7 @@
 *
 *
 *		MODEL CONTROL
-*		ENTER EITHER 1, 2, 3, 4 OR 5 TO SELECT MODELS - 0 WILL SELECT ALL MODELS - LEFT MOUSE CLICK WILL DESELECT ALL MODELS
+*		ENTER EITHER 1, 2, 3, 4 OR 5 TO SELECT MODELS - LEFT MOUSE CLICK WILL DESELECT ALL MODELS
 *		====================================================================================================================
 *
 *		TAB						: TOGGLE BETWEEN INCREMENTAL OR CONTINUOUS MOVEMENT
@@ -108,6 +108,35 @@
 *		ARROW LEFT				: -X ORIENTATION
 *
 *		ARROW RIGHT				: +X ORIENTATION
+*
+*
+*
+*		RUBIKS CUBE CONTROL
+*		====================================================================================================================
+*		
+*		Q/A						: +/-X ROTATION LAYER 1
+*
+*		W/S						: +/-X ROTATION LAYER 2
+*
+*		E/D						: +/-X ROTATION LAYER 3
+*
+*		R/F						: +/-Y ROTATION LAYER 1
+*
+*		T/G						: +/-Y ROTATION LAYER 2 
+*
+*		Y/H						: +/-Y ROTATION LAYER 3
+*
+*		U/J						: +/-Z ROTATION LAYER 1
+*
+*		I/K						: +/-Z ROTATION LAYER 2
+*
+*		O/L						: +/-Z ROTATION LAYER 3
+*
+*
+*		TIMER CONTROL
+*		====================================================================================================================
+*
+*		0						: RESET TIMER
 */
 
 
@@ -197,27 +226,57 @@ bool DOWN_KEY = false;
 bool RIGHT_KEY = false;
 bool LEFT_KEY = false;
 
-bool T_KEY = GLFW_RELEASE;
-bool Y_KEY = GLFW_RELEASE;
-bool G_KEY = GLFW_RELEASE;
-bool H_KEY = GLFW_RELEASE;
-bool B_KEY = GLFW_RELEASE;
-bool N_KEY = GLFW_RELEASE;
-bool X_KEY = GLFW_RELEASE;      // toggle textures
+
+
+    // toggle textures
 
 bool TAB_KEY = GLFW_RELEASE;
+bool Q_KEY = GLFW_RELEASE;
 bool W_KEY = GLFW_RELEASE;
+bool E_KEY = GLFW_RELEASE;
+bool R_KEY = GLFW_RELEASE;
+bool T_KEY = GLFW_RELEASE;
+bool Y_KEY = GLFW_RELEASE;
+bool U_KEY = GLFW_RELEASE;
+bool I_KEY = GLFW_RELEASE;
+bool O_KEY = GLFW_RELEASE;
+
 bool A_KEY = GLFW_RELEASE;
 bool S_KEY = GLFW_RELEASE;
 bool D_KEY = GLFW_RELEASE;
-bool SPACE_KEY = GLFW_RELEASE;
-bool Z_KEY = GLFW_RELEASE;
-bool U_KEY = GLFW_RELEASE;
+bool F_KEY = GLFW_RELEASE;
+bool G_KEY = GLFW_RELEASE;
+bool H_KEY = GLFW_RELEASE;
 bool J_KEY = GLFW_RELEASE;
 bool K_KEY = GLFW_RELEASE;
 bool L_KEY = GLFW_RELEASE;
+
+bool Z_KEY = GLFW_RELEASE;
+bool X_KEY = GLFW_RELEASE;
+bool B_KEY = GLFW_RELEASE;
+bool N_KEY = GLFW_RELEASE;
 bool M_KEY = GLFW_RELEASE;
-bool F_KEY = GLFW_RELEASE;
+
+bool SPACE_KEY = GLFW_RELEASE;
+
+// rubiks cube 
+glm::mat4 cube_rotation_X_1;
+glm::mat4 cube_rotation_X_2;
+glm::mat4 cube_rotation_X_3;
+
+glm::mat4 cube_rotation_Y_1;
+glm::mat4 cube_rotation_Y_2;
+glm::mat4 cube_rotation_Y_3;
+
+glm::mat4 cube_rotation_Z_1;
+glm::mat4 cube_rotation_Z_2;
+glm::mat4 cube_rotation_Z_3;
+
+glm::mat3 cube_rotation = glm::mat4(0.0f);
+// 
+
+
+const float cube_angle = glm::radians(90.0f);
 
 bool textures_on = true;        // toggles textures on/off; textures are on initially
 
@@ -616,24 +675,7 @@ int main()
 
 	const float ANGLE = 5.0f; // set rotation snap to 5 degrees
 
-	// rubiks cube
-	glm::mat4 cube_rotation_X_1;	
-	glm::mat4 cube_rotation_X_2;	
-	glm::mat4 cube_rotation_X_3;	
-
-	glm::mat4 cube_rotation_Y_1;	
-	glm::mat4 cube_rotation_Y_2;	
-	glm::mat4 cube_rotation_Y_3;	
-
-	glm::mat4 cube_rotation_Z_1;	
-	glm::mat4 cube_rotation_Z_2;	
-	glm::mat4 cube_rotation_Z_3;	
-
-	glm::mat3 cube_rotation = glm::mat4(0.0f);
 	
-
-
-	const float cube_angle = glm::radians(90.0f);
 
 	// render loop
 	while (!glfwWindowShouldClose(window))
@@ -736,93 +778,11 @@ int main()
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
 
-			// draw rubiks cube
-			texturedShaderProgram.setFloat("ambientStrength", 1.0f);
-			modelTranslationMatrix = translate(glm::mat4(1.0f), glm::vec3(0.0f, 3.0f, 2.0f));
-			modelScalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(3.0f, 3.0f, 3.0f));
-			modelRotationMatrix = identityMatrix;
-
-			if ((A_KEY == GLFW_RELEASE) && (glfwGetKey(window, GLFW_KEY_A)) && (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE))
-				cube_rotation[0][0] -= cube_angle;
-			A_KEY = glfwGetKey(window, GLFW_KEY_A);
-
-			if ((S_KEY == GLFW_RELEASE) && (glfwGetKey(window, GLFW_KEY_S)) && (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE))
-				cube_rotation[1][0] -= cube_angle;
-			S_KEY = glfwGetKey(window, GLFW_KEY_S);
-
-			if ((D_KEY == GLFW_RELEASE) && (glfwGetKey(window, GLFW_KEY_D)) && (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE))
-				cube_rotation[2][0] -= cube_angle;
-			D_KEY = glfwGetKey(window, GLFW_KEY_D);
-
-			if ((F_KEY == GLFW_RELEASE) && (glfwGetKey(window, GLFW_KEY_F)) && (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE))
-				cube_rotation[0][1] -= cube_angle;
-			F_KEY = glfwGetKey(window, GLFW_KEY_F);
-
-			if ((G_KEY == GLFW_RELEASE) && (glfwGetKey(window, GLFW_KEY_G)) && (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE))
-				cube_rotation[1][1] -= cube_angle;
-			G_KEY = glfwGetKey(window, GLFW_KEY_G);
-
-			if ((H_KEY == GLFW_RELEASE) && (glfwGetKey(window, GLFW_KEY_H)) && (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE))
-				cube_rotation[2][1] -= cube_angle;
-			H_KEY = glfwGetKey(window, GLFW_KEY_H);
-
-			if ((J_KEY == GLFW_RELEASE) && (glfwGetKey(window, GLFW_KEY_J)) && (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE))
-				cube_rotation[0][2] -= cube_angle;
-			J_KEY = glfwGetKey(window, GLFW_KEY_J);
-
-			if ((K_KEY == GLFW_RELEASE) && (glfwGetKey(window, GLFW_KEY_K)) && (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE))
-				cube_rotation[1][2] -= cube_angle;
-			K_KEY = glfwGetKey(window, GLFW_KEY_K);
-
-			if ((L_KEY == GLFW_RELEASE) && (glfwGetKey(window, GLFW_KEY_L)) && (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE))
-				cube_rotation[2][2] -= cube_angle;
-			L_KEY = glfwGetKey(window, GLFW_KEY_L);
-
-			cube_rotation_X_1[1][1] = cos(cube_rotation[0][0]);
-			cube_rotation_X_1[2][2] = cos(cube_rotation[0][0]);
-			cube_rotation_X_1[1][2] = -sin(cube_rotation[0][0]);
-			cube_rotation_X_1[2][1] = sin(cube_rotation[0][0]);
-
-			cube_rotation_X_2[1][1] = cos(cube_rotation[1][0]);
-			cube_rotation_X_2[2][2] = cos(cube_rotation[1][0]);
-			cube_rotation_X_2[1][2] = -sin(cube_rotation[1][0]);
-			cube_rotation_X_2[2][1] = sin(cube_rotation[1][0]);
-
-			cube_rotation_X_3[1][1] = cos(cube_rotation[2][0]);
-			cube_rotation_X_3[2][2] = cos(cube_rotation[2][0]);
-			cube_rotation_X_3[1][2] = -sin(cube_rotation[2][0]);
-			cube_rotation_X_3[2][1] = sin(cube_rotation[2][0]);
-
-			cube_rotation_Y_1[0][0] = cos(cube_rotation[0][1]);
-			cube_rotation_Y_1[2][2] = cos(cube_rotation[0][1]);
-			cube_rotation_Y_1[0][2] = sin(cube_rotation[0][1]);
-			cube_rotation_Y_1[2][0] = -sin(cube_rotation[0][1]);
-
-			cube_rotation_Y_2[0][0] = cos(cube_rotation[1][1]);
-			cube_rotation_Y_2[2][2] = cos(cube_rotation[1][1]);
-			cube_rotation_Y_2[0][2] = sin(cube_rotation[1][1]);
-			cube_rotation_Y_2[2][0] = -sin(cube_rotation[1][1]);
-
-			cube_rotation_Y_3[0][0] = cos(cube_rotation[2][1]);
-			cube_rotation_Y_3[2][2] = cos(cube_rotation[2][1]);
-			cube_rotation_Y_3[0][2] = sin(cube_rotation[2][1]);
-			cube_rotation_Y_3[2][0] = -sin(cube_rotation[2][1]);
-
-			cube_rotation_Z_1[0][0] = cos(cube_rotation[0][2]);
-			cube_rotation_Z_1[1][1] = cos(cube_rotation[0][2]);
-			cube_rotation_Z_1[0][1] = -sin(cube_rotation[0][2]);
-			cube_rotation_Z_1[1][0] = sin(cube_rotation[0][2]);
-
-			cube_rotation_Z_2[0][0] = cos(cube_rotation[1][2]);
-			cube_rotation_Z_2[1][1] = cos(cube_rotation[1][2]);
-			cube_rotation_Z_2[0][1] = -sin(cube_rotation[1][2]);
-			cube_rotation_Z_2[1][0] = sin(cube_rotation[1][2]);
-
-			cube_rotation_Z_3[0][0] = cos(cube_rotation[2][2]);
-			cube_rotation_Z_3[1][1] = cos(cube_rotation[2][2]);
-			cube_rotation_Z_3[0][1] = -sin(cube_rotation[2][2]);
-			cube_rotation_Z_3[1][0] = sin(cube_rotation[2][2]);
-
+		// draw rubiks cube
+		texturedShaderProgram.setFloat("ambientStrength", 1.0f);
+		modelTranslationMatrix = translate(glm::mat4(1.0f), glm::vec3(0.0f, 3.0f, 2.0f));
+		modelScalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(3.0f, 3.0f, 3.0f));
+		modelRotationMatrix = identityMatrix;
 
 			// cube 1
 			partMatrix = cube_rotation_X_3 * cube_rotation_Y_1 * cube_rotation_Z_1 * translate(glm::mat4(1.0f), glm::vec3(0.05f, 0.05f, 0.05f));
@@ -1229,7 +1189,7 @@ int main()
 				glEnable(GL_CULL_FACE);
 
 				// draw skybox
-				texturedShaderProgram.setFloat("ambientStrength", 2.5);
+				texturedShaderProgram.setFloat("ambientStrength", 2.0);
 				modelTranslationMatrix = translate(glm::mat4(1.0f), glm::vec3(cameraPosition.x, cameraPosition.y, cameraPosition.z));
 				modelScalingMatrix = scale(glm::mat4(1.0f), glm::vec3(50000.0f, 50000.0f, 50000.0f));
 				partMatrix = translate(glm::mat4(1.0f), glm::vec3(-0.05f, -0.05f, -0.05f));
@@ -1257,6 +1217,8 @@ int main()
 				glDrawArrays(GL_TRIANGLES, 30, 6);
 
 				glFrontFace(GL_CW);
+				glBindTexture(GL_TEXTURE_2D, 0);
+				texturedShaderProgram.setInt("texture_1", 0);
 
 
 		texturedShaderProgram.setVec3("objectColor", 1.0f, 1.0f, 1.0f);
@@ -1348,7 +1310,7 @@ void processInput(GLFWwindow* window, Shader shaderProgram)
 	}
 
 	// orthographic - projection transform
-	if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
+	if (glfwGetKey(window, GLFW_KEY_V) == GLFW_PRESS)
 	{
 		projectionMatrix = glm::ortho(-4.0f, 4.0f,      // left/right
 			-3.0f, 3.0f,	  // bottom/top
@@ -1595,6 +1557,124 @@ void processInput(GLFWwindow* window, Shader shaderProgram)
 	worldOrientationMatrix = worldOrientation_X * worldOrientation_Y;
 	worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
 
+
+	// control for Rubiks cube
+	if ((Q_KEY == GLFW_RELEASE) && (glfwGetKey(window, GLFW_KEY_Q)) && (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE))
+		cube_rotation[0][0] += cube_angle;
+	Q_KEY = glfwGetKey(window, GLFW_KEY_Q);
+
+	if ((W_KEY == GLFW_RELEASE) && (glfwGetKey(window, GLFW_KEY_W)) && (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE))
+		cube_rotation[1][0] += cube_angle;
+	W_KEY = glfwGetKey(window, GLFW_KEY_W);
+
+	if ((E_KEY == GLFW_RELEASE) && (glfwGetKey(window, GLFW_KEY_E)) && (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE))
+		cube_rotation[2][0] += cube_angle;
+	E_KEY = glfwGetKey(window, GLFW_KEY_E);
+
+	if ((R_KEY == GLFW_RELEASE) && (glfwGetKey(window, GLFW_KEY_R)) && (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE))
+		cube_rotation[0][1] += cube_angle;
+	R_KEY = glfwGetKey(window, GLFW_KEY_R);
+
+	if ((T_KEY == GLFW_RELEASE) && (glfwGetKey(window, GLFW_KEY_T)) && (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE))
+		cube_rotation[1][1] += cube_angle;
+	T_KEY = glfwGetKey(window, GLFW_KEY_T);
+
+	if ((Y_KEY == GLFW_RELEASE) && (glfwGetKey(window, GLFW_KEY_Y)) && (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE))
+		cube_rotation[2][1] += cube_angle;
+	Y_KEY = glfwGetKey(window, GLFW_KEY_Y);
+
+	if ((U_KEY == GLFW_RELEASE) && (glfwGetKey(window, GLFW_KEY_U)) && (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE))
+		cube_rotation[0][2] += cube_angle;
+	U_KEY = glfwGetKey(window, GLFW_KEY_U);
+
+	if ((I_KEY == GLFW_RELEASE) && (glfwGetKey(window, GLFW_KEY_I)) && (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE))
+		cube_rotation[1][2] += cube_angle;
+	I_KEY = glfwGetKey(window, GLFW_KEY_I);
+
+	if ((O_KEY == GLFW_RELEASE) && (glfwGetKey(window, GLFW_KEY_O)) && (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE))
+		cube_rotation[2][2] += cube_angle;
+	O_KEY = glfwGetKey(window, GLFW_KEY_O);
+
+	if ((A_KEY == GLFW_RELEASE) && (glfwGetKey(window, GLFW_KEY_A)) && (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE))
+		cube_rotation[0][0] -= cube_angle;
+	A_KEY = glfwGetKey(window, GLFW_KEY_A);
+
+	if ((S_KEY == GLFW_RELEASE) && (glfwGetKey(window, GLFW_KEY_S)) && (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE))
+		cube_rotation[1][0] -= cube_angle;
+	S_KEY = glfwGetKey(window, GLFW_KEY_S);
+
+	if ((D_KEY == GLFW_RELEASE) && (glfwGetKey(window, GLFW_KEY_D)) && (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE))
+		cube_rotation[2][0] -= cube_angle;
+	D_KEY = glfwGetKey(window, GLFW_KEY_D);
+
+	if ((F_KEY == GLFW_RELEASE) && (glfwGetKey(window, GLFW_KEY_F)) && (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE))
+		cube_rotation[0][1] -= cube_angle;
+	F_KEY = glfwGetKey(window, GLFW_KEY_F);
+
+	if ((G_KEY == GLFW_RELEASE) && (glfwGetKey(window, GLFW_KEY_G)) && (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE))
+		cube_rotation[1][1] -= cube_angle;
+	G_KEY = glfwGetKey(window, GLFW_KEY_G);
+
+	if ((H_KEY == GLFW_RELEASE) && (glfwGetKey(window, GLFW_KEY_H)) && (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE))
+		cube_rotation[2][1] -= cube_angle;
+	H_KEY = glfwGetKey(window, GLFW_KEY_H);
+
+	if ((J_KEY == GLFW_RELEASE) && (glfwGetKey(window, GLFW_KEY_J)) && (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE))
+		cube_rotation[0][2] -= cube_angle;
+	J_KEY = glfwGetKey(window, GLFW_KEY_J);
+
+	if ((K_KEY == GLFW_RELEASE) && (glfwGetKey(window, GLFW_KEY_K)) && (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE))
+		cube_rotation[1][2] -= cube_angle;
+	K_KEY = glfwGetKey(window, GLFW_KEY_K);
+
+	if ((L_KEY == GLFW_RELEASE) && (glfwGetKey(window, GLFW_KEY_L)) && (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE))
+		cube_rotation[2][2] -= cube_angle;
+	L_KEY = glfwGetKey(window, GLFW_KEY_L);
+
+	cube_rotation_X_1[1][1] = cos(cube_rotation[0][0]);
+	cube_rotation_X_1[2][2] = cos(cube_rotation[0][0]);
+	cube_rotation_X_1[1][2] = -sin(cube_rotation[0][0]);
+	cube_rotation_X_1[2][1] = sin(cube_rotation[0][0]);
+
+	cube_rotation_X_2[1][1] = cos(cube_rotation[1][0]);
+	cube_rotation_X_2[2][2] = cos(cube_rotation[1][0]);
+	cube_rotation_X_2[1][2] = -sin(cube_rotation[1][0]);
+	cube_rotation_X_2[2][1] = sin(cube_rotation[1][0]);
+
+	cube_rotation_X_3[1][1] = cos(cube_rotation[2][0]);
+	cube_rotation_X_3[2][2] = cos(cube_rotation[2][0]);
+	cube_rotation_X_3[1][2] = -sin(cube_rotation[2][0]);
+	cube_rotation_X_3[2][1] = sin(cube_rotation[2][0]);
+
+	cube_rotation_Y_1[0][0] = cos(cube_rotation[0][1]);
+	cube_rotation_Y_1[2][2] = cos(cube_rotation[0][1]);
+	cube_rotation_Y_1[0][2] = sin(cube_rotation[0][1]);
+	cube_rotation_Y_1[2][0] = -sin(cube_rotation[0][1]);
+
+	cube_rotation_Y_2[0][0] = cos(cube_rotation[1][1]);
+	cube_rotation_Y_2[2][2] = cos(cube_rotation[1][1]);
+	cube_rotation_Y_2[0][2] = sin(cube_rotation[1][1]);
+	cube_rotation_Y_2[2][0] = -sin(cube_rotation[1][1]);
+
+	cube_rotation_Y_3[0][0] = cos(cube_rotation[2][1]);
+	cube_rotation_Y_3[2][2] = cos(cube_rotation[2][1]);
+	cube_rotation_Y_3[0][2] = sin(cube_rotation[2][1]);
+	cube_rotation_Y_3[2][0] = -sin(cube_rotation[2][1]);
+
+	cube_rotation_Z_1[0][0] = cos(cube_rotation[0][2]);
+	cube_rotation_Z_1[1][1] = cos(cube_rotation[0][2]);
+	cube_rotation_Z_1[0][1] = -sin(cube_rotation[0][2]);
+	cube_rotation_Z_1[1][0] = sin(cube_rotation[0][2]);
+
+	cube_rotation_Z_2[0][0] = cos(cube_rotation[1][2]);
+	cube_rotation_Z_2[1][1] = cos(cube_rotation[1][2]);
+	cube_rotation_Z_2[0][1] = -sin(cube_rotation[1][2]);
+	cube_rotation_Z_2[1][0] = sin(cube_rotation[1][2]);
+
+	cube_rotation_Z_3[0][0] = cos(cube_rotation[2][2]);
+	cube_rotation_Z_3[1][1] = cos(cube_rotation[2][2]);
+	cube_rotation_Z_3[0][1] = -sin(cube_rotation[2][2]);
+	cube_rotation_Z_3[1][0] = sin(cube_rotation[2][2]);
 }
 
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
