@@ -389,6 +389,13 @@ int main()
 	Texture science_8("../assets/textures/face_6/science_8.jpg");
 	Texture science_9("../assets/textures/face_6/science_9.jpg");
 
+	Texture skybox_front("../assets/textures/skybox/skybox_front.png");
+	Texture skybox_top("../assets/textures/skybox/skybox_top.png");
+	Texture skybox_bottom("../assets/textures/skybox/skybox_bottom.png");
+	Texture skybox_left("../assets/textures/skybox/skybox_left.png");
+	Texture skybox_right("../assets/textures/skybox/skybox_right.png");
+	Texture skybox_back("../assets/textures/skybox/skybox_back.png");
+
 #endif
 
 	unsigned int number[10];
@@ -534,7 +541,7 @@ int main()
 	glBindVertexArray(0);
 
 	// set global matrices for each shader
-	projectionMatrix = glm::perspective(90.0f, 1024.0f / 768.0f, 0.0005f, 500.0f);
+	projectionMatrix = glm::perspective(90.0f, 1024.0f / 768.0f, 0.0005f, 500000.0f);
 	texturedShaderProgram.useProgram();
 	texturedShaderProgram.setMat4("projectionMatrix", projectionMatrix);
 	shadowShaderProgram.useProgram();
@@ -1166,6 +1173,10 @@ int main()
 
 			// end of rubiks cube
 
+			
+
+
+
 
 			// draw timer
 			modelTranslationMatrix = translate(glm::mat4(1.0f), glm::vec3(0.1f, 4.0f, 2.0f));
@@ -1179,9 +1190,10 @@ int main()
 			time[3] = glfwGetTime() / 1000.0f;
 			time[4] = glfwGetTime() / 10000.0f;
 
-			std::cout << time[4]%10 << time[3]%10 << time[2]%10 << time[1]%10 << time[0]%10 << std::endl;
-
 			
+			texturedShaderProgram.setFloat("ambientStrength", 2.0);
+			texturedShaderProgram.setVec3("objectColor", 0.0f, 1.0f, 1.0f);
+
 				glDisable(GL_CULL_FACE);
 				partMatrix = translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
 				worldMatrix = worldOrientationMatrix * modelTranslationMatrix * partMatrix;
@@ -1215,8 +1227,39 @@ int main()
 				glDrawArrays(GL_TRIANGLES, 12, 6);
 
 				glEnable(GL_CULL_FACE);
-			
 
+				// draw skybox
+				texturedShaderProgram.setFloat("ambientStrength", 2.5);
+				modelTranslationMatrix = translate(glm::mat4(1.0f), glm::vec3(cameraPosition.x, cameraPosition.y, cameraPosition.z));
+				modelScalingMatrix = scale(glm::mat4(1.0f), glm::vec3(50000.0f, 50000.0f, 50000.0f));
+				partMatrix = translate(glm::mat4(1.0f), glm::vec3(-0.05f, -0.05f, -0.05f));
+				worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * partMatrix;
+				texturedShaderProgram.setMat4("worldMatrix", worldMatrix);
+
+				glFrontFace(GL_CCW);
+
+				glBindTexture(GL_TEXTURE_2D, skybox_front.getTextureID());
+				glDrawArrays(GL_TRIANGLES, 0, 6);
+
+				glBindTexture(GL_TEXTURE_2D, skybox_right.getTextureID());
+				glDrawArrays(GL_TRIANGLES, 6, 6);
+
+				glBindTexture(GL_TEXTURE_2D, skybox_back.getTextureID());
+				glDrawArrays(GL_TRIANGLES, 12, 6);
+
+				glBindTexture(GL_TEXTURE_2D, skybox_left.getTextureID());
+				glDrawArrays(GL_TRIANGLES, 18, 6);
+
+				glBindTexture(GL_TEXTURE_2D, skybox_bottom.getTextureID());
+				glDrawArrays(GL_TRIANGLES, 24, 6);
+
+				glBindTexture(GL_TEXTURE_2D, skybox_top.getTextureID());
+				glDrawArrays(GL_TRIANGLES, 30, 6);
+
+				glFrontFace(GL_CW);
+
+
+		texturedShaderProgram.setVec3("objectColor", 1.0f, 1.0f, 1.0f);
 		worldMatrix = worldOrientationMatrix;
 		texturedShaderProgram.setFloat("ambientStrength", 2.0f);
 		drawAxisLines(texturedShaderProgram);
@@ -1300,7 +1343,7 @@ void processInput(GLFWwindow* window, Shader shaderProgram)
 	{
 		projectionMatrix = glm::perspective(90.0f,			// field of view in degrees
 			1024.0f / 768.0f,	// aspect ratio
-			0.005f, 500.0f);	// near and far (near > 0)
+			0.005f, 500000.0f);	// near and far (near > 0)
 		shaderProgram.setMat4("projectionMatrix", projectionMatrix);
 	}
 
@@ -1309,7 +1352,7 @@ void processInput(GLFWwindow* window, Shader shaderProgram)
 	{
 		projectionMatrix = glm::ortho(-4.0f, 4.0f,      // left/right
 			-3.0f, 3.0f,	  // bottom/top
-			-100.0f, 100.0f);  // near/far 
+			-500.0f, 500000.0f);  // near/far 
 		shaderProgram.setMat4("projectionMatrix", projectionMatrix);
 	}
 
@@ -1568,7 +1611,7 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 				fov = fov + 5.0;
 				projectionMatrix = glm::perspective(glm::radians(fov),			// field of view in degrees
 					1024.0f / 768.0f,	// aspect ratio
-					0.005f, 500.0f);	// near and far (near > 0)
+					0.005f, 500000.0f);	// near and far (near > 0)
 			}
 		}
 		// scroll down to zoom out 
@@ -1578,7 +1621,7 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 				fov = fov - 5.0;
 				projectionMatrix = glm::perspective(glm::radians(fov),			// field of view in degrees
 					1024.0f / 768.0f,	// aspect ratio
-					0.005f, 500.0f);	// near and far (near > 0)
+					0.005f, 500000.0f);	// near and far (near > 0)
 			}
 		}
 	}
