@@ -4,7 +4,6 @@
 *	Umaid Malik 27576110
 *	Noor Alali
 *	Vishal Senewiratne
-*	Dominic Hart
 *
 *	CONTROLS:
 
@@ -111,7 +110,7 @@
 *
 *
 *
-*		RUBIKS CUBE CONTROL
+*		RUBIKS CUBE CONTROL - PRESS 6 TO SELECT
 *		====================================================================================================================
 *		
 *		Q/A						: +/-X ROTATION LAYER 1
@@ -155,7 +154,6 @@
 // include class for the assets
 #include "shader.h"
 #include "texture.h"
-#include "camera.h"
 
 using namespace glm;
 
@@ -195,7 +193,6 @@ glm::mat4 modelRotationMatrix;
 glm::mat4 worldOrientationMatrix = identityMatrix;
 glm::mat4 worldOrientation_X;
 glm::mat4 worldOrientation_Y;
-//
 
 // used for rotation angle and rotation snap for world orientation set to 15 degrees
 glm::vec3 worldRotation;
@@ -220,12 +217,12 @@ bool TWO_KEY_PRESSED = false;
 bool THREE_KEY_PRESSED = false;
 bool FOUR_KEY_PRESSED = false;
 bool FIVE_KEY_PRESSED = false;
+bool SIX_KEY_PRESSED = false;
 
 bool UP_KEY = false;
 bool DOWN_KEY = false;
 bool RIGHT_KEY = false;
 bool LEFT_KEY = false;
-
 
 
     // toggle textures
@@ -532,7 +529,7 @@ int main()
 	// Get the framebuffer
 	glGenFramebuffers(1, &depthMapFBO);
 	// Dimensions of the shadow texture
-	const unsigned SHADOW_WIDTH = 24, SHADOW_HEIGHT = 24;
+	const unsigned SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
 	// Variable storing index to texture used for shadow mapping
 	GLuint depthMap;
 	// Get the texture
@@ -552,9 +549,11 @@ int main()
 	// Attach the depth map textures to the depth map framebuffer
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMap, 0);
 	// set texture unit # for shadow map
-	//setShadowMapTexture(lightShaderProgram.getShaderProgramID(), 0);
 	glDrawBuffer(GL_NONE);
+	glReadBuffer(GL_NONE);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+	// setup parameters for gridline
 	const float unitLength = 10.0f / (float)numGridLines;   // henceforth considered a unit of length
 	const float axisLineLength = 5 * unitLength;            // axis lines are the length of n grid squares
 
@@ -613,6 +612,9 @@ int main()
 	shadowShaderProgram.useProgram();
 	shadowShaderProgram.setMat4("viewMatrix", viewMatrix);
 
+	texturedShaderProgram.useProgram();
+	texturedShaderProgram.setInt("shadowMap", 1);
+
 
 	float lightAngleOuter = cos(radians(67.5));
 	float lightAngleInner = cos(radians(62.5));
@@ -630,9 +632,6 @@ int main()
 	// Set object color
 	texturedShaderProgram.setVec3("objectColor", glm::vec3(1.0f, 1.0f, 1.0f));
 
-	// Variables to be used in rotation
-	float angle = 0.0f;
-	float rotationSpeed = 90.0f;  // degrees per second
 	float lastFrameTime = glfwGetTime();
 
 	// read mouse position into variables
@@ -685,11 +684,11 @@ int main()
 		lastFrameTime += deltaTime;
 
 		// light parameters
-		vec3 lightPosition = vec3(-0.1f, 3.0f, -0.1f);
+		vec3 lightPosition = vec3(0.0f, 2.0f, 0.0f);
 		vec3 lightFocus(0.1f, 0.0f, 0.1f);      // the point in 3D space the light "looks" at
 		vec3 lightDirection = normalize(lightFocus - lightPosition);
 
-		float lightNearPlane = 0.1f;
+		float lightNearPlane = 1.0f;
 		float lightFarPlane = 10.0f;
 
 		texturedShaderProgram.setVec3("lightColor", glm::vec3(1.0f, 1.0f, 1.0f));
@@ -699,30 +698,292 @@ int main()
 		mat4 lightViewMatrix = lookAt(lightPosition, lightFocus, vec3(0.0f, 1.0f, 0.0f));
 		mat4 lightSpaceMatrix = lightProjectionMatrix * lightViewMatrix;
 
-		// Set light space matrix on both shaders
+
+		// render shadow
+		shadowShaderProgram.useProgram();
 		shadowShaderProgram.setMat4("light_view_proj_matrix", lightSpaceMatrix);
-		texturedShaderProgram.setMat4("light_view_proj_matrix", lightSpaceMatrix);
-
-		// Set light far and near planes on scene shader
-		texturedShaderProgram.setInt("light_near_plane", lightNearPlane);
-		texturedShaderProgram.setInt("light_far_plane", lightFarPlane);
-
-		// Set light position on scene shader
-		texturedShaderProgram.setVec3("lightPos", lightPosition);
-
-		// Set light direction on scene shader
-		texturedShaderProgram.setVec3("lightDir", lightDirection);
-
-
-
-		texturedShaderProgram.setMat4("worldMatrix", worldMatrix);
-		shadowShaderProgram.setMat4("worldMatrix", worldMatrix);
 		
-		texturedShaderProgram.setMat4("viewMatrix", viewMatrix);
-	
+		glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
+		glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+		glClear(GL_DEPTH_BUFFER_BIT);
+		glActiveTexture(GL_TEXTURE0);
+		glCullFace(GL_FRONT); // used to fix any peter panning issues
+		
+		glPointSize(10);		// increased point size so that it is easily visible
+		glLineWidth(2);
+		glBindVertexArray(VAO[0]);
+		glBindBuffer(GL_ARRAY_BUFFER, VBO[0]);
 
+		
+		modelControl(window, shadowShaderProgram, init_ground_Size, model_ground_Size, initPos_ground, model_ground_Position, ground_theta, ground_rotation_X, ground_rotation_Y, ground_rotation_Z, ANGLE, false, ground_color);
+		model_ground(10.0, shadowShaderProgram, groundTexture, textures_on);
+
+		// beginning of model A7
+		modelControl(window, shadowShaderProgram, init_A7_Size, model_A7_Size, initPos_A7, model_A7_Position, A7_theta, A7_rotation_X, A7_rotation_Y, A7_rotation_Z, ANGLE, ONE_KEY_PRESSED, A7_color);
+		model_A7(shadowShaderProgram, boxTexture, metalTexture, textures_on);
+		// end of model_A7();
+		// beginning of model O9
+		modelControl(window, shadowShaderProgram, init_O9_Size, model_O9_Size, initPos_O9, model_O9_Position, O9_theta, O9_rotation_X, O9_rotation_Y, O9_rotation_Z, ANGLE, TWO_KEY_PRESSED, O9_color);
+		model_O9(shadowShaderProgram, boxTexture, metalTexture, textures_on);
+		// end of model O9
+		// beginning of model S0
+		modelControl(window, shadowShaderProgram, init_S0_Size, model_S0_Size, initPos_S0, model_S0_Position, S0_theta, S0_rotation_X, S0_rotation_Y, S0_rotation_Z, ANGLE, THREE_KEY_PRESSED, S0_color);
+		model_S0(shadowShaderProgram, boxTexture, metalTexture, textures_on);
+		// end of model S0
+		// beginning of model M6
+		modelControl(window, shadowShaderProgram, init_M6_Size, model_M6_Size, initPos_M6, model_M6_Position, M6_theta, M6_rotation_X, M6_rotation_Y, M6_rotation_Z, ANGLE, FOUR_KEY_PRESSED, M6_color);
+		model_M6(shadowShaderProgram, boxTexture, metalTexture, textures_on);
+		// end of model M6
+		// beginning of model N7
+		modelControl(window, shadowShaderProgram, init_N7_Size, model_N7_Size, initPos_N7, model_N7_Position, N7_theta, N7_rotation_X, N7_rotation_Y, N7_rotation_Z, ANGLE, FIVE_KEY_PRESSED, N7_color);
+		model_N7(shadowShaderProgram, boxTexture, metalTexture, textures_on);
+		// end of moedel N7
+
+		// light cube
+		worldMatrix = worldOrientationMatrix * translate(glm::mat4(1.0f), lightPosition) * glm::scale(glm::mat4(1.0f), glm::vec3(0.25f, 0.25f, 0.25f));
+		shadowShaderProgram.setMat4("worldMatrix", worldMatrix);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		// draw rubiks cube
+		modelTranslationMatrix = translate(glm::mat4(1.0f), glm::vec3(0.0f, 3.0f, 2.0f));
+		modelScalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(3.0f, 3.0f, 3.0f));
+		modelRotationMatrix = identityMatrix;
+
+		// cube 1
+		partMatrix = cube_rotation_X_3 * cube_rotation_Y_1 * cube_rotation_Z_1 * translate(glm::mat4(1.0f), glm::vec3(0.05f, 0.05f, 0.05f));
+		worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
+		shadowShaderProgram.setMat4("worldMatrix", worldMatrix);
+
+		glDrawArrays(GL_TRIANGLES, 30, 6);
+		glDrawArrays(GL_TRIANGLES, 12, 6);
+		glDrawArrays(GL_TRIANGLES, 6, 6);
+
+		// cube 2
+		partMatrix = cube_rotation_X_3 * cube_rotation_Y_1 * cube_rotation_Z_2 * translate(glm::mat4(1.0f), glm::vec3(0.05f, 0.05f, -0.05f));
+		worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
+		shadowShaderProgram.setMat4("worldMatrix", worldMatrix);
+
+		glDrawArrays(GL_TRIANGLES, 30, 6);
+		glDrawArrays(GL_TRIANGLES, 6, 6);
+
+		// cube 3
+		partMatrix = cube_rotation_X_3 * cube_rotation_Y_1 * cube_rotation_Z_3 * translate(glm::mat4(1.0f), glm::vec3(0.05f, 0.05f, -0.15f));
+		worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
+		shadowShaderProgram.setMat4("worldMatrix", worldMatrix);
+
+		glDrawArrays(GL_TRIANGLES, 30, 6);
+		glDrawArrays(GL_TRIANGLES, 6, 6);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+
+		// cube 4
+		partMatrix = cube_rotation_X_2 * cube_rotation_Y_1 * cube_rotation_Z_1 * translate(glm::mat4(1.0f), glm::vec3(-0.05f, 0.05f, 0.05f));
+		worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
+		shadowShaderProgram.setMat4("worldMatrix", worldMatrix);
+
+		glDrawArrays(GL_TRIANGLES, 30, 6);
+		glDrawArrays(GL_TRIANGLES, 12, 6);
+
+		// cube 5
+		partMatrix = cube_rotation_X_2 * cube_rotation_Y_1 * cube_rotation_Z_2 * translate(glm::mat4(1.0f), glm::vec3(-0.05f, 0.05f, -0.05f));
+		worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
+		shadowShaderProgram.setMat4("worldMatrix", worldMatrix);
+
+		glDrawArrays(GL_TRIANGLES, 30, 6);
+
+		//cube 6
+		partMatrix = cube_rotation_X_2 * cube_rotation_Y_1 * cube_rotation_Z_3 * translate(glm::mat4(1.0f), glm::vec3(-0.05f, 0.05f, -0.15f));
+		worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
+		shadowShaderProgram.setMat4("worldMatrix", worldMatrix);
+
+		glDrawArrays(GL_TRIANGLES, 30, 6);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+
+		// cube 7
+		partMatrix = cube_rotation_X_1 * cube_rotation_Y_1 * cube_rotation_Z_1 * translate(glm::mat4(1.0f), glm::vec3(-0.15f, 0.05f, 0.05f));
+		worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
+		shadowShaderProgram.setMat4("worldMatrix", worldMatrix);
+
+		glDrawArrays(GL_TRIANGLES, 30, 6);
+		glDrawArrays(GL_TRIANGLES, 12, 6);
+		glDrawArrays(GL_TRIANGLES, 18, 6);
+
+		// cube 8
+		partMatrix = cube_rotation_X_1 * cube_rotation_Y_1 * cube_rotation_Z_2 * translate(glm::mat4(1.0f), glm::vec3(-0.15f, 0.05f, -0.05f));
+		worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
+		shadowShaderProgram.setMat4("worldMatrix", worldMatrix);
+
+		glDrawArrays(GL_TRIANGLES, 30, 6);
+		glDrawArrays(GL_TRIANGLES, 18, 6);
+
+		// cube 9
+		partMatrix = cube_rotation_X_1 * cube_rotation_Y_1 * cube_rotation_Z_3 * translate(glm::mat4(1.0f), glm::vec3(-0.15f, 0.05f, -0.15f));
+		worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
+		shadowShaderProgram.setMat4("worldMatrix", worldMatrix);
+
+		glDrawArrays(GL_TRIANGLES, 30, 6);
+		glDrawArrays(GL_TRIANGLES, 18, 6);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+
+		// cube 10 
+		partMatrix = cube_rotation_X_3 * cube_rotation_Y_2 * cube_rotation_Z_1 * translate(glm::mat4(1.0f), glm::vec3(0.05f, -0.05f, 0.05f));
+		worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
+		shadowShaderProgram.setMat4("worldMatrix", worldMatrix);
+
+		glDrawArrays(GL_TRIANGLES, 12, 6);
+		glDrawArrays(GL_TRIANGLES, 6, 6);
+
+		// cube 11
+		partMatrix = cube_rotation_X_3 * cube_rotation_Y_2 * cube_rotation_Z_2 * translate(glm::mat4(1.0f), glm::vec3(0.05f, -0.05f, -0.05f));
+		worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
+		shadowShaderProgram.setMat4("worldMatrix", worldMatrix);
+
+		glDrawArrays(GL_TRIANGLES, 6, 6);
+
+		// cube 12
+		partMatrix = cube_rotation_X_3 * cube_rotation_Y_2 * cube_rotation_Z_3 * translate(glm::mat4(1.0f), glm::vec3(0.05f, -0.05f, -0.15f));
+		worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
+		shadowShaderProgram.setMat4("worldMatrix", worldMatrix);
+
+		glDrawArrays(GL_TRIANGLES, 6, 6);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+
+		// cube 13
+		partMatrix = cube_rotation_X_2 * cube_rotation_Y_2 * cube_rotation_Z_1 * translate(glm::mat4(1.0f), glm::vec3(-0.05f, -0.05f, 0.05f));
+		worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
+		shadowShaderProgram.setMat4("worldMatrix", worldMatrix);
+
+		glDrawArrays(GL_TRIANGLES, 12, 6);
+
+		// cube 14
+		partMatrix = cube_rotation_X_2 * cube_rotation_Y_2 * cube_rotation_Z_3 * translate(glm::mat4(1.0f), glm::vec3(-0.05f, -0.05f, -0.15f));
+		worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
+		shadowShaderProgram.setMat4("worldMatrix", worldMatrix);
+
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+
+
+		// cube 15
+		partMatrix = cube_rotation_X_1 * cube_rotation_Y_2 * cube_rotation_Z_1 * translate(glm::mat4(1.0f), glm::vec3(-0.15f, -0.05f, 0.05f));
+		worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
+		shadowShaderProgram.setMat4("worldMatrix", worldMatrix);
+
+		glDrawArrays(GL_TRIANGLES, 12, 6);
+		glDrawArrays(GL_TRIANGLES, 18, 6);
+
+		// cube 16
+		partMatrix = cube_rotation_X_1 * cube_rotation_Y_2 * cube_rotation_Z_2 * translate(glm::mat4(1.0f), glm::vec3(-0.15f, -0.05f, -0.05f));
+		worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
+		shadowShaderProgram.setMat4("worldMatrix", worldMatrix);
+
+		glDrawArrays(GL_TRIANGLES, 18, 6);
+
+		// cube 17
+		partMatrix = cube_rotation_X_1 * cube_rotation_Y_2 * cube_rotation_Z_3 * translate(glm::mat4(1.0f), glm::vec3(-0.15f, -0.05f, -0.15f));
+		worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
+		shadowShaderProgram.setMat4("worldMatrix", worldMatrix);
+
+		glDrawArrays(GL_TRIANGLES, 18, 6);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+
+		// cube 18
+		partMatrix = cube_rotation_X_3 * cube_rotation_Y_3 * cube_rotation_Z_1 * translate(glm::mat4(1.0f), glm::vec3(0.05f, -0.15f, 0.05f));
+		worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
+		shadowShaderProgram.setMat4("worldMatrix", worldMatrix);
+
+		glDrawArrays(GL_TRIANGLES, 12, 6);
+		glDrawArrays(GL_TRIANGLES, 6, 6);
+		glDrawArrays(GL_TRIANGLES, 24, 6);
+
+		// cube 19 
+		partMatrix = cube_rotation_X_3 * cube_rotation_Y_3 * cube_rotation_Z_2 * translate(glm::mat4(1.0f), glm::vec3(0.05f, -0.15f, -0.05f));
+		worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
+		shadowShaderProgram.setMat4("worldMatrix", worldMatrix);
+
+		glDrawArrays(GL_TRIANGLES, 6, 6);
+		glDrawArrays(GL_TRIANGLES, 24, 6);
+
+		// cube 20
+		partMatrix = cube_rotation_X_3 * cube_rotation_Y_3 * cube_rotation_Z_3 * translate(glm::mat4(1.0f), glm::vec3(0.05f, -0.15f, -0.15f));
+		worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
+		shadowShaderProgram.setMat4("worldMatrix", worldMatrix);
+
+		glDrawArrays(GL_TRIANGLES, 6, 6);
+		glDrawArrays(GL_TRIANGLES, 24, 6);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+
+		// cube 21
+		partMatrix = cube_rotation_X_2 * cube_rotation_Y_3 * cube_rotation_Z_1 * translate(glm::mat4(1.0f), glm::vec3(-0.05f, -0.15f, 0.05f));
+		worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
+		shadowShaderProgram.setMat4("worldMatrix", worldMatrix);
+
+		glDrawArrays(GL_TRIANGLES, 12, 6);
+		glDrawArrays(GL_TRIANGLES, 24, 6);
+
+		// cube 22
+		partMatrix = cube_rotation_X_2 * cube_rotation_Y_3 * cube_rotation_Z_2 * translate(glm::mat4(1.0f), glm::vec3(-0.05f, -0.15f, -0.05f));
+		worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
+		shadowShaderProgram.setMat4("worldMatrix", worldMatrix);
+
+		glDrawArrays(GL_TRIANGLES, 24, 6);
+
+		// cube 23
+		partMatrix = cube_rotation_X_2 * cube_rotation_Y_3 * cube_rotation_Z_3 * translate(glm::mat4(1.0f), glm::vec3(-0.05f, -0.15f, -0.15f));
+		worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
+		shadowShaderProgram.setMat4("worldMatrix", worldMatrix);
+
+		glDrawArrays(GL_TRIANGLES, 24, 6);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+
+		// cube 24
+		partMatrix = cube_rotation_X_1 * cube_rotation_Y_3 * cube_rotation_Z_1 * translate(glm::mat4(1.0f), glm::vec3(-0.15f, -0.15f, 0.05f));
+		worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
+		shadowShaderProgram.setMat4("worldMatrix", worldMatrix);
+
+		glDrawArrays(GL_TRIANGLES, 12, 6);
+		glDrawArrays(GL_TRIANGLES, 18, 6);
+		glDrawArrays(GL_TRIANGLES, 24, 6);
+
+		// cube 25
+		partMatrix = cube_rotation_X_1 * cube_rotation_Y_3 * cube_rotation_Z_2 * translate(glm::mat4(1.0f), glm::vec3(-0.15f, -0.15f, -0.05f));
+		worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
+		shadowShaderProgram.setMat4("worldMatrix", worldMatrix);
+
+		glDrawArrays(GL_TRIANGLES, 18, 6);
+		glDrawArrays(GL_TRIANGLES, 24, 6);
+
+		// cube 26
+		partMatrix = cube_rotation_X_1 * cube_rotation_Y_3 * cube_rotation_Z_3 * translate(glm::mat4(1.0f), glm::vec3(-0.15f, -0.15f, -0.15f));
+		worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
+		shadowShaderProgram.setMat4("worldMatrix", worldMatrix);
+
+		glDrawArrays(GL_TRIANGLES, 18, 6);
+		glDrawArrays(GL_TRIANGLES, 24, 6);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+
+		// end of rubiks cube
+
+		glCullFace(GL_BACK);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		
+		// reset viewport
+		int width, height;
+		glfwGetFramebufferSize(window, &width, &height);
+		glViewport(0, 0, width, height);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		
+
+		// render scene
+		//int width, height;
+		glfwGetFramebufferSize(window, &width, &height);
+		glViewport(0, 0, width, height);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glClearColor(0.0f, 0.2f, 0.4f, 1.0f); // Midnight blue
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		
 		texturedShaderProgram.setVec3("viewPos", cameraPosition);
 
+		
 
 		// use texturedShaderProgram for the textured models
 		if (textures_on) {
@@ -732,13 +993,26 @@ int main()
 		else {
 			texturedShaderProgram.useProgram();
 		}
-		int width, height;
-		glfwGetFramebufferSize(window, &width, &height);
-		glViewport(0, 0, width, height);
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		glClearColor(0.0f, 0.2f, 0.4f, 1.0f); // Midnight blue
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, depthMap);
+		// Set light space matrix on both shaders
+
+		texturedShaderProgram.setMat4("light_view_proj_matrix", lightSpaceMatrix);
+
+		// Set light position on scene shader
+		texturedShaderProgram.setVec3("lightPos", lightPosition);
+
+		// Set light direction on scene shader
+		texturedShaderProgram.setVec3("lightDir", lightDirection);
+
+
+		// Set light far and near planes on scene shader
+		texturedShaderProgram.setInt("light_near_plane", lightNearPlane);
+		texturedShaderProgram.setInt("light_far_plane", lightFarPlane);
+		
+		//glActiveTexture(GL_TEXTURE0);
+		//glBindTexture(GL_TEXTURE_2D, depthMap);
+
 
 		glPointSize(10);		// increased point size so that it is easily visible
 		glLineWidth(2);
@@ -748,7 +1022,7 @@ int main()
 		texturedShaderProgram.setFloat("ambientStrength", 0.3f);
 		modelControl(window, texturedShaderProgram, init_ground_Size, model_ground_Size, initPos_ground, model_ground_Position, ground_theta, ground_rotation_X, ground_rotation_Y, ground_rotation_Z, ANGLE, false, ground_color);
 		model_ground(10.0, texturedShaderProgram, groundTexture, textures_on);
-			
+					
 		// beginning of model A7
 		modelControl(window, texturedShaderProgram, init_A7_Size, model_A7_Size, initPos_A7, model_A7_Position, A7_theta, A7_rotation_X, A7_rotation_Y, A7_rotation_Z, ANGLE, ONE_KEY_PRESSED, A7_color);
 		model_A7(texturedShaderProgram, boxTexture, metalTexture, textures_on);
@@ -773,12 +1047,14 @@ int main()
 		// light cube
 		texturedShaderProgram.setVec3("objectColor", glm::vec3(1.0f, 1.0f, 1.0f));
 		texturedShaderProgram.setFloat("ambientStrength", 100.0f);
-		worldMatrix = worldOrientationMatrix * translate(glm::mat4(1.0f), glm::vec3(0.0f, 3.0f, 0.0f)) * glm::scale(glm::mat4(1.0f), glm::vec3(0.25f, 0.25f, 0.25f));
+		worldMatrix = worldOrientationMatrix * translate(glm::mat4(1.0f), lightPosition) * glm::scale(glm::mat4(1.0f), glm::vec3(0.25f, 0.25f, 0.25f));
 		texturedShaderProgram.setMat4("worldMatrix", worldMatrix);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
+		
 
 		// draw rubiks cube
+		texturedShaderProgram.setBool("drawTexture", GL_TRUE);
 		texturedShaderProgram.setFloat("ambientStrength", 1.0f);
 		modelTranslationMatrix = translate(glm::mat4(1.0f), glm::vec3(0.0f, 3.0f, 2.0f));
 		modelScalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(3.0f, 3.0f, 3.0f));
@@ -1217,18 +1493,17 @@ int main()
 				glDrawArrays(GL_TRIANGLES, 30, 6);
 
 				glFrontFace(GL_CW);
-				glBindTexture(GL_TEXTURE_2D, 0);
-				texturedShaderProgram.setInt("texture_1", 0);
-
+				
+		texturedShaderProgram.setBool( "drawTexture", GL_FALSE);
 
 		texturedShaderProgram.setVec3("objectColor", 1.0f, 1.0f, 1.0f);
 		worldMatrix = worldOrientationMatrix;
 		texturedShaderProgram.setFloat("ambientStrength", 2.0f);
 		drawAxisLines(texturedShaderProgram);
-		texturedShaderProgram.setFloat("ambientStrength", 1.0f);
+		texturedShaderProgram.setFloat("ambientStrength", 0.75f);
 		drawGridlines(texturedShaderProgram);
 		
-		
+		texturedShaderProgram.setBool("drawTexture", GL_TRUE);
 		
 
 
@@ -1236,14 +1511,6 @@ int main()
 		glBindVertexArray(0);
 
 	
-		
-
-
-
-	
-
-
-
 
 		// teardown: check and call events and swap the buffers
 		glfwSwapBuffers(window);
@@ -1454,6 +1721,7 @@ void processInput(GLFWwindow* window, Shader shaderProgram)
 		THREE_KEY_PRESSED = false;
 		FOUR_KEY_PRESSED = false;
 		FIVE_KEY_PRESSED = false;
+		SIX_KEY_PRESSED = false;
 	}
 
 	// press 1 to select model A7
@@ -1464,6 +1732,7 @@ void processInput(GLFWwindow* window, Shader shaderProgram)
 		THREE_KEY_PRESSED = false;
 		FOUR_KEY_PRESSED = false;
 		FIVE_KEY_PRESSED = false;
+		SIX_KEY_PRESSED = false;
 	}
 
 	// press 2 to select model O9
@@ -1474,6 +1743,7 @@ void processInput(GLFWwindow* window, Shader shaderProgram)
 		THREE_KEY_PRESSED = false;
 		FOUR_KEY_PRESSED = false;
 		FIVE_KEY_PRESSED = false;
+		SIX_KEY_PRESSED = false;
 	}
 
 	// press 3 to select model S0 
@@ -1484,6 +1754,7 @@ void processInput(GLFWwindow* window, Shader shaderProgram)
 		THREE_KEY_PRESSED = true;
 		FOUR_KEY_PRESSED = false;
 		FIVE_KEY_PRESSED = false;
+		SIX_KEY_PRESSED = false;
 	}
 
 	// press 4 to select model M6
@@ -1494,6 +1765,7 @@ void processInput(GLFWwindow* window, Shader shaderProgram)
 		THREE_KEY_PRESSED = false;
 		FOUR_KEY_PRESSED = true;
 		FIVE_KEY_PRESSED = false;
+		SIX_KEY_PRESSED = false;
 	}
 
 	// press 5 to select model N7
@@ -1504,6 +1776,18 @@ void processInput(GLFWwindow* window, Shader shaderProgram)
 		THREE_KEY_PRESSED = false;
 		FOUR_KEY_PRESSED = false;
 		FIVE_KEY_PRESSED = true;
+		SIX_KEY_PRESSED = false;
+	}
+
+	// press 6 to select Rubik's cube
+	if (glfwGetKey(window, GLFW_KEY_6) == GLFW_PRESS)
+	{
+		ONE_KEY_PRESSED = false;
+		TWO_KEY_PRESSED = false;
+		THREE_KEY_PRESSED = false;
+		FOUR_KEY_PRESSED = false;
+		FIVE_KEY_PRESSED = false;
+		SIX_KEY_PRESSED = true;
 	}
 
 
@@ -1558,78 +1842,80 @@ void processInput(GLFWwindow* window, Shader shaderProgram)
 	worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
 
 
-	// control for Rubiks cube
-	if ((Q_KEY == GLFW_RELEASE) && (glfwGetKey(window, GLFW_KEY_Q)) && (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE))
-		cube_rotation[0][0] += cube_angle;
-	Q_KEY = glfwGetKey(window, GLFW_KEY_Q);
+	if (SIX_KEY_PRESSED) {
+		// control for Rubiks cube
+		if ((Q_KEY == GLFW_RELEASE) && (glfwGetKey(window, GLFW_KEY_Q)) && (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE))
+			cube_rotation[0][0] += cube_angle;
+		Q_KEY = glfwGetKey(window, GLFW_KEY_Q);
 
-	if ((W_KEY == GLFW_RELEASE) && (glfwGetKey(window, GLFW_KEY_W)) && (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE))
-		cube_rotation[1][0] += cube_angle;
-	W_KEY = glfwGetKey(window, GLFW_KEY_W);
+		if ((W_KEY == GLFW_RELEASE) && (glfwGetKey(window, GLFW_KEY_W)) && (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE))
+			cube_rotation[1][0] += cube_angle;
+		W_KEY = glfwGetKey(window, GLFW_KEY_W);
 
-	if ((E_KEY == GLFW_RELEASE) && (glfwGetKey(window, GLFW_KEY_E)) && (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE))
-		cube_rotation[2][0] += cube_angle;
-	E_KEY = glfwGetKey(window, GLFW_KEY_E);
+		if ((E_KEY == GLFW_RELEASE) && (glfwGetKey(window, GLFW_KEY_E)) && (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE))
+			cube_rotation[2][0] += cube_angle;
+		E_KEY = glfwGetKey(window, GLFW_KEY_E);
 
-	if ((R_KEY == GLFW_RELEASE) && (glfwGetKey(window, GLFW_KEY_R)) && (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE))
-		cube_rotation[0][1] += cube_angle;
-	R_KEY = glfwGetKey(window, GLFW_KEY_R);
+		if ((R_KEY == GLFW_RELEASE) && (glfwGetKey(window, GLFW_KEY_R)) && (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE))
+			cube_rotation[0][1] += cube_angle;
+		R_KEY = glfwGetKey(window, GLFW_KEY_R);
 
-	if ((T_KEY == GLFW_RELEASE) && (glfwGetKey(window, GLFW_KEY_T)) && (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE))
-		cube_rotation[1][1] += cube_angle;
-	T_KEY = glfwGetKey(window, GLFW_KEY_T);
+		if ((T_KEY == GLFW_RELEASE) && (glfwGetKey(window, GLFW_KEY_T)) && (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE))
+			cube_rotation[1][1] += cube_angle;
+		T_KEY = glfwGetKey(window, GLFW_KEY_T);
 
-	if ((Y_KEY == GLFW_RELEASE) && (glfwGetKey(window, GLFW_KEY_Y)) && (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE))
-		cube_rotation[2][1] += cube_angle;
-	Y_KEY = glfwGetKey(window, GLFW_KEY_Y);
+		if ((Y_KEY == GLFW_RELEASE) && (glfwGetKey(window, GLFW_KEY_Y)) && (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE))
+			cube_rotation[2][1] += cube_angle;
+		Y_KEY = glfwGetKey(window, GLFW_KEY_Y);
 
-	if ((U_KEY == GLFW_RELEASE) && (glfwGetKey(window, GLFW_KEY_U)) && (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE))
-		cube_rotation[0][2] += cube_angle;
-	U_KEY = glfwGetKey(window, GLFW_KEY_U);
+		if ((U_KEY == GLFW_RELEASE) && (glfwGetKey(window, GLFW_KEY_U)) && (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE))
+			cube_rotation[0][2] += cube_angle;
+		U_KEY = glfwGetKey(window, GLFW_KEY_U);
 
-	if ((I_KEY == GLFW_RELEASE) && (glfwGetKey(window, GLFW_KEY_I)) && (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE))
-		cube_rotation[1][2] += cube_angle;
-	I_KEY = glfwGetKey(window, GLFW_KEY_I);
+		if ((I_KEY == GLFW_RELEASE) && (glfwGetKey(window, GLFW_KEY_I)) && (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE))
+			cube_rotation[1][2] += cube_angle;
+		I_KEY = glfwGetKey(window, GLFW_KEY_I);
 
-	if ((O_KEY == GLFW_RELEASE) && (glfwGetKey(window, GLFW_KEY_O)) && (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE))
-		cube_rotation[2][2] += cube_angle;
-	O_KEY = glfwGetKey(window, GLFW_KEY_O);
+		if ((O_KEY == GLFW_RELEASE) && (glfwGetKey(window, GLFW_KEY_O)) && (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE))
+			cube_rotation[2][2] += cube_angle;
+		O_KEY = glfwGetKey(window, GLFW_KEY_O);
 
-	if ((A_KEY == GLFW_RELEASE) && (glfwGetKey(window, GLFW_KEY_A)) && (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE))
-		cube_rotation[0][0] -= cube_angle;
-	A_KEY = glfwGetKey(window, GLFW_KEY_A);
+		if ((A_KEY == GLFW_RELEASE) && (glfwGetKey(window, GLFW_KEY_A)) && (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE))
+			cube_rotation[0][0] -= cube_angle;
+		A_KEY = glfwGetKey(window, GLFW_KEY_A);
 
-	if ((S_KEY == GLFW_RELEASE) && (glfwGetKey(window, GLFW_KEY_S)) && (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE))
-		cube_rotation[1][0] -= cube_angle;
-	S_KEY = glfwGetKey(window, GLFW_KEY_S);
+		if ((S_KEY == GLFW_RELEASE) && (glfwGetKey(window, GLFW_KEY_S)) && (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE))
+			cube_rotation[1][0] -= cube_angle;
+		S_KEY = glfwGetKey(window, GLFW_KEY_S);
 
-	if ((D_KEY == GLFW_RELEASE) && (glfwGetKey(window, GLFW_KEY_D)) && (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE))
-		cube_rotation[2][0] -= cube_angle;
-	D_KEY = glfwGetKey(window, GLFW_KEY_D);
+		if ((D_KEY == GLFW_RELEASE) && (glfwGetKey(window, GLFW_KEY_D)) && (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE))
+			cube_rotation[2][0] -= cube_angle;
+		D_KEY = glfwGetKey(window, GLFW_KEY_D);
 
-	if ((F_KEY == GLFW_RELEASE) && (glfwGetKey(window, GLFW_KEY_F)) && (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE))
-		cube_rotation[0][1] -= cube_angle;
-	F_KEY = glfwGetKey(window, GLFW_KEY_F);
+		if ((F_KEY == GLFW_RELEASE) && (glfwGetKey(window, GLFW_KEY_F)) && (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE))
+			cube_rotation[0][1] -= cube_angle;
+		F_KEY = glfwGetKey(window, GLFW_KEY_F);
 
-	if ((G_KEY == GLFW_RELEASE) && (glfwGetKey(window, GLFW_KEY_G)) && (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE))
-		cube_rotation[1][1] -= cube_angle;
-	G_KEY = glfwGetKey(window, GLFW_KEY_G);
+		if ((G_KEY == GLFW_RELEASE) && (glfwGetKey(window, GLFW_KEY_G)) && (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE))
+			cube_rotation[1][1] -= cube_angle;
+		G_KEY = glfwGetKey(window, GLFW_KEY_G);
 
-	if ((H_KEY == GLFW_RELEASE) && (glfwGetKey(window, GLFW_KEY_H)) && (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE))
-		cube_rotation[2][1] -= cube_angle;
-	H_KEY = glfwGetKey(window, GLFW_KEY_H);
+		if ((H_KEY == GLFW_RELEASE) && (glfwGetKey(window, GLFW_KEY_H)) && (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE))
+			cube_rotation[2][1] -= cube_angle;
+		H_KEY = glfwGetKey(window, GLFW_KEY_H);
 
-	if ((J_KEY == GLFW_RELEASE) && (glfwGetKey(window, GLFW_KEY_J)) && (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE))
-		cube_rotation[0][2] -= cube_angle;
-	J_KEY = glfwGetKey(window, GLFW_KEY_J);
+		if ((J_KEY == GLFW_RELEASE) && (glfwGetKey(window, GLFW_KEY_J)) && (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE))
+			cube_rotation[0][2] -= cube_angle;
+		J_KEY = glfwGetKey(window, GLFW_KEY_J);
 
-	if ((K_KEY == GLFW_RELEASE) && (glfwGetKey(window, GLFW_KEY_K)) && (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE))
-		cube_rotation[1][2] -= cube_angle;
-	K_KEY = glfwGetKey(window, GLFW_KEY_K);
+		if ((K_KEY == GLFW_RELEASE) && (glfwGetKey(window, GLFW_KEY_K)) && (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE))
+			cube_rotation[1][2] -= cube_angle;
+		K_KEY = glfwGetKey(window, GLFW_KEY_K);
 
-	if ((L_KEY == GLFW_RELEASE) && (glfwGetKey(window, GLFW_KEY_L)) && (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE))
-		cube_rotation[2][2] -= cube_angle;
-	L_KEY = glfwGetKey(window, GLFW_KEY_L);
+		if ((L_KEY == GLFW_RELEASE) && (glfwGetKey(window, GLFW_KEY_L)) && (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE))
+			cube_rotation[2][2] -= cube_angle;
+		L_KEY = glfwGetKey(window, GLFW_KEY_L);
+	}
 
 	cube_rotation_X_1[1][1] = cos(cube_rotation[0][0]);
 	cube_rotation_X_1[2][2] = cos(cube_rotation[0][0]);
@@ -2183,6 +2469,9 @@ void model_ground(float groundSize, Shader shaderProgram, Texture texture, bool 
 		glBindTexture(GL_TEXTURE_2D, texture.getTextureID());
 		shaderProgram.setInt("texture_1", 0);
 	}
+	if (!isTextureOn) 
+		shaderProgram.setBool("drawTexture", GL_FALSE);
+	else shaderProgram.setBool("drawTexture", GL_TRUE);
 
 	translationMatrix[3][0] = -ground_final / 2 / 10;
 	translationMatrix[3][2] = -ground_final / 2 / 10;

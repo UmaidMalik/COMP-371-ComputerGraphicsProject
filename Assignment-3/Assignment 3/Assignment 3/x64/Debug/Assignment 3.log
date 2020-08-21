@@ -1,22 +1,20 @@
 ﻿  main.cpp
 C:\Users\umaid\Documents\Concordia\Summer 2020\COMP 371\COMP 371 - Project\Assignment-3\Assignment 3\Assignment 3\shader.h(64): warning C4101: 'e': unreferenced local variable
-C:\Users\umaid\Documents\Concordia\Summer 2020\COMP 371\COMP 371 - Project\Assignment-3\Assignment 3\Assignment 3\camera.h(45): warning C4244: '-=': conversion from 'double' to 'float', possible loss of data
-C:\Users\umaid\Documents\Concordia\Summer 2020\COMP 371\COMP 371 - Project\Assignment-3\Assignment 3\Assignment 3\camera.h(46): warning C4244: '-=': conversion from 'double' to 'float', possible loss of data
-C:\Users\umaid\Documents\Concordia\Summer 2020\COMP 371\COMP 371 - Project\Assignment-3\Assignment 3\Assignment 3\main.cpp(617): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-C:\Users\umaid\Documents\Concordia\Summer 2020\COMP 371\COMP 371 - Project\Assignment-3\Assignment 3\Assignment 3\main.cpp(618): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-C:\Users\umaid\Documents\Concordia\Summer 2020\COMP 371\COMP 371 - Project\Assignment-3\Assignment 3\Assignment 3\main.cpp(621): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
-C:\Users\umaid\Documents\Concordia\Summer 2020\COMP 371\COMP 371 - Project\Assignment-3\Assignment 3\Assignment 3\main.cpp(624): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
-C:\Users\umaid\Documents\Concordia\Summer 2020\COMP 371\COMP 371 - Project\Assignment-3\Assignment 3\Assignment 3\main.cpp(636): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-C:\Users\umaid\Documents\Concordia\Summer 2020\COMP 371\COMP 371 - Project\Assignment-3\Assignment 3\Assignment 3\main.cpp(684): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-C:\Users\umaid\Documents\Concordia\Summer 2020\COMP 371\COMP 371 - Project\Assignment-3\Assignment 3\Assignment 3\main.cpp(707): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
-C:\Users\umaid\Documents\Concordia\Summer 2020\COMP 371\COMP 371 - Project\Assignment-3\Assignment 3\Assignment 3\main.cpp(708): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
-C:\Users\umaid\Documents\Concordia\Summer 2020\COMP 371\COMP 371 - Project\Assignment-3\Assignment 3\Assignment 3\main.cpp(1147): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-C:\Users\umaid\Documents\Concordia\Summer 2020\COMP 371\COMP 371 - Project\Assignment-3\Assignment 3\Assignment 3\main.cpp(1148): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-C:\Users\umaid\Documents\Concordia\Summer 2020\COMP 371\COMP 371 - Project\Assignment-3\Assignment 3\Assignment 3\main.cpp(1149): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-C:\Users\umaid\Documents\Concordia\Summer 2020\COMP 371\COMP 371 - Project\Assignment-3\Assignment 3\Assignment 3\main.cpp(1150): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-C:\Users\umaid\Documents\Concordia\Summer 2020\COMP 371\COMP 371 - Project\Assignment-3\Assignment 3\Assignment 3\main.cpp(1151): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-C:\Users\umaid\Documents\Concordia\Summer 2020\COMP 371\COMP 371 - Project\Assignment-3\Assignment 3\Assignment 3\main.cpp(1357): warning C4244: '-=': conversion from 'double' to 'float', possible loss of data
-C:\Users\umaid\Documents\Concordia\Summer 2020\COMP 371\COMP 371 - Project\Assignment-3\Assignment 3\Assignment 3\main.cpp(1358): warning C4244: '-=': conversion from 'double' to 'float', possible loss of data
-C:\Users\umaid\Documents\Concordia\Summer 2020\COMP 371\COMP 371 - Project\Assignment-3\Assignment 3\Assignment 3\main.cpp(1691): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-C:\Users\umaid\Documents\Concordia\Summer 2020\COMP 371\COMP 371 - Project\Assignment-3\Assignment 3\Assignment 3\main.cpp(1701): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\Users\umaid\Documents\Concordia\Summer 2020\COMP 371\COMP 371 - Project\Assignment-3\Assignment 3\Assignment 3\main.cpp(619): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\umaid\Documents\Concordia\Summer 2020\COMP 371\COMP 371 - Project\Assignment-3\Assignment 3\Assignment 3\main.cpp(620): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\umaid\Documents\Concordia\Summer 2020\COMP 371\COMP 371 - Project\Assignment-3\Assignment 3\Assignment 3\main.cpp(623): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+C:\Users\umaid\Documents\Concordia\Summer 2020\COMP 371\COMP 371 - Project\Assignment-3\Assignment 3\Assignment 3\main.cpp(626): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+C:\Users\umaid\Documents\Concordia\Summer 2020\COMP 371\COMP 371 - Project\Assignment-3\Assignment 3\Assignment 3\main.cpp(635): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\umaid\Documents\Concordia\Summer 2020\COMP 371\COMP 371 - Project\Assignment-3\Assignment 3\Assignment 3\main.cpp(683): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\Users\umaid\Documents\Concordia\Summer 2020\COMP 371\COMP 371 - Project\Assignment-3\Assignment 3\Assignment 3\main.cpp(1010): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+C:\Users\umaid\Documents\Concordia\Summer 2020\COMP 371\COMP 371 - Project\Assignment-3\Assignment 3\Assignment 3\main.cpp(1011): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+C:\Users\umaid\Documents\Concordia\Summer 2020\COMP 371\COMP 371 - Project\Assignment-3\Assignment 3\Assignment 3\main.cpp(1423): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+C:\Users\umaid\Documents\Concordia\Summer 2020\COMP 371\COMP 371 - Project\Assignment-3\Assignment 3\Assignment 3\main.cpp(1424): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+C:\Users\umaid\Documents\Concordia\Summer 2020\COMP 371\COMP 371 - Project\Assignment-3\Assignment 3\Assignment 3\main.cpp(1425): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+C:\Users\umaid\Documents\Concordia\Summer 2020\COMP 371\COMP 371 - Project\Assignment-3\Assignment 3\Assignment 3\main.cpp(1426): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+C:\Users\umaid\Documents\Concordia\Summer 2020\COMP 371\COMP 371 - Project\Assignment-3\Assignment 3\Assignment 3\main.cpp(1427): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+C:\Users\umaid\Documents\Concordia\Summer 2020\COMP 371\COMP 371 - Project\Assignment-3\Assignment 3\Assignment 3\main.cpp(1624): warning C4244: '-=': conversion from 'double' to 'float', possible loss of data
+C:\Users\umaid\Documents\Concordia\Summer 2020\COMP 371\COMP 371 - Project\Assignment-3\Assignment 3\Assignment 3\main.cpp(1625): warning C4244: '-=': conversion from 'double' to 'float', possible loss of data
+C:\Users\umaid\Documents\Concordia\Summer 2020\COMP 371\COMP 371 - Project\Assignment-3\Assignment 3\Assignment 3\main.cpp(1977): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\Users\umaid\Documents\Concordia\Summer 2020\COMP 371\COMP 371 - Project\Assignment-3\Assignment 3\Assignment 3\main.cpp(1987): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
   Assignment 3.vcxproj -> C:\Users\umaid\Documents\Concordia\Summer 2020\COMP 371\COMP 371 - Project\Assignment-3\Assignment 3\x64\Debug\Assignment 3.exe

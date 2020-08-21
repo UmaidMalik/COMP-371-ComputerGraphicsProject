@@ -10,9 +10,9 @@ uniform sampler2D texture_1;
 
 uniform vec3 objectColor;
     
-uniform float ambientStrength = 0.3; //0.50
-const float diffuseStrength = 2.9; // 1.50
-const float specularStrength = 0.4; // 1.80
+uniform float ambientStrength = 0.3; 
+const float diffuseStrength = 2.9; 
+const float specularStrength = 0.4; 
 
 uniform float light_cutoff_outer;
 uniform float light_cutoff_inner;
@@ -22,6 +22,8 @@ uniform float light_far_plane;
 uniform vec3 viewPos;
 
 uniform sampler2D shadowMap;
+
+uniform bool drawTexture = true;
 
 in vec3 FragPos;
 in vec4 FragPosLightSpace;
@@ -63,8 +65,8 @@ float shadowScalar()
 	
 	float current_depth = normalized_device_coord.z;
 	
-	float bias = 0.003;  // bias applied in depth map: see shadow_vertex.glsl
-    return ((current_depth - bias) < closest_depth) ? 1.0 : 0.0;
+	float bias = max(0.05 * (1.0 - dot(Normal, lightDir)), 0.005);  // bias applied in depth map: see shadow_vertex.glsl
+    return ((current_depth - bias) > closest_depth) ? 1.0 : 0.0;
 }
 
 float spotlightScalar()
@@ -79,26 +81,6 @@ float spotlightScalar()
         return 0.0;
     }
 }
-/*
-void main()
-	{
-		// ambient
-		vec3 ambient = ambientStrength * lightColor;
-		// diffuse
-		vec3 norm = normalize(Normal);
-		vec3 lightDir = normalize(lightPos - FragPos);
-		float diff = max(dot(norm, lightDir), 0.0);
-		vec3 diffuse = diffuseStrength * diff * lightColor;
-		// specular
-		vec3 viewDir = normalize(viewPos - FragPos);
-		vec3 reflectDir = reflect(-lightDir, norm);
-		float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
-		vec3 specular = specularStrength * spec * lightColor;
-		//
-		vec3 phongModel = (ambient + diffuse + specular) * objectColor;
-		FragResult = texture(texture_1, vertexUV) * vec4(phongModel, 1.0);
-	}
-	*/
 
 	void main()
 	{
@@ -116,5 +98,9 @@ void main()
 		// phongModel
 		vec3 phongModel = (ambient + diffuse + specular) * objectColor;
 		
-		FragResult = texture(texture_1, vertexUV) * vec4(phongModel, 1.0) ;
+		if (drawTexture)
+			FragResult = texture(texture_1, vertexUV) * vec4(phongModel, 1.0);
+		else
+			FragResult = vec4(phongModel, 1.0);
+		
 	}
