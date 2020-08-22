@@ -309,7 +309,13 @@ void model_O9(Shader shaderProgram, Texture texture_1, Texture texture_2, bool i
 void model_S0(Shader shaderProgram, Texture texture_1, Texture texture_2, bool isTextureOn);
 void model_M6(Shader shaderProgram, Texture texture_1, Texture texture_2, bool isTextureOn);
 void model_N7(Shader shaderProgram, Texture texture_1, Texture texture_2, bool isTextureOn);
-void rubiks_cube(Shader shaderProgram, Texture texture_1, Texture texture_2, bool isTextureOn);
+
+
+void rubiks_cube(Shader shaderProgram, unsigned int knight_tex_ID[10], unsigned int color_tex_ID[10], unsigned int shape_A_tex_ID[10], unsigned int shape_B_tex_ID[10], unsigned int number_tex_ID[10], unsigned int science_tex_ID[10]);
+void drawLightCube(Shader shaderProgram, vec3 lightPosition);
+void drawTimer(Shader shaderProgram, unsigned int number_tex_ID[10]);
+void drawSkybox(Shader shaderProgram, Texture skybox_front, Texture skybox_right, Texture skybox_back, Texture skybox_left, Texture skybox_bottom, Texture skybox_top);
+
 
 int createGridlines(int numGridlines, vec3* gridLinesVertices, GLuint size, vec3 lineColor, float sizeOfGrid);
 void drawGridlines(Shader shaderProgram);
@@ -445,6 +451,8 @@ int main()
 	Texture science_8("../assets/textures/face_6/science_8.jpg");
 	Texture science_9("../assets/textures/face_6/science_9.jpg");
 
+	
+
 	Texture skybox_front("../assets/textures/skybox/skybox_front.png");
 	Texture skybox_top("../assets/textures/skybox/skybox_top.png");
 	Texture skybox_bottom("../assets/textures/skybox/skybox_bottom.png");
@@ -465,6 +473,61 @@ int main()
 	number[7] = number_7.getTextureID();
 	number[8] = number_8.getTextureID();
 	number[9] = number_9.getTextureID();
+
+	unsigned int knight[10];
+	knight[1] = knight_1.getTextureID();
+	knight[2] = knight_2.getTextureID();
+	knight[3] = knight_3.getTextureID();
+	knight[4] = knight_4.getTextureID();
+	knight[5] = knight_5.getTextureID();
+	knight[6] = knight_6.getTextureID();
+	knight[7] = knight_7.getTextureID();
+	knight[8] = knight_8.getTextureID();
+	knight[9] = knight_9.getTextureID();
+
+	unsigned int color[10];
+	color[1] = color_1.getTextureID();
+	color[2] = color_2.getTextureID();
+	color[3] = color_3.getTextureID();
+	color[4] = color_4.getTextureID();
+	color[5] = color_5.getTextureID();
+	color[6] = color_6.getTextureID();
+	color[7] = color_7.getTextureID();
+	color[8] = color_8.getTextureID();
+	color[9] = color_9.getTextureID();
+
+	unsigned int shape_A[10];
+	shape_A[1] = shape_A_1.getTextureID();
+	shape_A[2] = shape_A_2.getTextureID();
+	shape_A[3] = shape_A_3.getTextureID();
+	shape_A[4] = shape_A_4.getTextureID();
+	shape_A[5] = shape_A_5.getTextureID();
+	shape_A[6] = shape_A_6.getTextureID();
+	shape_A[7] = shape_A_7.getTextureID();
+	shape_A[8] = shape_A_8.getTextureID();
+	shape_A[9] = shape_A_9.getTextureID();
+
+	unsigned int shape_B[10];
+	shape_B[1] = shape_B_1.getTextureID();
+	shape_B[2] = shape_B_2.getTextureID();
+	shape_B[3] = shape_B_3.getTextureID();
+	shape_B[4] = shape_B_4.getTextureID();
+	shape_B[5] = shape_B_5.getTextureID();
+	shape_B[6] = shape_B_6.getTextureID();
+	shape_B[7] = shape_B_7.getTextureID();
+	shape_B[8] = shape_B_8.getTextureID();
+	shape_B[9] = shape_B_9.getTextureID();
+
+	unsigned int science[10];
+	science[1] = science_1.getTextureID();
+	science[2] = science_2.getTextureID();
+	science[3] = science_3.getTextureID();
+	science[4] = science_4.getTextureID();
+	science[5] = science_5.getTextureID();
+	science[6] = science_6.getTextureID();
+	science[7] = science_7.getTextureID();
+	science[8] = science_8.getTextureID();
+	science[9] = science_9.getTextureID();
 	
 	// defines vertices and color for the cube 
 	TexturedColoredVertex texturedCubeVertexArray[] = {
@@ -684,8 +747,8 @@ int main()
 		lastFrameTime += deltaTime;
 
 		// light parameters
-		vec3 lightPosition = vec3(0.0f, 2.0f, 0.0f);
-		vec3 lightFocus(0.1f, 0.0f, 0.1f);      // the point in 3D space the light "looks" at
+		vec3 lightPosition = vec3(0.0f, 3.0f, 4.0f);
+		vec3 lightFocus(0.0f, 0.0f, 0.0f);      // the point in 3D space the light "looks" at
 		vec3 lightDirection = normalize(lightFocus - lightPosition);
 
 		float lightNearPlane = 1.0f;
@@ -695,11 +758,12 @@ int main()
 		texturedShaderProgram.setVec3("objectColor", glm::vec3(1.0f, 1.0f, 1.0f));
 		
 		mat4 lightProjectionMatrix = perspective(90.0f, (float)SHADOW_WIDTH / (float)SHADOW_HEIGHT, lightNearPlane, lightFarPlane);
+		//mat4 lightProjectionMatrix = ortho(-100.0f, 100.0f, -100.0f, 100.0f, lightNearPlane, lightFarPlane);
 		mat4 lightViewMatrix = lookAt(lightPosition, lightFocus, vec3(0.0f, 1.0f, 0.0f));
 		mat4 lightSpaceMatrix = lightProjectionMatrix * lightViewMatrix;
 
 
-		// render shadow
+		// 1. render shadow
 		shadowShaderProgram.useProgram();
 		shadowShaderProgram.setMat4("light_view_proj_matrix", lightSpaceMatrix);
 		
@@ -707,7 +771,7 @@ int main()
 		glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
 		glClear(GL_DEPTH_BUFFER_BIT);
 		glActiveTexture(GL_TEXTURE0);
-		glCullFace(GL_FRONT); // used to fix any peter panning issues
+		//glCullFace(GL_FRONT); // used to fix any peter panning issues
 		
 		glPointSize(10);		// increased point size so that it is easily visible
 		glLineWidth(2);
@@ -739,230 +803,22 @@ int main()
 		model_N7(shadowShaderProgram, boxTexture, metalTexture, textures_on);
 		// end of moedel N7
 
-		// light cube
-		worldMatrix = worldOrientationMatrix * translate(glm::mat4(1.0f), lightPosition) * glm::scale(glm::mat4(1.0f), glm::vec3(0.25f, 0.25f, 0.25f));
-		shadowShaderProgram.setMat4("worldMatrix", worldMatrix);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
+		
 
 		// draw rubiks cube
-		modelTranslationMatrix = translate(glm::mat4(1.0f), glm::vec3(0.0f, 3.0f, 2.0f));
-		modelScalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(3.0f, 3.0f, 3.0f));
-		modelRotationMatrix = identityMatrix;
-
-		// cube 1
-		partMatrix = cube_rotation_X_3 * cube_rotation_Y_1 * cube_rotation_Z_1 * translate(glm::mat4(1.0f), glm::vec3(0.05f, 0.05f, 0.05f));
-		worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
-		shadowShaderProgram.setMat4("worldMatrix", worldMatrix);
-
-		glDrawArrays(GL_TRIANGLES, 30, 6);
-		glDrawArrays(GL_TRIANGLES, 12, 6);
-		glDrawArrays(GL_TRIANGLES, 6, 6);
-
-		// cube 2
-		partMatrix = cube_rotation_X_3 * cube_rotation_Y_1 * cube_rotation_Z_2 * translate(glm::mat4(1.0f), glm::vec3(0.05f, 0.05f, -0.05f));
-		worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
-		shadowShaderProgram.setMat4("worldMatrix", worldMatrix);
-
-		glDrawArrays(GL_TRIANGLES, 30, 6);
-		glDrawArrays(GL_TRIANGLES, 6, 6);
-
-		// cube 3
-		partMatrix = cube_rotation_X_3 * cube_rotation_Y_1 * cube_rotation_Z_3 * translate(glm::mat4(1.0f), glm::vec3(0.05f, 0.05f, -0.15f));
-		worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
-		shadowShaderProgram.setMat4("worldMatrix", worldMatrix);
-
-		glDrawArrays(GL_TRIANGLES, 30, 6);
-		glDrawArrays(GL_TRIANGLES, 6, 6);
-		glDrawArrays(GL_TRIANGLES, 0, 6);
-
-		// cube 4
-		partMatrix = cube_rotation_X_2 * cube_rotation_Y_1 * cube_rotation_Z_1 * translate(glm::mat4(1.0f), glm::vec3(-0.05f, 0.05f, 0.05f));
-		worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
-		shadowShaderProgram.setMat4("worldMatrix", worldMatrix);
-
-		glDrawArrays(GL_TRIANGLES, 30, 6);
-		glDrawArrays(GL_TRIANGLES, 12, 6);
-
-		// cube 5
-		partMatrix = cube_rotation_X_2 * cube_rotation_Y_1 * cube_rotation_Z_2 * translate(glm::mat4(1.0f), glm::vec3(-0.05f, 0.05f, -0.05f));
-		worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
-		shadowShaderProgram.setMat4("worldMatrix", worldMatrix);
-
-		glDrawArrays(GL_TRIANGLES, 30, 6);
-
-		//cube 6
-		partMatrix = cube_rotation_X_2 * cube_rotation_Y_1 * cube_rotation_Z_3 * translate(glm::mat4(1.0f), glm::vec3(-0.05f, 0.05f, -0.15f));
-		worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
-		shadowShaderProgram.setMat4("worldMatrix", worldMatrix);
-
-		glDrawArrays(GL_TRIANGLES, 30, 6);
-		glDrawArrays(GL_TRIANGLES, 0, 6);
-
-		// cube 7
-		partMatrix = cube_rotation_X_1 * cube_rotation_Y_1 * cube_rotation_Z_1 * translate(glm::mat4(1.0f), glm::vec3(-0.15f, 0.05f, 0.05f));
-		worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
-		shadowShaderProgram.setMat4("worldMatrix", worldMatrix);
-
-		glDrawArrays(GL_TRIANGLES, 30, 6);
-		glDrawArrays(GL_TRIANGLES, 12, 6);
-		glDrawArrays(GL_TRIANGLES, 18, 6);
-
-		// cube 8
-		partMatrix = cube_rotation_X_1 * cube_rotation_Y_1 * cube_rotation_Z_2 * translate(glm::mat4(1.0f), glm::vec3(-0.15f, 0.05f, -0.05f));
-		worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
-		shadowShaderProgram.setMat4("worldMatrix", worldMatrix);
-
-		glDrawArrays(GL_TRIANGLES, 30, 6);
-		glDrawArrays(GL_TRIANGLES, 18, 6);
-
-		// cube 9
-		partMatrix = cube_rotation_X_1 * cube_rotation_Y_1 * cube_rotation_Z_3 * translate(glm::mat4(1.0f), glm::vec3(-0.15f, 0.05f, -0.15f));
-		worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
-		shadowShaderProgram.setMat4("worldMatrix", worldMatrix);
-
-		glDrawArrays(GL_TRIANGLES, 30, 6);
-		glDrawArrays(GL_TRIANGLES, 18, 6);
-		glDrawArrays(GL_TRIANGLES, 0, 6);
-
-		// cube 10 
-		partMatrix = cube_rotation_X_3 * cube_rotation_Y_2 * cube_rotation_Z_1 * translate(glm::mat4(1.0f), glm::vec3(0.05f, -0.05f, 0.05f));
-		worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
-		shadowShaderProgram.setMat4("worldMatrix", worldMatrix);
-
-		glDrawArrays(GL_TRIANGLES, 12, 6);
-		glDrawArrays(GL_TRIANGLES, 6, 6);
-
-		// cube 11
-		partMatrix = cube_rotation_X_3 * cube_rotation_Y_2 * cube_rotation_Z_2 * translate(glm::mat4(1.0f), glm::vec3(0.05f, -0.05f, -0.05f));
-		worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
-		shadowShaderProgram.setMat4("worldMatrix", worldMatrix);
-
-		glDrawArrays(GL_TRIANGLES, 6, 6);
-
-		// cube 12
-		partMatrix = cube_rotation_X_3 * cube_rotation_Y_2 * cube_rotation_Z_3 * translate(glm::mat4(1.0f), glm::vec3(0.05f, -0.05f, -0.15f));
-		worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
-		shadowShaderProgram.setMat4("worldMatrix", worldMatrix);
-
-		glDrawArrays(GL_TRIANGLES, 6, 6);
-		glDrawArrays(GL_TRIANGLES, 0, 6);
-
-		// cube 13
-		partMatrix = cube_rotation_X_2 * cube_rotation_Y_2 * cube_rotation_Z_1 * translate(glm::mat4(1.0f), glm::vec3(-0.05f, -0.05f, 0.05f));
-		worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
-		shadowShaderProgram.setMat4("worldMatrix", worldMatrix);
-
-		glDrawArrays(GL_TRIANGLES, 12, 6);
-
-		// cube 14
-		partMatrix = cube_rotation_X_2 * cube_rotation_Y_2 * cube_rotation_Z_3 * translate(glm::mat4(1.0f), glm::vec3(-0.05f, -0.05f, -0.15f));
-		worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
-		shadowShaderProgram.setMat4("worldMatrix", worldMatrix);
-
-		glDrawArrays(GL_TRIANGLES, 0, 6);
-
-
-		// cube 15
-		partMatrix = cube_rotation_X_1 * cube_rotation_Y_2 * cube_rotation_Z_1 * translate(glm::mat4(1.0f), glm::vec3(-0.15f, -0.05f, 0.05f));
-		worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
-		shadowShaderProgram.setMat4("worldMatrix", worldMatrix);
-
-		glDrawArrays(GL_TRIANGLES, 12, 6);
-		glDrawArrays(GL_TRIANGLES, 18, 6);
-
-		// cube 16
-		partMatrix = cube_rotation_X_1 * cube_rotation_Y_2 * cube_rotation_Z_2 * translate(glm::mat4(1.0f), glm::vec3(-0.15f, -0.05f, -0.05f));
-		worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
-		shadowShaderProgram.setMat4("worldMatrix", worldMatrix);
-
-		glDrawArrays(GL_TRIANGLES, 18, 6);
-
-		// cube 17
-		partMatrix = cube_rotation_X_1 * cube_rotation_Y_2 * cube_rotation_Z_3 * translate(glm::mat4(1.0f), glm::vec3(-0.15f, -0.05f, -0.15f));
-		worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
-		shadowShaderProgram.setMat4("worldMatrix", worldMatrix);
-
-		glDrawArrays(GL_TRIANGLES, 18, 6);
-		glDrawArrays(GL_TRIANGLES, 0, 6);
-
-		// cube 18
-		partMatrix = cube_rotation_X_3 * cube_rotation_Y_3 * cube_rotation_Z_1 * translate(glm::mat4(1.0f), glm::vec3(0.05f, -0.15f, 0.05f));
-		worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
-		shadowShaderProgram.setMat4("worldMatrix", worldMatrix);
-
-		glDrawArrays(GL_TRIANGLES, 12, 6);
-		glDrawArrays(GL_TRIANGLES, 6, 6);
-		glDrawArrays(GL_TRIANGLES, 24, 6);
-
-		// cube 19 
-		partMatrix = cube_rotation_X_3 * cube_rotation_Y_3 * cube_rotation_Z_2 * translate(glm::mat4(1.0f), glm::vec3(0.05f, -0.15f, -0.05f));
-		worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
-		shadowShaderProgram.setMat4("worldMatrix", worldMatrix);
-
-		glDrawArrays(GL_TRIANGLES, 6, 6);
-		glDrawArrays(GL_TRIANGLES, 24, 6);
-
-		// cube 20
-		partMatrix = cube_rotation_X_3 * cube_rotation_Y_3 * cube_rotation_Z_3 * translate(glm::mat4(1.0f), glm::vec3(0.05f, -0.15f, -0.15f));
-		worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
-		shadowShaderProgram.setMat4("worldMatrix", worldMatrix);
-
-		glDrawArrays(GL_TRIANGLES, 6, 6);
-		glDrawArrays(GL_TRIANGLES, 24, 6);
-		glDrawArrays(GL_TRIANGLES, 0, 6);
-
-		// cube 21
-		partMatrix = cube_rotation_X_2 * cube_rotation_Y_3 * cube_rotation_Z_1 * translate(glm::mat4(1.0f), glm::vec3(-0.05f, -0.15f, 0.05f));
-		worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
-		shadowShaderProgram.setMat4("worldMatrix", worldMatrix);
-
-		glDrawArrays(GL_TRIANGLES, 12, 6);
-		glDrawArrays(GL_TRIANGLES, 24, 6);
-
-		// cube 22
-		partMatrix = cube_rotation_X_2 * cube_rotation_Y_3 * cube_rotation_Z_2 * translate(glm::mat4(1.0f), glm::vec3(-0.05f, -0.15f, -0.05f));
-		worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
-		shadowShaderProgram.setMat4("worldMatrix", worldMatrix);
-
-		glDrawArrays(GL_TRIANGLES, 24, 6);
-
-		// cube 23
-		partMatrix = cube_rotation_X_2 * cube_rotation_Y_3 * cube_rotation_Z_3 * translate(glm::mat4(1.0f), glm::vec3(-0.05f, -0.15f, -0.15f));
-		worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
-		shadowShaderProgram.setMat4("worldMatrix", worldMatrix);
-
-		glDrawArrays(GL_TRIANGLES, 24, 6);
-		glDrawArrays(GL_TRIANGLES, 0, 6);
-
-		// cube 24
-		partMatrix = cube_rotation_X_1 * cube_rotation_Y_3 * cube_rotation_Z_1 * translate(glm::mat4(1.0f), glm::vec3(-0.15f, -0.15f, 0.05f));
-		worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
-		shadowShaderProgram.setMat4("worldMatrix", worldMatrix);
-
-		glDrawArrays(GL_TRIANGLES, 12, 6);
-		glDrawArrays(GL_TRIANGLES, 18, 6);
-		glDrawArrays(GL_TRIANGLES, 24, 6);
-
-		// cube 25
-		partMatrix = cube_rotation_X_1 * cube_rotation_Y_3 * cube_rotation_Z_2 * translate(glm::mat4(1.0f), glm::vec3(-0.15f, -0.15f, -0.05f));
-		worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
-		shadowShaderProgram.setMat4("worldMatrix", worldMatrix);
-
-		glDrawArrays(GL_TRIANGLES, 18, 6);
-		glDrawArrays(GL_TRIANGLES, 24, 6);
-
-		// cube 26
-		partMatrix = cube_rotation_X_1 * cube_rotation_Y_3 * cube_rotation_Z_3 * translate(glm::mat4(1.0f), glm::vec3(-0.15f, -0.15f, -0.15f));
-		worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
-		shadowShaderProgram.setMat4("worldMatrix", worldMatrix);
-
-		glDrawArrays(GL_TRIANGLES, 18, 6);
-		glDrawArrays(GL_TRIANGLES, 24, 6);
-		glDrawArrays(GL_TRIANGLES, 0, 6);
-
+		rubiks_cube(shadowShaderProgram, knight, color, shape_A, shape_B, number, science);
 		// end of rubiks cube
 
-		glCullFace(GL_BACK);
+		// draw timer
+		drawTimer(shadowShaderProgram, number);
+
+		
+
+
+		// draw skybox
+		drawSkybox(shadowShaderProgram, skybox_front, skybox_right, skybox_back, skybox_left, skybox_bottom, skybox_top);
+
+		//glCullFace(GL_BACK);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		
 		// reset viewport
@@ -973,30 +829,17 @@ int main()
 
 		
 
-		// render scene
+		// 2. render scene
 		//int width, height;
 		glfwGetFramebufferSize(window, &width, &height);
 		glViewport(0, 0, width, height);
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		glClearColor(0.0f, 0.2f, 0.4f, 1.0f); // Midnight blue
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		
+		texturedShaderProgram.useProgram();
+
 		texturedShaderProgram.setVec3("viewPos", cameraPosition);
 
 		
-
-		// use texturedShaderProgram for the textured models
-		if (textures_on) {
-			texturedShaderProgram.useProgram();
-			glActiveTexture(GL_TEXTURE0); // this is the GL "reset" texture, use to flush previous texture
-		}
-		else {
-			texturedShaderProgram.useProgram();
-		}
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, depthMap);
-		// Set light space matrix on both shaders
-
 		texturedShaderProgram.setMat4("light_view_proj_matrix", lightSpaceMatrix);
 
 		// Set light position on scene shader
@@ -1005,13 +848,22 @@ int main()
 		// Set light direction on scene shader
 		texturedShaderProgram.setVec3("lightDir", lightDirection);
 
+		// use texturedShaderProgram for the textured models
+		if (textures_on) {
+			glActiveTexture(GL_TEXTURE0); // this is the GL "reset" texture, use to flush previous texture
+		}
+	
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, depthMap);
+		// Set light space matrix on both shaders
+
 
 		// Set light far and near planes on scene shader
 		texturedShaderProgram.setInt("light_near_plane", lightNearPlane);
 		texturedShaderProgram.setInt("light_far_plane", lightFarPlane);
 		
-		//glActiveTexture(GL_TEXTURE0);
-		//glBindTexture(GL_TEXTURE_2D, depthMap);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, depthMap);
 
 
 		glPointSize(10);		// increased point size so that it is easily visible
@@ -1045,456 +897,24 @@ int main()
 		// end of moedel N7
 
 		// light cube
-		texturedShaderProgram.setVec3("objectColor", glm::vec3(1.0f, 1.0f, 1.0f));
-		texturedShaderProgram.setFloat("ambientStrength", 100.0f);
-		worldMatrix = worldOrientationMatrix * translate(glm::mat4(1.0f), lightPosition) * glm::scale(glm::mat4(1.0f), glm::vec3(0.25f, 0.25f, 0.25f));
-		texturedShaderProgram.setMat4("worldMatrix", worldMatrix);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
+		drawLightCube(texturedShaderProgram, lightPosition);
+		
 
 		
 
 		// draw rubiks cube
-		texturedShaderProgram.setBool("drawTexture", GL_TRUE);
-		texturedShaderProgram.setFloat("ambientStrength", 1.0f);
-		modelTranslationMatrix = translate(glm::mat4(1.0f), glm::vec3(0.0f, 3.0f, 2.0f));
-		modelScalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(3.0f, 3.0f, 3.0f));
-		modelRotationMatrix = identityMatrix;
+		rubiks_cube(texturedShaderProgram, knight, color, shape_A, shape_B, number, science);
+		// end of rubiks cube
 
-			// cube 1
-			partMatrix = cube_rotation_X_3 * cube_rotation_Y_1 * cube_rotation_Z_1 * translate(glm::mat4(1.0f), glm::vec3(0.05f, 0.05f, 0.05f));
-			worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
-			texturedShaderProgram.setMat4("worldMatrix", worldMatrix);
-
-			glBindTexture(GL_TEXTURE_2D, shape_A_9.getTextureID());
-			texturedShaderProgram.setInt("texture_1", 0);
-			glDrawArrays(GL_TRIANGLES, 30, 6);
-
-			glBindTexture(GL_TEXTURE_2D, color_3.getTextureID());
-			texturedShaderProgram.setInt("texture_1", 0);
-			glDrawArrays(GL_TRIANGLES, 12, 6);
-
-			glBindTexture(GL_TEXTURE_2D, science_1.getTextureID());
-			texturedShaderProgram.setInt("texture_1", 0);
-			glDrawArrays(GL_TRIANGLES, 6, 6);
-
-			// cube 2
-			partMatrix = cube_rotation_X_3 * cube_rotation_Y_1 * cube_rotation_Z_2 * translate(glm::mat4(1.0f), glm::vec3(0.05f, 0.05f, -0.05f));
-			worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
-			texturedShaderProgram.setMat4("worldMatrix", worldMatrix);
-
-			glBindTexture(GL_TEXTURE_2D, shape_A_6.getTextureID());
-			texturedShaderProgram.setInt("texture_1", 0);
-			glDrawArrays(GL_TRIANGLES, 30, 6);
-
-			glBindTexture(GL_TEXTURE_2D, science_2.getTextureID());
-			texturedShaderProgram.setInt("texture_1", 0);
-			glDrawArrays(GL_TRIANGLES, 6, 6);
-
-			// cube 3
-			partMatrix = cube_rotation_X_3 * cube_rotation_Y_1 * cube_rotation_Z_3 * translate(glm::mat4(1.0f), glm::vec3(0.05f, 0.05f, -0.15f));
-			worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
-			texturedShaderProgram.setMat4("worldMatrix", worldMatrix);
-
-			glBindTexture(GL_TEXTURE_2D, shape_A_3.getTextureID());
-			texturedShaderProgram.setInt("texture_1", 0);
-			glDrawArrays(GL_TRIANGLES, 30, 6);
-
-			glBindTexture(GL_TEXTURE_2D, science_3.getTextureID());
-			texturedShaderProgram.setInt("texture_1", 0);
-			glDrawArrays(GL_TRIANGLES, 6, 6);
-
-			glBindTexture(GL_TEXTURE_2D, number[1]);
-			texturedShaderProgram.setInt("texture_1", 0);
-			glDrawArrays(GL_TRIANGLES, 0, 6);
-
-			// cube 4
-			partMatrix = cube_rotation_X_2 * cube_rotation_Y_1 * cube_rotation_Z_1 * translate(glm::mat4(1.0f), glm::vec3(-0.05f, 0.05f, 0.05f));
-			worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
-			texturedShaderProgram.setMat4("worldMatrix", worldMatrix);
-
-			glBindTexture(GL_TEXTURE_2D, shape_A_8.getTextureID());
-			texturedShaderProgram.setInt("texture_1", 0);
-			glDrawArrays(GL_TRIANGLES, 30, 6);
-
-			glBindTexture(GL_TEXTURE_2D, color_2.getTextureID());
-			texturedShaderProgram.setInt("texture_1", 0);
-			glDrawArrays(GL_TRIANGLES, 12, 6);
-
-			// cube 5
-			partMatrix = cube_rotation_X_2 * cube_rotation_Y_1 * cube_rotation_Z_2 * translate(glm::mat4(1.0f), glm::vec3(-0.05f, 0.05f, -0.05f));
-			worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
-			texturedShaderProgram.setMat4("worldMatrix", worldMatrix);
-
-			glBindTexture(GL_TEXTURE_2D, shape_A_5.getTextureID());
-			texturedShaderProgram.setInt("texture_1", 0);
-			glDrawArrays(GL_TRIANGLES, 30, 6);
-
-			//cube 6
-			partMatrix = cube_rotation_X_2 * cube_rotation_Y_1 * cube_rotation_Z_3 * translate(glm::mat4(1.0f), glm::vec3(-0.05f, 0.05f, -0.15f));
-			worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
-			texturedShaderProgram.setMat4("worldMatrix", worldMatrix);
-
-			glBindTexture(GL_TEXTURE_2D, shape_A_2.getTextureID());
-			texturedShaderProgram.setInt("texture_1", 0);
-			glDrawArrays(GL_TRIANGLES, 30, 6);
-
-			glBindTexture(GL_TEXTURE_2D, number[2]);
-			texturedShaderProgram.setInt("texture_1", 0);
-			glDrawArrays(GL_TRIANGLES, 0, 6);
-
-			// cube 7
-			partMatrix = cube_rotation_X_1 * cube_rotation_Y_1 * cube_rotation_Z_1 * translate(glm::mat4(1.0f), glm::vec3(-0.15f, 0.05f, 0.05f));
-			worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
-			texturedShaderProgram.setMat4("worldMatrix", worldMatrix);
-
-			glBindTexture(GL_TEXTURE_2D, shape_A_7.getTextureID());
-			texturedShaderProgram.setInt("texture_1", 0);
-			glDrawArrays(GL_TRIANGLES, 30, 6);
-
-			glBindTexture(GL_TEXTURE_2D, color_1.getTextureID());
-			texturedShaderProgram.setInt("texture_1", 0);
-			glDrawArrays(GL_TRIANGLES, 12, 6);
-
-			glBindTexture(GL_TEXTURE_2D, knight_3.getTextureID());
-			texturedShaderProgram.setInt("texture_1", 0);
-			glDrawArrays(GL_TRIANGLES, 18, 6);
-
-			// cube 8
-			partMatrix = cube_rotation_X_1 * cube_rotation_Y_1 * cube_rotation_Z_2 * translate(glm::mat4(1.0f), glm::vec3(-0.15f, 0.05f, -0.05f));
-			worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
-			texturedShaderProgram.setMat4("worldMatrix", worldMatrix);
-
-			glBindTexture(GL_TEXTURE_2D, shape_A_4.getTextureID());
-			texturedShaderProgram.setInt("texture_1", 0);
-			glDrawArrays(GL_TRIANGLES, 30, 6);
-
-			glBindTexture(GL_TEXTURE_2D, knight_2.getTextureID());
-			texturedShaderProgram.setInt("texture_1", 0);
-			glDrawArrays(GL_TRIANGLES, 18, 6);
-
-			// cube 9
-			partMatrix = cube_rotation_X_1 * cube_rotation_Y_1 * cube_rotation_Z_3 * translate(glm::mat4(1.0f), glm::vec3(-0.15f, 0.05f, -0.15f));
-			worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
-			texturedShaderProgram.setMat4("worldMatrix", worldMatrix);
-
-			glBindTexture(GL_TEXTURE_2D, shape_A_1.getTextureID());
-			texturedShaderProgram.setInt("texture_1", 0);
-			glDrawArrays(GL_TRIANGLES, 30, 6);
-
-			glBindTexture(GL_TEXTURE_2D, knight_1.getTextureID());
-			texturedShaderProgram.setInt("texture_1", 0);
-			glDrawArrays(GL_TRIANGLES, 18, 6);
-
-			glBindTexture(GL_TEXTURE_2D, number[3]);
-			texturedShaderProgram.setInt("texture_1", 0);
-			glDrawArrays(GL_TRIANGLES, 0, 6);
-
-			// cube 10 
-			partMatrix = cube_rotation_X_3 * cube_rotation_Y_2 * cube_rotation_Z_1 * translate(glm::mat4(1.0f), glm::vec3(0.05f, -0.05f, 0.05f));
-			worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
-			texturedShaderProgram.setMat4("worldMatrix", worldMatrix);
-
-			glBindTexture(GL_TEXTURE_2D, color_6.getTextureID());
-			texturedShaderProgram.setInt("texture_1", 0);
-			glDrawArrays(GL_TRIANGLES, 12, 6);
-
-			glBindTexture(GL_TEXTURE_2D, science_4.getTextureID());
-			texturedShaderProgram.setInt("texture_1", 0);
-			glDrawArrays(GL_TRIANGLES, 6, 6);
-
-			// cube 11
-			partMatrix = cube_rotation_X_3 * cube_rotation_Y_2 * cube_rotation_Z_2 * translate(glm::mat4(1.0f), glm::vec3(0.05f, -0.05f, -0.05f));
-			worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
-			texturedShaderProgram.setMat4("worldMatrix", worldMatrix);
-
-			glBindTexture(GL_TEXTURE_2D, science_5.getTextureID());
-			texturedShaderProgram.setInt("texture_1", 0);
-			glDrawArrays(GL_TRIANGLES, 6, 6);
-
-			// cube 12
-			partMatrix = cube_rotation_X_3 * cube_rotation_Y_2 * cube_rotation_Z_3 * translate(glm::mat4(1.0f), glm::vec3(0.05f, -0.05f, -0.15f));
-			worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
-			texturedShaderProgram.setMat4("worldMatrix", worldMatrix);
-
-			glBindTexture(GL_TEXTURE_2D, science_6.getTextureID());
-			texturedShaderProgram.setInt("texture_1", 0);
-			glDrawArrays(GL_TRIANGLES, 6, 6);
-
-			glBindTexture(GL_TEXTURE_2D, number[4]);
-			texturedShaderProgram.setInt("texture_1", 0);
-			glDrawArrays(GL_TRIANGLES, 0, 6);
-
-			// cube 13
-			partMatrix = cube_rotation_X_2 * cube_rotation_Y_2 * cube_rotation_Z_1 * translate(glm::mat4(1.0f), glm::vec3(-0.05f, -0.05f, 0.05f));
-			worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
-			texturedShaderProgram.setMat4("worldMatrix", worldMatrix);
-
-			glBindTexture(GL_TEXTURE_2D, color_5.getTextureID());
-			texturedShaderProgram.setInt("texture_1", 0);
-			glDrawArrays(GL_TRIANGLES, 12, 6);
-
-			// cube 14
-			partMatrix = cube_rotation_X_2 * cube_rotation_Y_2 * cube_rotation_Z_3 * translate(glm::mat4(1.0f), glm::vec3(-0.05f, -0.05f, -0.15f));
-			worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
-			texturedShaderProgram.setMat4("worldMatrix", worldMatrix);
-
-			glBindTexture(GL_TEXTURE_2D, number[5]);
-			texturedShaderProgram.setInt("texture_1", 0);
-			glDrawArrays(GL_TRIANGLES, 0, 6);
-
-
-			// cube 15
-			partMatrix = cube_rotation_X_1 * cube_rotation_Y_2 * cube_rotation_Z_1 * translate(glm::mat4(1.0f), glm::vec3(-0.15f, -0.05f, 0.05f));
-			worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
-			texturedShaderProgram.setMat4("worldMatrix", worldMatrix);
-
-			glBindTexture(GL_TEXTURE_2D, color_4.getTextureID());
-			texturedShaderProgram.setInt("texture_1", 0);
-			glDrawArrays(GL_TRIANGLES, 12, 6);
-
-			glBindTexture(GL_TEXTURE_2D, knight_6.getTextureID());
-			texturedShaderProgram.setInt("texture_1", 0);
-			glDrawArrays(GL_TRIANGLES, 18, 6);
-
-			// cube 16
-			partMatrix = cube_rotation_X_1 * cube_rotation_Y_2 * cube_rotation_Z_2 * translate(glm::mat4(1.0f), glm::vec3(-0.15f, -0.05f, -0.05f));
-			worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
-			texturedShaderProgram.setMat4("worldMatrix", worldMatrix);
-
-			glBindTexture(GL_TEXTURE_2D, knight_5.getTextureID());
-			texturedShaderProgram.setInt("texture_1", 0);
-			glDrawArrays(GL_TRIANGLES, 18, 6);
-
-			// cube 17
-			partMatrix = cube_rotation_X_1 * cube_rotation_Y_2 * cube_rotation_Z_3 * translate(glm::mat4(1.0f), glm::vec3(-0.15f, -0.05f, -0.15f));
-			worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
-			texturedShaderProgram.setMat4("worldMatrix", worldMatrix);
-
-			glBindTexture(GL_TEXTURE_2D, knight_4.getTextureID());
-			texturedShaderProgram.setInt("texture_1", 0);
-			glDrawArrays(GL_TRIANGLES, 18, 6);
-
-			glBindTexture(GL_TEXTURE_2D, number[6]);
-			texturedShaderProgram.setInt("texture_1", 0);
-			glDrawArrays(GL_TRIANGLES, 0, 6);
-
-			// cube 18
-			partMatrix = cube_rotation_X_3 * cube_rotation_Y_3 * cube_rotation_Z_1 * translate(glm::mat4(1.0f), glm::vec3(0.05f, -0.15f, 0.05f));
-			worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
-			texturedShaderProgram.setMat4("worldMatrix", worldMatrix);
-
-			glBindTexture(GL_TEXTURE_2D, color_9.getTextureID());
-			texturedShaderProgram.setInt("texture_1", 0);
-			glDrawArrays(GL_TRIANGLES, 12, 6);
-
-			glBindTexture(GL_TEXTURE_2D, science_7.getTextureID());
-			texturedShaderProgram.setInt("texture_1", 0);
-			glDrawArrays(GL_TRIANGLES, 6, 6);
-
-			glBindTexture(GL_TEXTURE_2D, shape_B_3.getTextureID());
-			texturedShaderProgram.setInt("texture_1", 0);
-			glDrawArrays(GL_TRIANGLES, 24, 6);
-
-			// cube 19 
-			partMatrix = cube_rotation_X_3 * cube_rotation_Y_3 * cube_rotation_Z_2 * translate(glm::mat4(1.0f), glm::vec3(0.05f, -0.15f, -0.05f));
-			worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
-			texturedShaderProgram.setMat4("worldMatrix", worldMatrix);
-
-			glBindTexture(GL_TEXTURE_2D, science_8.getTextureID());
-			texturedShaderProgram.setInt("texture_1", 0);
-			glDrawArrays(GL_TRIANGLES, 6, 6);
-
-			glBindTexture(GL_TEXTURE_2D, shape_B_6.getTextureID());
-			texturedShaderProgram.setInt("texture_1", 0);
-			glDrawArrays(GL_TRIANGLES, 24, 6);
-
-			// cube 20
-			partMatrix = cube_rotation_X_3 * cube_rotation_Y_3 * cube_rotation_Z_3 * translate(glm::mat4(1.0f), glm::vec3(0.05f, -0.15f, -0.15f));
-			worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
-			texturedShaderProgram.setMat4("worldMatrix", worldMatrix);
-
-			glBindTexture(GL_TEXTURE_2D, science_9.getTextureID());
-			texturedShaderProgram.setInt("texture_1", 0);
-			glDrawArrays(GL_TRIANGLES, 6, 6);
-
-			glBindTexture(GL_TEXTURE_2D, shape_B_9.getTextureID());
-			texturedShaderProgram.setInt("texture_1", 0);
-			glDrawArrays(GL_TRIANGLES, 24, 6);
-
-			glBindTexture(GL_TEXTURE_2D, number[7]);
-			texturedShaderProgram.setInt("texture_1", 0);
-			glDrawArrays(GL_TRIANGLES, 0, 6);
-
-			// cube 21
-			partMatrix = cube_rotation_X_2 * cube_rotation_Y_3 * cube_rotation_Z_1 * translate(glm::mat4(1.0f), glm::vec3(-0.05f, -0.15f, 0.05f));
-			worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
-			texturedShaderProgram.setMat4("worldMatrix", worldMatrix);
-
-			glBindTexture(GL_TEXTURE_2D, color_8.getTextureID());
-			texturedShaderProgram.setInt("texture_1", 0);
-			glDrawArrays(GL_TRIANGLES, 12, 6);
-
-			glBindTexture(GL_TEXTURE_2D, shape_B_2.getTextureID());
-			texturedShaderProgram.setInt("texture_1", 0);
-			glDrawArrays(GL_TRIANGLES, 24, 6);
-
-			// cube 22
-			partMatrix = cube_rotation_X_2 * cube_rotation_Y_3 * cube_rotation_Z_2 * translate(glm::mat4(1.0f), glm::vec3(-0.05f, -0.15f, -0.05f));
-			worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
-			texturedShaderProgram.setMat4("worldMatrix", worldMatrix);
-
-			glBindTexture(GL_TEXTURE_2D, shape_B_5.getTextureID());
-			texturedShaderProgram.setInt("texture_1", 0);
-			glDrawArrays(GL_TRIANGLES, 24, 6);
-
-			// cube 23
-			partMatrix = cube_rotation_X_2 * cube_rotation_Y_3 * cube_rotation_Z_3 * translate(glm::mat4(1.0f), glm::vec3(-0.05f, -0.15f, -0.15f));
-			worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
-			texturedShaderProgram.setMat4("worldMatrix", worldMatrix);
-
-			glBindTexture(GL_TEXTURE_2D, shape_B_8.getTextureID());
-			texturedShaderProgram.setInt("texture_1", 0);
-			glDrawArrays(GL_TRIANGLES, 24, 6);
-
-			glBindTexture(GL_TEXTURE_2D, number[8]);
-			texturedShaderProgram.setInt("texture_1", 0);
-			glDrawArrays(GL_TRIANGLES, 0, 6);
-
-			// cube 24
-			partMatrix = cube_rotation_X_1 * cube_rotation_Y_3 * cube_rotation_Z_1 * translate(glm::mat4(1.0f), glm::vec3(-0.15f, -0.15f, 0.05f));
-			worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
-			texturedShaderProgram.setMat4("worldMatrix", worldMatrix);
-
-			glBindTexture(GL_TEXTURE_2D, color_7.getTextureID());
-			texturedShaderProgram.setInt("texture_1", 0);
-			glDrawArrays(GL_TRIANGLES, 12, 6);
-
-			glBindTexture(GL_TEXTURE_2D, knight_9.getTextureID());
-			texturedShaderProgram.setInt("texture_1", 0);
-			glDrawArrays(GL_TRIANGLES, 18, 6);
-
-			glBindTexture(GL_TEXTURE_2D, shape_B_1.getTextureID());
-			texturedShaderProgram.setInt("texture_1", 0);
-			glDrawArrays(GL_TRIANGLES, 24, 6);
-
-			// cube 25
-			partMatrix = cube_rotation_X_1 * cube_rotation_Y_3 * cube_rotation_Z_2 * translate(glm::mat4(1.0f), glm::vec3(-0.15f, -0.15f, -0.05f));
-			worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
-			texturedShaderProgram.setMat4("worldMatrix", worldMatrix);
-
-			glBindTexture(GL_TEXTURE_2D, knight_8.getTextureID());
-			texturedShaderProgram.setInt("texture_1", 0);
-			glDrawArrays(GL_TRIANGLES, 18, 6);
-
-			glBindTexture(GL_TEXTURE_2D, shape_B_4.getTextureID());
-			texturedShaderProgram.setInt("texture_1", 0);
-			glDrawArrays(GL_TRIANGLES, 24, 6);
-
-			// cube 26
-			partMatrix = cube_rotation_X_1 * cube_rotation_Y_3 * cube_rotation_Z_3 * translate(glm::mat4(1.0f), glm::vec3(-0.15f, -0.15f, -0.15f));
-			worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
-			texturedShaderProgram.setMat4("worldMatrix", worldMatrix);
-
-			glBindTexture(GL_TEXTURE_2D, knight_7.getTextureID());
-			texturedShaderProgram.setInt("texture_1", 0);
-			glDrawArrays(GL_TRIANGLES, 18, 6);
-
-			glBindTexture(GL_TEXTURE_2D, shape_B_7.getTextureID());
-			texturedShaderProgram.setInt("texture_1", 0);
-			glDrawArrays(GL_TRIANGLES, 24, 6);
-
-			glBindTexture(GL_TEXTURE_2D, number[9]);
-			texturedShaderProgram.setInt("texture_1", 0);
-			glDrawArrays(GL_TRIANGLES, 0, 6);
-
-			// end of rubiks cube
-
-			
-
-
-
+	
 
 			// draw timer
-			modelTranslationMatrix = translate(glm::mat4(1.0f), glm::vec3(0.1f, 4.0f, 2.0f));
-			worldMatrix = worldOrientationMatrix; 
-			texturedShaderProgram.setMat4("worldMatrix", worldMatrix);
+			drawTimer(texturedShaderProgram, number);
 			
-			int time[5];
-			time[0] = glfwGetTime();
-			time[1] = glfwGetTime() / 10.0f;
-			time[2] = glfwGetTime() / 100.0f;
-			time[3] = glfwGetTime() / 1000.0f;
-			time[4] = glfwGetTime() / 10000.0f;
 
-			
-			texturedShaderProgram.setFloat("ambientStrength", 2.0);
-			texturedShaderProgram.setVec3("objectColor", 0.0f, 1.0f, 1.0f);
-
-				glDisable(GL_CULL_FACE);
-				partMatrix = translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
-				worldMatrix = worldOrientationMatrix * modelTranslationMatrix * partMatrix;
-				texturedShaderProgram.setMat4("worldMatrix", worldMatrix);
-				glBindTexture(GL_TEXTURE_2D, number[time[0] % 10]);
-				texturedShaderProgram.setInt("texture_1", 0);
-				glDrawArrays(GL_TRIANGLES, 12, 6);
-			
-				partMatrix = translate(glm::mat4(1.0f), glm::vec3(-0.1f, 0.0f, 0.0f));
-				worldMatrix = worldOrientationMatrix * modelTranslationMatrix * partMatrix;
-				texturedShaderProgram.setMat4("worldMatrix", worldMatrix);
-				glBindTexture(GL_TEXTURE_2D, number[time[1] % 10]);
-				glDrawArrays(GL_TRIANGLES, 12, 6);
-
-				partMatrix = translate(glm::mat4(1.0f), glm::vec3(-0.2f, 0.0f, 0.0f));
-				worldMatrix = worldOrientationMatrix * modelTranslationMatrix * partMatrix;
-				texturedShaderProgram.setMat4("worldMatrix", worldMatrix);
-				glBindTexture(GL_TEXTURE_2D, number[time[2] % 10]);
-				glDrawArrays(GL_TRIANGLES, 12, 6);
-
-				partMatrix = translate(glm::mat4(1.0f), glm::vec3(-0.3f, 0.0f, 0.0f));
-				worldMatrix = worldOrientationMatrix * modelTranslationMatrix * partMatrix;
-				texturedShaderProgram.setMat4("worldMatrix", worldMatrix);
-				glBindTexture(GL_TEXTURE_2D, number[time[3] % 10]);
-				glDrawArrays(GL_TRIANGLES, 12, 6);
-
-				partMatrix = translate(glm::mat4(1.0f), glm::vec3(-0.4f, 0.0f, 0.0f));
-				worldMatrix = worldOrientationMatrix * modelTranslationMatrix * partMatrix;
-				texturedShaderProgram.setMat4("worldMatrix", worldMatrix);
-				glBindTexture(GL_TEXTURE_2D, number[time[4] % 10]);
-				glDrawArrays(GL_TRIANGLES, 12, 6);
-
-				glEnable(GL_CULL_FACE);
-
-				// draw skybox
-				texturedShaderProgram.setFloat("ambientStrength", 2.0);
-				modelTranslationMatrix = translate(glm::mat4(1.0f), glm::vec3(cameraPosition.x, cameraPosition.y, cameraPosition.z));
-				modelScalingMatrix = scale(glm::mat4(1.0f), glm::vec3(50000.0f, 50000.0f, 50000.0f));
-				partMatrix = translate(glm::mat4(1.0f), glm::vec3(-0.05f, -0.05f, -0.05f));
-				worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * partMatrix;
-				texturedShaderProgram.setMat4("worldMatrix", worldMatrix);
-
-				glFrontFace(GL_CCW);
-
-				glBindTexture(GL_TEXTURE_2D, skybox_front.getTextureID());
-				glDrawArrays(GL_TRIANGLES, 0, 6);
-
-				glBindTexture(GL_TEXTURE_2D, skybox_right.getTextureID());
-				glDrawArrays(GL_TRIANGLES, 6, 6);
-
-				glBindTexture(GL_TEXTURE_2D, skybox_back.getTextureID());
-				glDrawArrays(GL_TRIANGLES, 12, 6);
-
-				glBindTexture(GL_TEXTURE_2D, skybox_left.getTextureID());
-				glDrawArrays(GL_TRIANGLES, 18, 6);
-
-				glBindTexture(GL_TEXTURE_2D, skybox_bottom.getTextureID());
-				glDrawArrays(GL_TRIANGLES, 24, 6);
-
-				glBindTexture(GL_TEXTURE_2D, skybox_top.getTextureID());
-				glDrawArrays(GL_TRIANGLES, 30, 6);
-
-				glFrontFace(GL_CW);
+			// draw skybox
+			drawSkybox(texturedShaderProgram, skybox_front, skybox_right, skybox_back, skybox_left, skybox_bottom, skybox_top);
 				
-		texturedShaderProgram.setBool( "drawTexture", GL_FALSE);
 
 		texturedShaderProgram.setVec3("objectColor", 1.0f, 1.0f, 1.0f);
 		worldMatrix = worldOrientationMatrix;
@@ -2767,7 +2187,460 @@ int createLine(vec3 * lineVertices) {
 }
 
 
-void rubiks_cube(Shader shaderProgram, Texture texture_1, Texture texture_2, bool isTextureOn)
+void rubiks_cube(Shader shaderProgram, unsigned int knight_tex_ID[10], unsigned int color_tex_ID[10], unsigned int shape_A_tex_ID[10], unsigned int shape_B_tex_ID[10], unsigned int number_tex_ID[10], unsigned int science_tex_ID[10])
 {
+	shaderProgram.setBool("drawTexture", GL_TRUE);
+	shaderProgram.setFloat("ambientStrength", 1.0f);
+	modelTranslationMatrix = translate(glm::mat4(1.0f), glm::vec3(0.0f, 3.0f, 2.0f));
+	modelScalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(3.0f, 3.0f, 3.0f));
+	modelRotationMatrix = identityMatrix;
 
+	// cube 1
+	partMatrix = cube_rotation_X_3 * cube_rotation_Y_1 * cube_rotation_Z_1 * translate(glm::mat4(1.0f), glm::vec3(0.05f, 0.05f, 0.05f));
+	worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
+	shaderProgram.setMat4("worldMatrix", worldMatrix);
+
+	glBindTexture(GL_TEXTURE_2D, shape_A_tex_ID[9]);
+	shaderProgram.setInt("texture_1", 0);
+	glDrawArrays(GL_TRIANGLES, 30, 6);
+
+	glBindTexture(GL_TEXTURE_2D, color_tex_ID[3]);
+	shaderProgram.setInt("texture_1", 0);
+	glDrawArrays(GL_TRIANGLES, 12, 6);
+
+	glBindTexture(GL_TEXTURE_2D, science_tex_ID[1]);
+	shaderProgram.setInt("texture_1", 0);
+	glDrawArrays(GL_TRIANGLES, 6, 6);
+
+	// cube 2
+	partMatrix = cube_rotation_X_3 * cube_rotation_Y_1 * cube_rotation_Z_2 * translate(glm::mat4(1.0f), glm::vec3(0.05f, 0.05f, -0.05f));
+	worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
+	shaderProgram.setMat4("worldMatrix", worldMatrix);
+
+	glBindTexture(GL_TEXTURE_2D, shape_A_tex_ID[6]);
+	shaderProgram.setInt("texture_1", 0);
+	glDrawArrays(GL_TRIANGLES, 30, 6);
+
+	glBindTexture(GL_TEXTURE_2D, science_tex_ID[2]);
+	shaderProgram.setInt("texture_1", 0);
+	glDrawArrays(GL_TRIANGLES, 6, 6);
+
+	// cube 3
+	partMatrix = cube_rotation_X_3 * cube_rotation_Y_1 * cube_rotation_Z_3 * translate(glm::mat4(1.0f), glm::vec3(0.05f, 0.05f, -0.15f));
+	worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
+	shaderProgram.setMat4("worldMatrix", worldMatrix);
+
+	glBindTexture(GL_TEXTURE_2D, shape_A_tex_ID[3]);
+	shaderProgram.setInt("texture_1", 0);
+	glDrawArrays(GL_TRIANGLES, 30, 6);
+
+	glBindTexture(GL_TEXTURE_2D, science_tex_ID[3]);
+	shaderProgram.setInt("texture_1", 0);
+	glDrawArrays(GL_TRIANGLES, 6, 6);
+
+	glBindTexture(GL_TEXTURE_2D, number_tex_ID[1]);
+	shaderProgram.setInt("texture_1", 0);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+
+	// cube 4
+	partMatrix = cube_rotation_X_2 * cube_rotation_Y_1 * cube_rotation_Z_1 * translate(glm::mat4(1.0f), glm::vec3(-0.05f, 0.05f, 0.05f));
+	worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
+	shaderProgram.setMat4("worldMatrix", worldMatrix);
+
+	glBindTexture(GL_TEXTURE_2D, shape_A_tex_ID[8]);
+	shaderProgram.setInt("texture_1", 0);
+	glDrawArrays(GL_TRIANGLES, 30, 6);
+
+	glBindTexture(GL_TEXTURE_2D, color_tex_ID[2]);
+	shaderProgram.setInt("texture_1", 0);
+	glDrawArrays(GL_TRIANGLES, 12, 6);
+
+	// cube 5
+	partMatrix = cube_rotation_X_2 * cube_rotation_Y_1 * cube_rotation_Z_2 * translate(glm::mat4(1.0f), glm::vec3(-0.05f, 0.05f, -0.05f));
+	worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
+	shaderProgram.setMat4("worldMatrix", worldMatrix);
+
+	glBindTexture(GL_TEXTURE_2D, shape_A_tex_ID[5]);
+	shaderProgram.setInt("texture_1", 0);
+	glDrawArrays(GL_TRIANGLES, 30, 6);
+
+	//cube 6
+	partMatrix = cube_rotation_X_2 * cube_rotation_Y_1 * cube_rotation_Z_3 * translate(glm::mat4(1.0f), glm::vec3(-0.05f, 0.05f, -0.15f));
+	worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
+	shaderProgram.setMat4("worldMatrix", worldMatrix);
+
+	glBindTexture(GL_TEXTURE_2D, shape_A_tex_ID[2]);
+	shaderProgram.setInt("texture_1", 0);
+	glDrawArrays(GL_TRIANGLES, 30, 6);
+
+	glBindTexture(GL_TEXTURE_2D, number_tex_ID[2]);
+	shaderProgram.setInt("texture_1", 0);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+
+	// cube 7
+	partMatrix = cube_rotation_X_1 * cube_rotation_Y_1 * cube_rotation_Z_1 * translate(glm::mat4(1.0f), glm::vec3(-0.15f, 0.05f, 0.05f));
+	worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
+	shaderProgram.setMat4("worldMatrix", worldMatrix);
+
+	glBindTexture(GL_TEXTURE_2D, shape_A_tex_ID[7]);
+	shaderProgram.setInt("texture_1", 0);
+	glDrawArrays(GL_TRIANGLES, 30, 6);
+
+	glBindTexture(GL_TEXTURE_2D, color_tex_ID[1]);
+	shaderProgram.setInt("texture_1", 0);
+	glDrawArrays(GL_TRIANGLES, 12, 6);
+
+	glBindTexture(GL_TEXTURE_2D, knight_tex_ID[3]);
+	shaderProgram.setInt("texture_1", 0);
+	glDrawArrays(GL_TRIANGLES, 18, 6);
+
+	// cube 8
+	partMatrix = cube_rotation_X_1 * cube_rotation_Y_1 * cube_rotation_Z_2 * translate(glm::mat4(1.0f), glm::vec3(-0.15f, 0.05f, -0.05f));
+	worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
+	shaderProgram.setMat4("worldMatrix", worldMatrix);
+
+	glBindTexture(GL_TEXTURE_2D, shape_A_tex_ID[4]);
+	shaderProgram.setInt("texture_1", 0);
+	glDrawArrays(GL_TRIANGLES, 30, 6);
+
+	glBindTexture(GL_TEXTURE_2D, knight_tex_ID[2]);
+	shaderProgram.setInt("texture_1", 0);
+	glDrawArrays(GL_TRIANGLES, 18, 6);
+
+	// cube 9
+	partMatrix = cube_rotation_X_1 * cube_rotation_Y_1 * cube_rotation_Z_3 * translate(glm::mat4(1.0f), glm::vec3(-0.15f, 0.05f, -0.15f));
+	worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
+	shaderProgram.setMat4("worldMatrix", worldMatrix);
+
+	glBindTexture(GL_TEXTURE_2D, shape_A_tex_ID[1]);
+	shaderProgram.setInt("texture_1", 0);
+	glDrawArrays(GL_TRIANGLES, 30, 6);
+
+	glBindTexture(GL_TEXTURE_2D, knight_tex_ID[1]);
+	shaderProgram.setInt("texture_1", 0);
+	glDrawArrays(GL_TRIANGLES, 18, 6);
+
+	glBindTexture(GL_TEXTURE_2D, number_tex_ID[3]);
+	shaderProgram.setInt("texture_1", 0);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+
+	// cube 10 
+	partMatrix = cube_rotation_X_3 * cube_rotation_Y_2 * cube_rotation_Z_1 * translate(glm::mat4(1.0f), glm::vec3(0.05f, -0.05f, 0.05f));
+	worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
+	shaderProgram.setMat4("worldMatrix", worldMatrix);
+
+	glBindTexture(GL_TEXTURE_2D, color_tex_ID[6]);
+	shaderProgram.setInt("texture_1", 0);
+	glDrawArrays(GL_TRIANGLES, 12, 6);
+
+	glBindTexture(GL_TEXTURE_2D, science_tex_ID[4]);
+	shaderProgram.setInt("texture_1", 0);
+	glDrawArrays(GL_TRIANGLES, 6, 6);
+
+	// cube 11
+	partMatrix = cube_rotation_X_3 * cube_rotation_Y_2 * cube_rotation_Z_2 * translate(glm::mat4(1.0f), glm::vec3(0.05f, -0.05f, -0.05f));
+	worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
+	shaderProgram.setMat4("worldMatrix", worldMatrix);
+
+	glBindTexture(GL_TEXTURE_2D, science_tex_ID[5]);
+	shaderProgram.setInt("texture_1", 0);
+	glDrawArrays(GL_TRIANGLES, 6, 6);
+
+	// cube 12
+	partMatrix = cube_rotation_X_3 * cube_rotation_Y_2 * cube_rotation_Z_3 * translate(glm::mat4(1.0f), glm::vec3(0.05f, -0.05f, -0.15f));
+	worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
+	shaderProgram.setMat4("worldMatrix", worldMatrix);
+
+	glBindTexture(GL_TEXTURE_2D, science_tex_ID[6]);
+	shaderProgram.setInt("texture_1", 0);
+	glDrawArrays(GL_TRIANGLES, 6, 6);
+
+	glBindTexture(GL_TEXTURE_2D, number_tex_ID[4]);
+	shaderProgram.setInt("texture_1", 0);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+
+	// cube 13
+	partMatrix = cube_rotation_X_2 * cube_rotation_Y_2 * cube_rotation_Z_1 * translate(glm::mat4(1.0f), glm::vec3(-0.05f, -0.05f, 0.05f));
+	worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
+	shaderProgram.setMat4("worldMatrix", worldMatrix);
+
+	glBindTexture(GL_TEXTURE_2D, color_tex_ID[5]);
+	shaderProgram.setInt("texture_1", 0);
+	glDrawArrays(GL_TRIANGLES, 12, 6);
+
+	// cube 14
+	partMatrix = cube_rotation_X_2 * cube_rotation_Y_2 * cube_rotation_Z_3 * translate(glm::mat4(1.0f), glm::vec3(-0.05f, -0.05f, -0.15f));
+	worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
+	shaderProgram.setMat4("worldMatrix", worldMatrix);
+
+	glBindTexture(GL_TEXTURE_2D, number_tex_ID[5]);
+	shaderProgram.setInt("texture_1", 0);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+
+
+	// cube 15
+	partMatrix = cube_rotation_X_1 * cube_rotation_Y_2 * cube_rotation_Z_1 * translate(glm::mat4(1.0f), glm::vec3(-0.15f, -0.05f, 0.05f));
+	worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
+	shaderProgram.setMat4("worldMatrix", worldMatrix);
+
+	glBindTexture(GL_TEXTURE_2D, color_tex_ID[4]);
+	shaderProgram.setInt("texture_1", 0);
+	glDrawArrays(GL_TRIANGLES, 12, 6);
+
+	glBindTexture(GL_TEXTURE_2D, knight_tex_ID[6]);
+	shaderProgram.setInt("texture_1", 0);
+	glDrawArrays(GL_TRIANGLES, 18, 6);
+
+	// cube 16
+	partMatrix = cube_rotation_X_1 * cube_rotation_Y_2 * cube_rotation_Z_2 * translate(glm::mat4(1.0f), glm::vec3(-0.15f, -0.05f, -0.05f));
+	worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
+	shaderProgram.setMat4("worldMatrix", worldMatrix);
+
+	glBindTexture(GL_TEXTURE_2D, knight_tex_ID[5]);
+	shaderProgram.setInt("texture_1", 0);
+	glDrawArrays(GL_TRIANGLES, 18, 6);
+
+	// cube 17
+	partMatrix = cube_rotation_X_1 * cube_rotation_Y_2 * cube_rotation_Z_3 * translate(glm::mat4(1.0f), glm::vec3(-0.15f, -0.05f, -0.15f));
+	worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
+	shaderProgram.setMat4("worldMatrix", worldMatrix);
+
+	glBindTexture(GL_TEXTURE_2D, knight_tex_ID[4]);
+	shaderProgram.setInt("texture_1", 0);
+	glDrawArrays(GL_TRIANGLES, 18, 6);
+
+	glBindTexture(GL_TEXTURE_2D, number_tex_ID[6]);
+	shaderProgram.setInt("texture_1", 0);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+
+	// cube 18
+	partMatrix = cube_rotation_X_3 * cube_rotation_Y_3 * cube_rotation_Z_1 * translate(glm::mat4(1.0f), glm::vec3(0.05f, -0.15f, 0.05f));
+	worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
+	shaderProgram.setMat4("worldMatrix", worldMatrix);
+
+	glBindTexture(GL_TEXTURE_2D, color_tex_ID[9]);
+	shaderProgram.setInt("texture_1", 0);
+	glDrawArrays(GL_TRIANGLES, 12, 6);
+
+	glBindTexture(GL_TEXTURE_2D, science_tex_ID[7]);
+	shaderProgram.setInt("texture_1", 0);
+	glDrawArrays(GL_TRIANGLES, 6, 6);
+
+	glBindTexture(GL_TEXTURE_2D, shape_B_tex_ID[3]);
+	shaderProgram.setInt("texture_1", 0);
+	glDrawArrays(GL_TRIANGLES, 24, 6);
+
+	// cube 19 
+	partMatrix = cube_rotation_X_3 * cube_rotation_Y_3 * cube_rotation_Z_2 * translate(glm::mat4(1.0f), glm::vec3(0.05f, -0.15f, -0.05f));
+	worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
+	shaderProgram.setMat4("worldMatrix", worldMatrix);
+
+	glBindTexture(GL_TEXTURE_2D, science_tex_ID[8]);
+	shaderProgram.setInt("texture_1", 0);
+	glDrawArrays(GL_TRIANGLES, 6, 6);
+
+	glBindTexture(GL_TEXTURE_2D, shape_B_tex_ID[6]);
+	shaderProgram.setInt("texture_1", 0);
+	glDrawArrays(GL_TRIANGLES, 24, 6);
+
+	// cube 20
+	partMatrix = cube_rotation_X_3 * cube_rotation_Y_3 * cube_rotation_Z_3 * translate(glm::mat4(1.0f), glm::vec3(0.05f, -0.15f, -0.15f));
+	worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
+	shaderProgram.setMat4("worldMatrix", worldMatrix);
+
+	glBindTexture(GL_TEXTURE_2D, science_tex_ID[9]);
+	shaderProgram.setInt("texture_1", 0);
+	glDrawArrays(GL_TRIANGLES, 6, 6);
+
+	glBindTexture(GL_TEXTURE_2D, shape_B_tex_ID[9]);
+	shaderProgram.setInt("texture_1", 0);
+	glDrawArrays(GL_TRIANGLES, 24, 6);
+
+	glBindTexture(GL_TEXTURE_2D, number_tex_ID[7]);
+	shaderProgram.setInt("texture_1", 0);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+
+	// cube 21
+	partMatrix = cube_rotation_X_2 * cube_rotation_Y_3 * cube_rotation_Z_1 * translate(glm::mat4(1.0f), glm::vec3(-0.05f, -0.15f, 0.05f));
+	worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
+	shaderProgram.setMat4("worldMatrix", worldMatrix);
+
+	glBindTexture(GL_TEXTURE_2D, color_tex_ID[8]);
+	shaderProgram.setInt("texture_1", 0);
+	glDrawArrays(GL_TRIANGLES, 12, 6);
+
+	glBindTexture(GL_TEXTURE_2D, shape_B_tex_ID[2]);
+	shaderProgram.setInt("texture_1", 0);
+	glDrawArrays(GL_TRIANGLES, 24, 6);
+
+	// cube 22
+	partMatrix = cube_rotation_X_2 * cube_rotation_Y_3 * cube_rotation_Z_2 * translate(glm::mat4(1.0f), glm::vec3(-0.05f, -0.15f, -0.05f));
+	worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
+	shaderProgram.setMat4("worldMatrix", worldMatrix);
+
+	glBindTexture(GL_TEXTURE_2D, shape_B_tex_ID[5]);
+	shaderProgram.setInt("texture_1", 0);
+	glDrawArrays(GL_TRIANGLES, 24, 6);
+
+	// cube 23
+	partMatrix = cube_rotation_X_2 * cube_rotation_Y_3 * cube_rotation_Z_3 * translate(glm::mat4(1.0f), glm::vec3(-0.05f, -0.15f, -0.15f));
+	worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
+	shaderProgram.setMat4("worldMatrix", worldMatrix);
+
+	glBindTexture(GL_TEXTURE_2D, shape_B_tex_ID[8]);
+	shaderProgram.setInt("texture_1", 0);
+	glDrawArrays(GL_TRIANGLES, 24, 6);
+
+	glBindTexture(GL_TEXTURE_2D, number_tex_ID[8]);
+	shaderProgram.setInt("texture_1", 0);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+
+	// cube 24
+	partMatrix = cube_rotation_X_1 * cube_rotation_Y_3 * cube_rotation_Z_1 * translate(glm::mat4(1.0f), glm::vec3(-0.15f, -0.15f, 0.05f));
+	worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
+	shaderProgram.setMat4("worldMatrix", worldMatrix);
+
+	glBindTexture(GL_TEXTURE_2D, color_tex_ID[7]);
+	shaderProgram.setInt("texture_1", 0);
+	glDrawArrays(GL_TRIANGLES, 12, 6);
+
+	glBindTexture(GL_TEXTURE_2D, knight_tex_ID[9]);
+	shaderProgram.setInt("texture_1", 0);
+	glDrawArrays(GL_TRIANGLES, 18, 6);
+
+	glBindTexture(GL_TEXTURE_2D, shape_B_tex_ID[1]);
+	shaderProgram.setInt("texture_1", 0);
+	glDrawArrays(GL_TRIANGLES, 24, 6);
+
+	// cube 25
+	partMatrix = cube_rotation_X_1 * cube_rotation_Y_3 * cube_rotation_Z_2 * translate(glm::mat4(1.0f), glm::vec3(-0.15f, -0.15f, -0.05f));
+	worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
+	shaderProgram.setMat4("worldMatrix", worldMatrix);
+
+	glBindTexture(GL_TEXTURE_2D, knight_tex_ID[8]);
+	shaderProgram.setInt("texture_1", 0);
+	glDrawArrays(GL_TRIANGLES, 18, 6);
+
+	glBindTexture(GL_TEXTURE_2D, shape_B_tex_ID[4]);
+	shaderProgram.setInt("texture_1", 0);
+	glDrawArrays(GL_TRIANGLES, 24, 6);
+
+	// cube 26
+	partMatrix = cube_rotation_X_1 * cube_rotation_Y_3 * cube_rotation_Z_3 * translate(glm::mat4(1.0f), glm::vec3(-0.15f, -0.15f, -0.15f));
+	worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * partMatrix;
+	shaderProgram.setMat4("worldMatrix", worldMatrix);
+
+	glBindTexture(GL_TEXTURE_2D, knight_tex_ID[7]);
+	shaderProgram.setInt("texture_1", 0);
+	glDrawArrays(GL_TRIANGLES, 18, 6);
+
+	glBindTexture(GL_TEXTURE_2D, shape_B_tex_ID[7]);
+	shaderProgram.setInt("texture_1", 0);
+	glDrawArrays(GL_TRIANGLES, 24, 6);
+
+	glBindTexture(GL_TEXTURE_2D, number_tex_ID[9]);
+	shaderProgram.setInt("texture_1", 0);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+
+	// end of rubiks cube
+}
+
+void drawLightCube(Shader shaderProgram, vec3 lightPosition) {
+
+	shaderProgram.setVec3("objectColor", glm::vec3(1.0f, 1.0f, 1.0f));
+
+	shaderProgram.setFloat("ambientStrength", 100.0f);
+
+	worldMatrix = worldOrientationMatrix * translate(glm::mat4(1.0f), lightPosition) * glm::scale(glm::mat4(1.0f), glm::vec3(0.25f, 0.25f, 0.25f));
+	shaderProgram.setMat4("worldMatrix", worldMatrix);
+
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+}
+
+void drawTimer(Shader shaderProgram, unsigned int number_tex_ID[10]) {
+
+	modelTranslationMatrix = translate(glm::mat4(1.0f), glm::vec3(0.1f, 4.0f, 2.0f));
+	worldMatrix = worldOrientationMatrix;
+	shaderProgram.setMat4("worldMatrix", worldMatrix);
+
+	int time[5];
+	time[0] = glfwGetTime();
+	time[1] = glfwGetTime() / 10.0f;
+	time[2] = glfwGetTime() / 100.0f;
+	time[3] = glfwGetTime() / 1000.0f;
+	time[4] = glfwGetTime() / 10000.0f;
+
+
+	shaderProgram.setFloat("ambientStrength", 2.0);
+	shaderProgram.setVec3("objectColor", 0.0f, 1.0f, 1.0f);
+
+	glDisable(GL_CULL_FACE);
+	partMatrix = translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
+	worldMatrix = worldOrientationMatrix * modelTranslationMatrix * partMatrix;
+	shaderProgram.setMat4("worldMatrix", worldMatrix);
+	glBindTexture(GL_TEXTURE_2D, number_tex_ID[time[0] % 10]);
+	shaderProgram.setInt("texture_1", 0);
+	glDrawArrays(GL_TRIANGLES, 12, 6);
+
+	partMatrix = translate(glm::mat4(1.0f), glm::vec3(-0.1f, 0.0f, 0.0f));
+	worldMatrix = worldOrientationMatrix * modelTranslationMatrix * partMatrix;
+	shaderProgram.setMat4("worldMatrix", worldMatrix);
+	glBindTexture(GL_TEXTURE_2D, number_tex_ID[time[1] % 10]);
+	glDrawArrays(GL_TRIANGLES, 12, 6);
+
+	partMatrix = translate(glm::mat4(1.0f), glm::vec3(-0.2f, 0.0f, 0.0f));
+	worldMatrix = worldOrientationMatrix * modelTranslationMatrix * partMatrix;
+	shaderProgram.setMat4("worldMatrix", worldMatrix);
+	glBindTexture(GL_TEXTURE_2D, number_tex_ID[time[2] % 10]);
+	glDrawArrays(GL_TRIANGLES, 12, 6);
+
+	partMatrix = translate(glm::mat4(1.0f), glm::vec3(-0.3f, 0.0f, 0.0f));
+	worldMatrix = worldOrientationMatrix * modelTranslationMatrix * partMatrix;
+	shaderProgram.setMat4("worldMatrix", worldMatrix);
+	glBindTexture(GL_TEXTURE_2D, number_tex_ID[time[3] % 10]);
+	glDrawArrays(GL_TRIANGLES, 12, 6);
+
+	partMatrix = translate(glm::mat4(1.0f), glm::vec3(-0.4f, 0.0f, 0.0f));
+	worldMatrix = worldOrientationMatrix * modelTranslationMatrix * partMatrix;
+	shaderProgram.setMat4("worldMatrix", worldMatrix);
+	glBindTexture(GL_TEXTURE_2D, number_tex_ID[time[4] % 10]);
+	glDrawArrays(GL_TRIANGLES, 12, 6);
+
+	glEnable(GL_CULL_FACE);
+}
+
+void drawSkybox(Shader shaderProgram, Texture skybox_front, Texture skybox_right, Texture skybox_back, Texture skybox_left, Texture skybox_bottom, Texture skybox_top) {
+
+	// draw skybox
+	
+	shaderProgram.setFloat("ambientStrength", 2.0);
+	modelTranslationMatrix = translate(glm::mat4(1.0f), glm::vec3(cameraPosition.x, cameraPosition.y, cameraPosition.z));
+	modelScalingMatrix = scale(glm::mat4(1.0f), glm::vec3(50000.0f, 50000.0f, 50000.0f));
+	partMatrix = translate(glm::mat4(1.0f), glm::vec3(-0.05f, -0.05f, -0.05f));
+	worldMatrix = worldOrientationMatrix * modelTranslationMatrix * modelScalingMatrix * partMatrix;
+	shaderProgram.setMat4("worldMatrix", worldMatrix);
+
+	glFrontFace(GL_CCW);
+
+	glBindTexture(GL_TEXTURE_2D, skybox_front.getTextureID());
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+
+	glBindTexture(GL_TEXTURE_2D, skybox_right.getTextureID());
+	glDrawArrays(GL_TRIANGLES, 6, 6);
+
+	glBindTexture(GL_TEXTURE_2D, skybox_back.getTextureID());
+	glDrawArrays(GL_TRIANGLES, 12, 6);
+
+	glBindTexture(GL_TEXTURE_2D, skybox_left.getTextureID());
+	glDrawArrays(GL_TRIANGLES, 18, 6);
+
+	glBindTexture(GL_TEXTURE_2D, skybox_bottom.getTextureID());
+	glDrawArrays(GL_TRIANGLES, 24, 6);
+
+	glBindTexture(GL_TEXTURE_2D, skybox_top.getTextureID());
+	glDrawArrays(GL_TRIANGLES, 30, 6);
+
+	glFrontFace(GL_CW);
+
+	shaderProgram.setBool("drawTexture", GL_FALSE);
 }

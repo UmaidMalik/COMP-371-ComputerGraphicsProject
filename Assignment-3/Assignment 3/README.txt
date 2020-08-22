@@ -4,14 +4,13 @@
 *	Umaid Malik 27576110
 *	Noor Alali
 *	Vishal Senewiratne
-*	Dominic Hart
 *
 *	CONTROLS:
 
 *		VIEW SELECTION CONTROLS
 *		==============================================================
 *
-*       	ESCAPE              : QUIT PROGRAM
+*       ESCAPE              : QUIT PROGRAM
 *
 *		==============================================================
 *		X					: TOGGLE TEXTURE ON/OFF
@@ -38,19 +37,19 @@
 *		PAN AND TILT (MOUSE MOVEMENT) WHILE HOLDING RIGHT MOUSE BUTTON
 *		==============================================================
 *
-*		W					: MOVE FORWARD
+*		W		: MOVE FORWARD
 *
-*		S					: MOVE BACKWARD
+*		S		: MOVE BACKWARD
 *
-*		A					: MOVE LEFT
+*		A		: MOVE LEFT
 *
-*		D					: MOVE RIGHT
+*		D		: MOVE RIGHT
 *
-*		Z					: MOVE NEGATIVE Y-DIRECTION
+*		Z		: MOVE NEGATIVE Y-DIRECTION
 *
-*		SPACE					: MOVE POSITIVE Y-DIRECTION
+*		SPACE		: MOVE POSITIVE Y-DIRECTION
 *
-*		SHIFT					: INCREASE MOVEMENT SPEED
+*		SHIFT		: INCREASE MOVEMENT SPEED
 *
 *		==============================================================
 *
@@ -59,82 +58,81 @@
 *		ENTER EITHER 1, 2, 3, 4 OR 5 TO SELECT MODELS - LEFT MOUSE CLICK WILL DESELECT ALL MODELS
 *		====================================================================================================================
 *
-*		TAB					: TOGGLE BETWEEN INCREMENTAL OR CONTINUOUS MOVEMENT
+*		TAB						: TOGGLE BETWEEN INCREMENTAL OR CONTINUOUS MOVEMENT
 *
-*		W					: MOVE MODEL IN +Z DIRECTION
+*		W						: MOVE MODEL IN +Z DIRECTION
 *
-*		S					: MOVE MODEL IN -Z DIRECTION
+*		S						: MOVE MODEL IN -Z DIRECTION
 *
-*		A					: MOVE MODEL IN -X DIRECTION
+*		A						: MOVE MODEL IN -X DIRECTION
 *
-*		D					: MOVE MODEL IN +X DIRECTION
+*		D						: MOVE MODEL IN +X DIRECTION
 *
-*		Z					: MOVE MODEL IN -Y DIRECTION
+*		Z						: MOVE MODEL IN -Y DIRECTION
 *
-*		SPACE					: MOVE MODEL IN +Y DIRECTION
+*		SPACE						: MOVE MODEL IN +Y DIRECTION
 *
-*		R					: RESET MODEL TO INITIAL POSITION
+*		R						: RESET MODEL TO INITIAL POSITION
 *
-*		SHIFT + R				: RESET MODEL TO INITIAL SIZE
+*		SHIFT + R					: RESET MODEL TO INITIAL SIZE
 *
-*		LCTRL + SHIFT + R			: RESET MODEL ORIENTATION
+*		LCTRL + SHIFT + R				: RESET MODEL ORIENTATION
 *
-*		U					: UPSCALE MODEL
+*		U						: UPSCALE MODEL
 *
-*		J					: DOWNSCALE MODEL
+*		J						: DOWNSCALE MODEL
 *
-*		T					: ROTATE MODEL +X DIRECTION
+*		T						: ROTATE MODEL +X DIRECTION
 *
-*		Y					: ROTATE MODEL -X DIRECTION
+*		Y						: ROTATE MODEL -X DIRECTION
 *
-*		G					: ROTATE MODEL +Y DIRECTION
+*		G						: ROTATE MODEL +Y DIRECTION
 *
-*		H					: ROTATE MODEL -Y DIRECTION
+*		H						: ROTATE MODEL -Y DIRECTION
 *
-*		B					: ROTATE MODEL +Z DIRECTION
+*		B						: ROTATE MODEL +Z DIRECTION
 *
-*		N					: ROTATE MODEL -Z DIRECTION
+*		N						: ROTATE MODEL -Z DIRECTION
 *
-*		SHIFT + W/A/S/D/X/SPACE			: INCREASE MOVEMENT SPEED
+*		SHIFT + W/A/S/D/X/SPACE				: INCREASE MOVEMENT SPEED
 *
-*		SHIFT + U/J				: INCREASE SCALING SPEED
+*		SHIFT + U/J					: INCREASE SCALING SPEED
 *
-*		ALT					: RANDOMIZE THE POSITION OF THE MODEL WITHIN THE GRID AREA
+*		ALT						: RANDOMIZE THE POSITION OF THE MODEL WITHIN THE GRID AREA
 *
-*		ARROW UP				: +Y ORIENTATION
+*		ARROW UP					: +Y ORIENTATION
 *
-*       	ARROW DOWN				: -Y ORIENTATION
+*       ARROW DOWN						: -Y ORIENTATION
 *
-*		ARROW LEFT				: -X ORIENTATION
+*		ARROW LEFT					: -X ORIENTATION
 *
-*		ARROW RIGHT				: +X ORIENTATION
+*		ARROW RIGHT					: +X ORIENTATION
 *
 *
 *
-*		RUBIKS CUBE CONTROL
+*		RUBIKS CUBE CONTROL - PRESS 6 TO SELECT
 *		====================================================================================================================
 *		
-*		Q/A					: +/-X ROTATION LAYER 1
+*		Q/A						: +/-X ROTATION LAYER 1
 *
-*		W/S					: +/-X ROTATION LAYER 2
+*		W/S						: +/-X ROTATION LAYER 2
 *
-*		E/D					: +/-X ROTATION LAYER 3
+*		E/D						: +/-X ROTATION LAYER 3
 *
-*		R/F					: +/-Y ROTATION LAYER 1
+*		R/F						: +/-Y ROTATION LAYER 1
 *
-*		T/G					: +/-Y ROTATION LAYER 2 
+*		T/G						: +/-Y ROTATION LAYER 2 
 *
-*		Y/H					: +/-Y ROTATION LAYER 3
+*		Y/H						: +/-Y ROTATION LAYER 3
 *
-*		U/J					: +/-Z ROTATION LAYER 1
+*		U/J						: +/-Z ROTATION LAYER 1
 *
-*		I/K					: +/-Z ROTATION LAYER 2
+*		I/K						: +/-Z ROTATION LAYER 2
 *
-*		O/L					: +/-Z ROTATION LAYER 3
+*		O/L						: +/-Z ROTATION LAYER 3
 *
 *
 *		TIMER CONTROL
 *		====================================================================================================================
 *
-*		0					: RESET TIMER
-*/
+*		0						: RESET TIMER
