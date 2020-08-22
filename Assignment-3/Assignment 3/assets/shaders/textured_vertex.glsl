@@ -18,7 +18,7 @@ out vec2 vertexUV;
         
 void main()
 	{
-		//Normal = transpose(inverse(mat3(worldMatrix))) * aNormal;
+		
 		Normal = mat3(worldMatrix) * aNormal;
 		FragPos = vec3(worldMatrix * vec4(aPos, 1.0));
 		FragPosLightSpace = light_view_proj_matrix * vec4(FragPos, 1.0);

@@ -6,7 +6,12 @@
 *	Vishal Senewiratne
 *
 *	CONTROLS:
-
+	***************************************************** 
+	*                                                   *
+	*	NOTE: CLICK RIGHT MOUSE BUTTON TO SHOW RENDER	*
+	*                                                   *
+	*****************************************************
+*
 *		VIEW SELECTION CONTROLS
 *		==============================================================
 *
@@ -225,7 +230,7 @@ bool RIGHT_KEY = false;
 bool LEFT_KEY = false;
 
 
-    // toggle textures
+ 
 
 bool TAB_KEY = GLFW_RELEASE;
 bool Q_KEY = GLFW_RELEASE;
@@ -249,7 +254,7 @@ bool K_KEY = GLFW_RELEASE;
 bool L_KEY = GLFW_RELEASE;
 
 bool Z_KEY = GLFW_RELEASE;
-bool X_KEY = GLFW_RELEASE;
+bool X_KEY = GLFW_RELEASE;    // toggle textures
 bool B_KEY = GLFW_RELEASE;
 bool N_KEY = GLFW_RELEASE;
 bool M_KEY = GLFW_RELEASE;
@@ -742,12 +747,12 @@ int main()
 	// render loop
 	while (!glfwWindowShouldClose(window))
 	{
-	
+		
 		deltaTime = glfwGetTime() - lastFrameTime;
 		lastFrameTime += deltaTime;
 
 		// light parameters
-		vec3 lightPosition = vec3(0.0f, 3.0f, 4.0f);
+		vec3 lightPosition = vec3(-3.0f, 3.0f, 4.0f);
 		vec3 lightFocus(0.0f, 0.0f, 0.0f);      // the point in 3D space the light "looks" at
 		vec3 lightDirection = normalize(lightFocus - lightPosition);
 
@@ -1337,46 +1342,55 @@ void processInput(GLFWwindow* window, Shader shaderProgram)
 		L_KEY = glfwGetKey(window, GLFW_KEY_L);
 	}
 
+	// X1
 	cube_rotation_X_1[1][1] = cos(cube_rotation[0][0]);
 	cube_rotation_X_1[2][2] = cos(cube_rotation[0][0]);
 	cube_rotation_X_1[1][2] = -sin(cube_rotation[0][0]);
 	cube_rotation_X_1[2][1] = sin(cube_rotation[0][0]);
 
+	// X2
 	cube_rotation_X_2[1][1] = cos(cube_rotation[1][0]);
 	cube_rotation_X_2[2][2] = cos(cube_rotation[1][0]);
 	cube_rotation_X_2[1][2] = -sin(cube_rotation[1][0]);
 	cube_rotation_X_2[2][1] = sin(cube_rotation[1][0]);
 
+	// X3
 	cube_rotation_X_3[1][1] = cos(cube_rotation[2][0]);
 	cube_rotation_X_3[2][2] = cos(cube_rotation[2][0]);
 	cube_rotation_X_3[1][2] = -sin(cube_rotation[2][0]);
 	cube_rotation_X_3[2][1] = sin(cube_rotation[2][0]);
 
+	// Y1
 	cube_rotation_Y_1[0][0] = cos(cube_rotation[0][1]);
 	cube_rotation_Y_1[2][2] = cos(cube_rotation[0][1]);
 	cube_rotation_Y_1[0][2] = sin(cube_rotation[0][1]);
 	cube_rotation_Y_1[2][0] = -sin(cube_rotation[0][1]);
 
+	// Y2
 	cube_rotation_Y_2[0][0] = cos(cube_rotation[1][1]);
 	cube_rotation_Y_2[2][2] = cos(cube_rotation[1][1]);
 	cube_rotation_Y_2[0][2] = sin(cube_rotation[1][1]);
 	cube_rotation_Y_2[2][0] = -sin(cube_rotation[1][1]);
 
+	// Y3
 	cube_rotation_Y_3[0][0] = cos(cube_rotation[2][1]);
 	cube_rotation_Y_3[2][2] = cos(cube_rotation[2][1]);
 	cube_rotation_Y_3[0][2] = sin(cube_rotation[2][1]);
 	cube_rotation_Y_3[2][0] = -sin(cube_rotation[2][1]);
 
+	// Z1
 	cube_rotation_Z_1[0][0] = cos(cube_rotation[0][2]);
 	cube_rotation_Z_1[1][1] = cos(cube_rotation[0][2]);
 	cube_rotation_Z_1[0][1] = -sin(cube_rotation[0][2]);
 	cube_rotation_Z_1[1][0] = sin(cube_rotation[0][2]);
 
+	// Z2
 	cube_rotation_Z_2[0][0] = cos(cube_rotation[1][2]);
 	cube_rotation_Z_2[1][1] = cos(cube_rotation[1][2]);
 	cube_rotation_Z_2[0][1] = -sin(cube_rotation[1][2]);
 	cube_rotation_Z_2[1][0] = sin(cube_rotation[1][2]);
 
+	// Z3
 	cube_rotation_Z_3[0][0] = cos(cube_rotation[2][2]);
 	cube_rotation_Z_3[1][1] = cos(cube_rotation[2][2]);
 	cube_rotation_Z_3[0][1] = -sin(cube_rotation[2][2]);
@@ -2139,7 +2153,6 @@ int createGridlines(int numGridlines, vec3 * gridLinesVertices, GLuint size, vec
 	return vertexArrayObject;
 }
 
-
 int createTexturedCubeVertexArrayObject(TexturedColoredVertex * texturedCubeVertexArray, GLuint size) {
 
 	// Create a vertex array
@@ -2163,8 +2176,6 @@ int createTexturedCubeVertexArrayObject(TexturedColoredVertex * texturedCubeVert
 	return vertexArrayObject;
 }
 
-
-
 int createLine(vec3 * lineVertices) {
 
 	// Create a vertex array
@@ -2185,7 +2196,6 @@ int createLine(vec3 * lineVertices) {
 
 	return vertexArrayObject;
 }
-
 
 void rubiks_cube(Shader shaderProgram, unsigned int knight_tex_ID[10], unsigned int color_tex_ID[10], unsigned int shape_A_tex_ID[10], unsigned int shape_B_tex_ID[10], unsigned int number_tex_ID[10], unsigned int science_tex_ID[10])
 {
@@ -2559,17 +2569,17 @@ void drawLightCube(Shader shaderProgram, vec3 lightPosition) {
 
 void drawTimer(Shader shaderProgram, unsigned int number_tex_ID[10]) {
 
-	modelTranslationMatrix = translate(glm::mat4(1.0f), glm::vec3(0.1f, 4.0f, 2.0f));
+	modelTranslationMatrix = translate(glm::mat4(1.0f), glm::vec3(0.2f, 4.0f, 2.0f));
 	worldMatrix = worldOrientationMatrix;
 	shaderProgram.setMat4("worldMatrix", worldMatrix);
 
-	int time[5];
-	time[0] = glfwGetTime();
-	time[1] = glfwGetTime() / 10.0f;
-	time[2] = glfwGetTime() / 100.0f;
-	time[3] = glfwGetTime() / 1000.0f;
-	time[4] = glfwGetTime() / 10000.0f;
-
+	int time[6];
+	time[0] = glfwGetTime() / 0.1; 
+	time[1] = glfwGetTime() / 1.0f;	
+	time[2] = glfwGetTime() / 10.0f;	// division by 10 means that the 3nd digit is delayed by 10 seconds
+	time[3] = glfwGetTime() / 100.0f;	// division by 100 means that the 4nd digit is delayed by 100 seconds
+	time[4] = glfwGetTime() / 1000.0f; // division by 1000 means that the 5nd digit is delayed by 1000 seconds
+	time[5] = glfwGetTime() / 10000.0f; // division by 1000 means that the 5nd digit is delayed by 1000 seconds
 
 	shaderProgram.setFloat("ambientStrength", 2.0);
 	shaderProgram.setVec3("objectColor", 0.0f, 1.0f, 1.0f);
@@ -2604,6 +2614,12 @@ void drawTimer(Shader shaderProgram, unsigned int number_tex_ID[10]) {
 	worldMatrix = worldOrientationMatrix * modelTranslationMatrix * partMatrix;
 	shaderProgram.setMat4("worldMatrix", worldMatrix);
 	glBindTexture(GL_TEXTURE_2D, number_tex_ID[time[4] % 10]);
+	glDrawArrays(GL_TRIANGLES, 12, 6);
+
+	partMatrix = translate(glm::mat4(1.0f), glm::vec3(-0.5f, 0.0f, 0.0f));
+	worldMatrix = worldOrientationMatrix * modelTranslationMatrix * partMatrix;
+	shaderProgram.setMat4("worldMatrix", worldMatrix);
+	glBindTexture(GL_TEXTURE_2D, number_tex_ID[time[5] % 10]);
 	glDrawArrays(GL_TRIANGLES, 12, 6);
 
 	glEnable(GL_CULL_FACE);

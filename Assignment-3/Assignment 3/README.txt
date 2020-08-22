@@ -5,12 +5,18 @@
 *	Noor Alali
 *	Vishal Senewiratne
 *
+	***************************************************** 
+	*                                                   *
+	*   NOTE: CLICK RIGHT MOUSE BUTTON TO SHOW RENDER   *
+	*                                                   *
+	*****************************************************
+*
 *	CONTROLS:
-
+*
 *		VIEW SELECTION CONTROLS
 *		==============================================================
 *
-*       ESCAPE              : QUIT PROGRAM
+*       	ESCAPE              : QUIT PROGRAM
 *
 *		==============================================================
 *		X					: TOGGLE TEXTURE ON/OFF
